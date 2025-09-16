@@ -93,10 +93,10 @@ export default configure((ctx) => {
           // you need to set i18n resource including paths !
           include: [fileURLToPath(new URL('./src/i18n', import.meta.url))]
         }],
+        // Disable vue-tsc checker in dev to avoid crashes with @vue/language-core on some Node versions.
+        // You can re-enable by setting env VUE_TSC_CHECK=1
         ['vite-plugin-checker', {
-          vueTsc: {
-            tsconfigPath: 'tsconfig.vue-tsc.json'
-          },
+          ...(process.env.VUE_TSC_CHECK === '1' ? { vueTsc: { tsconfigPath: 'tsconfig.vue-tsc.json' } } : {}),
           eslint: {
             lintCommand: 'eslint "./**/*.{js,ts,mjs,cjs,vue}"'
           }
