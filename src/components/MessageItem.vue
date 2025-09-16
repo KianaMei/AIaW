@@ -54,15 +54,13 @@
             header-class="min-h-40px reasoning-content-header"
           >
             <q-card important:bg-sur-c-low>
-              <q-card-section
-                text="on-sur-var"
-                font-code
-                whitespace-pre-wrap
-                pt-2
-                @vue:updated="onHtmlChanged()"
-              >
-                {{ content.reasoning.trim() }}
-              </q-card-section>
+              <!-- Render reasoning with Markdown so **bold**, lists, code, etc. work -->
+              <md-preview
+                :model-value="content.reasoning"
+                v-bind="mdPreviewProps"
+                class="px-3 py-2"
+                @on-html-changed="onHtmlChanged()"
+              />
             </q-card>
           </q-expansion-item>
           <div
