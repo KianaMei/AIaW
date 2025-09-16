@@ -2,5 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "skipLibCheck": true
+  },
+  // Ensure vueCompilerOptions exists to satisfy tooling that expects an iterable plugins array
+  "vueCompilerOptions": {
+    "plugins": []
   }
 }
