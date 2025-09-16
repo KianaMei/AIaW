@@ -1,7 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { TransportConf } from './types'
 import { JSONEqual } from './functions'
-import { version } from 'src/version.json'
+import { version } from 'src/version'
 import { TauriShellClientTransport } from './tauri-shell-transport'
 import { platform } from '@tauri-apps/plugin-os'
 import { fetch } from './platform-api'
