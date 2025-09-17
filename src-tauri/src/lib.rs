@@ -16,13 +16,19 @@ pub fn run() {
             is_deb::is_deb_package
         ])
         .setup(|app| {
-            if cfg!(debug_assertions) {
-                app.handle().plugin(
-                    tauri_plugin_log::Builder::default()
-                        .level(log::LevelFilter::Info)
-                        .build(),
-                )?;
+            // Enable logging in both debug and release to help diagnose issues
+            app.handle().plugin(
+                tauri_plugin_log::Builder::default()
+                    .level(log::LevelFilter::Info)
+                    .build(),
+            )?;
+
+            // In debug builds, auto-open devtools on startup
+            #[cfg(debug_assertions)]
+            if let Some(win) = app.get_webview_window("main") {
+                let _ = win.open_devtools();
             }
+
             Ok(())
         })
         .run(tauri::generate_context!())

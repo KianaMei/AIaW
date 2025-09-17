@@ -19,7 +19,9 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
+            // Disable code shrinking/obfuscation to prevent plugin stripping causing crashes.
+            // Re-enable with proper ProGuard keep rules if needed.
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

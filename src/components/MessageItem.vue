@@ -56,7 +56,7 @@
             <q-card important:bg-sur-c-low>
               <!-- Render reasoning with Markdown so **bold**, lists, code, etc. work -->
               <md-preview
-                :model-value="content.reasoning"
+                :model-value="sanitizeReasoning(content.reasoning)"
                 v-bind="mdPreviewProps"
                 class="px-3 py-2 reasoning-md"
                 @on-html-changed="onHtmlChanged()"
@@ -580,6 +580,17 @@ function injectConvertArtifact() {
 }
 const mdPreviewProps = useMdPreviewProps()
 const { t } = useI18n()
+
+function sanitizeReasoning(text?: string) {
+  if (!text) return text
+  let s = text.replace(/\r\n/g, '\n')
+  // Ensure bold section titles are separated to their own line
+  s = s.replace(/([^\n])(\*\*[^*\n]+\*\*)/g, '$1\n$2')
+  s = s.replace(/(\*\*[^*\n]+\*\*)([^\n])/g, '$1\n$2')
+  // Collapse accidental single-letter newlines like "a\nn\nd" -> "and"
+  s = s.replace(/\b([A-Za-z])\n([A-Za-z])\n([A-Za-z])\b/g, '$1$2$3')
+  return s
+}
 </script>
 
 <style lang="scss">
@@ -599,5 +610,7 @@ const { t } = useI18n()
   line-height: 1.6;
   // keep code readable but slightly smaller
   pre, code { font-size: 0.9em; }
+  // As a safety net, when a paragraph starts with bold text, add spacing
+  p > strong:first-child { display: inline-block; margin-top: .25em }
 }
 </style>
