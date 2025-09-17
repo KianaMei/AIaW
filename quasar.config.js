@@ -18,7 +18,9 @@ export default configure((ctx) => {
     boot: [
       'i18n',
       'unocss',
-      'global-components'
+      'global-components',
+      // provide convenient debug shortcuts in Tauri builds (F12 / Ctrl+Shift+I)
+      'debug'
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css

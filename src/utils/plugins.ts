@@ -192,7 +192,9 @@ function buildLobePlugin(manifest: LobeChatPluginManifest, available: boolean): 
         const res = await corsFetch(url, {
           method: 'POST',
           body: JSON.stringify(args),
-          headers: createHeadersWithPluginSettings(settings)
+          headers: createHeadersWithPluginSettings(settings),
+          // Fail fast for long-hanging third-party plugins
+          timeoutMs: 45_000
         })
         if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
         return [{

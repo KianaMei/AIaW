@@ -53,6 +53,7 @@ jobs:
 
         with:
           releaseId: ${{ github.event.release.id }}
+          includeDebug: true
           args: ${{ matrix.args }}
 
       # Skip latest.json linux-deb augmentation since Linux builds are disabled

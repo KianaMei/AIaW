@@ -16,10 +16,17 @@ pub fn run() {
             is_deb::is_deb_package
         ])
         .setup(|app| {
-            // Enable logging in both debug and release to help diagnose issues
+            // Enable logging in both debug and release; level controlled by env AIAW_LOG
+            let lvl = match std::env::var("AIAW_LOG").map(|v| v.to_lowercase()) {
+                Ok(s) if s == "trace" => log::LevelFilter::Trace,
+                Ok(s) if s == "debug" => log::LevelFilter::Debug,
+                Ok(s) if s == "warn" => log::LevelFilter::Warn,
+                Ok(s) if s == "error" => log::LevelFilter::Error,
+                _ => if cfg!(debug_assertions) { log::LevelFilter::Debug } else { log::LevelFilter::Info },
+            };
             app.handle().plugin(
                 tauri_plugin_log::Builder::default()
-                    .level(log::LevelFilter::Info)
+                    .level(lvl)
                     .build(),
             )?;
 
