@@ -3,6 +3,9 @@ name: 'Build Tauri'
 on:
   release:
     types: [published]
+  push:
+    tags:
+      - 'v*'
 
 
 jobs:
@@ -45,14 +48,30 @@ jobs:
       - name: setup .env
         run: cp .env.app .env.local
 
-      - uses: tauri-apps/tauri-action@v0
+      - name: Build & Publish (release event)
+        if: ${{ github.event_name == 'release' }}
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-
         with:
           releaseId: ${{ github.event.release.id }}
+          includeDebug: true
+          args: ${{ matrix.args }}
+
+      - name: Build & Publish (tag push)
+        if: ${{ github.event_name == 'push' }}
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: ${{ github.ref_name }}
+          releaseDraft: false
+          prerelease: false
           includeDebug: true
           args: ${{ matrix.args }}
 
