@@ -11,4 +11,3 @@ const data = JSON.parse(raw)
 export default data
 export const version = data.version
 export type AppVersion = typeof data
-

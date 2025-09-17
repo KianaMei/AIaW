@@ -58,7 +58,7 @@
               <md-preview
                 :model-value="content.reasoning"
                 v-bind="mdPreviewProps"
-                class="px-3 py-2"
+                class="px-3 py-2 reasoning-md"
                 @on-html-changed="onHtmlChanged()"
               />
             </q-card>
@@ -591,5 +591,13 @@ const { t } = useI18n()
   .q-item__section--avatar {
     min-width: 0;
   }
+}
+
+// Make reasoning preview a bit smaller than the main answer for visual hierarchy
+.reasoning-md {
+  font-size: 0.92em;
+  line-height: 1.6;
+  // keep code readable but slightly smaller
+  pre, code { font-size: 0.9em; }
 }
 </style>

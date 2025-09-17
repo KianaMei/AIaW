@@ -74,7 +74,8 @@ const rules: Rule[] = [{
     }))
   },
   default: {
-    textVerbosity: 'medium'
+    // default to high verbosity for richer responses
+    textVerbosity: 'high'
   },
   exec: options => {
     const { webSearch, codeExecution, textVerbosity } = options
@@ -102,7 +103,8 @@ const rules: Rule[] = [{
       enum: ['low', 'medium', 'high']
     }))
   },
-  default: {},
+  // default to high reasoning effort for reasoning-capable OpenAI models
+  default: { reasoningEffort: 'high' },
   exec: ({ reasoningEffort }) => {
     return {
       providerOptions: {
