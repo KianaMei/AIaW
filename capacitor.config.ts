@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-  appId: 'app.aiaw',
-  appName: 'AIaW',
+  appId: 'com.kianamei.alaw',
+  appName: 'AlaW',
   webDir: 'dist/spa',
   plugins: {
     EdgeToEdge: {

@@ -1,53 +1,53 @@
-{
-  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "AI as Workspace",
-  "version": "1.8.3",
-  "identifier": "app.aiaw",
-  "build": {
-    "frontendDist": "../dist/spa",
-    "devUrl": "http://localhost:9005",
-    "beforeDevCommand": "pnpm dev",
-    "beforeBuildCommand": "pnpm build"
-  },
-  "app": {
-    "windows": [
-      {
-        "title": "AI as Workspace",
-        "width": 1150,
-        "height": 750,
-        "resizable": true,
-        "fullscreen": false,
-        "dragDropEnabled": false
-      }
-    ],
-    "security": {
-      "csp": null
-    }
-  },
-  "bundle": {
-    "active": true,
-    "targets": [
-      "deb",
-      "appimage",
-      "nsis",
-      "app",
-      "dmg"
-    ],
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ],
-    "createUpdaterArtifacts": true
-  },
-  "plugins": {
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU4M0M5QTM1MDEwQzVERDEKUldUUlhRd0JOWm84V0hHekl0d09jaG1WRTRTbUgrTDhkWmFnK2RGWnRBY3RoaFJiTElZTDB6djQK",
-      "endpoints": [
-        "https://github.com/NitroRCr/AIaW/releases/latest/download/latest.json"
-      ]
-    }
-  }
+﻿{
+    "$schema":  "../node_modules/@tauri-apps/cli/config.schema.json",
+    "productName":  "AlaW",
+    "version":  "1.8.3",
+    "identifier":  "com.kianamei.alaw",
+    "build":  {
+                  "frontendDist":  "../dist/spa",
+                  "devUrl":  "http://localhost:9005",
+                  "beforeDevCommand":  "pnpm dev",
+                  "beforeBuildCommand":  "pnpm build"
+              },
+    "app":  {
+                "windows":  [
+                                {
+                                    "title":  "AI as Workspace",
+                                    "width":  1150,
+                                    "height":  750,
+                                    "resizable":  true,
+                                    "fullscreen":  false,
+                                    "dragDropEnabled":  false
+                                }
+                            ],
+                "security":  {
+                                 "csp":  null
+                             }
+            },
+    "bundle":  {
+                   "active":  true,
+                   "targets":  [
+                                   "deb",
+                                   "appimage",
+                                   "nsis",
+                                   "app",
+                                   "dmg"
+                               ],
+                   "icon":  [
+                                "icons/32x32.png",
+                                "icons/128x128.png",
+                                "icons/128x128@2x.png",
+                                "icons/icon.icns",
+                                "icons/icon.ico"
+                            ],
+                   "createUpdaterArtifacts":  true
+               },
+    "plugins":  {
+                    "updater":  {
+                                    "pubkey":  "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEY5QzREQkJBM0M3QTYwOTkKUldTWllIbzh1dHZFK2Y5M1JGM3JjRk1hcER1akZMWUU0cWg1V0RtK3ByOTR6YU1hM1lNb1BpVXMK",
+                                    "endpoints":  [
+                                                      "https://github.com/KianaMei/AlaW/releases/latest/download/latest.json"
+                                                  ]
+                                }
+                }
 }

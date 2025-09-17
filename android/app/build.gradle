@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "app.aiaw"
+    namespace "com.kianamei.alaw"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "app.aiaw"
+        applicationId "com.kianamei.alaw"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 10803

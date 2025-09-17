@@ -32,6 +32,10 @@ yarn-error.log*
 # local .env files
 .env.local*
 
+# Local secrets (do NOT commit)
+.secrets/
+*.jks
+
 # Code counter
 .VSCodeCounter
 

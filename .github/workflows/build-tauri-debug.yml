@@ -11,15 +11,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # for Arm based macs (M1 and above).
-            args: '--target aarch64-apple-darwin'
-            id: 'macos-arm'
-          - platform: 'macos-latest' # for Intel based macs.
-            args: '--target x86_64-apple-darwin'
-            id: 'macos-intel'
-          - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
-            args: ''
-            id: 'ubuntu'
           - platform: 'windows-latest'
             args: ''
             id: 'windows'
@@ -46,11 +37,7 @@ jobs:
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      # Linux/macOS builders removed for personal Windows-only builds
 
       - name: install frontend dependencies
         run: pnpm install
@@ -76,8 +63,4 @@ jobs:
           path: |
             src-tauri/target/debug/bundle/*/*.exe
             src-tauri/target/debug/bundle/*/*.msi
-            src-tauri/target/debug/bundle/*/*.rpm
-            src-tauri/target/debug/bundle/*/*.deb
-            src-tauri/target/debug/bundle/*/*.AppImage
-            src-tauri/target/*/debug/bundle/dmg/*.dmg
           retention-days: 5
