@@ -8,19 +8,19 @@ export default () => {
 
   // Register global hotkeys to open DevTools via Tauri command (works in release)
   window.addEventListener('keydown', (ev) => {
-      const ctrlCmd = ev.ctrlKey || ev.metaKey
-      const shift = ev.shiftKey
+    const ctrlCmd = ev.ctrlKey || ev.metaKey
+    const shift = ev.shiftKey
 
-      // F12 or Ctrl/Cmd+Shift+I => open DevTools
-      if ((ev.key === 'F12') || (ctrlCmd && shift && (ev.key.toUpperCase() === 'I'))) {
-        ev.preventDefault()
-        invoke('open_devtools').catch(() => {})
-      }
+    // F12 or Ctrl/Cmd+Shift+I => open DevTools
+    if ((ev.key === 'F12') || (ctrlCmd && shift && (ev.key.toUpperCase() === 'I'))) {
+      ev.preventDefault()
+      invoke('open_devtools').catch(() => {})
+    }
 
-      // Ctrl/Cmd+Shift+R => reload current window
-      if (ctrlCmd && shift && (ev.key.toUpperCase() === 'R')) {
-        ev.preventDefault()
-        location.reload()
-      }
+    // Ctrl/Cmd+Shift+R => reload current window
+    if (ctrlCmd && shift && (ev.key.toUpperCase() === 'R')) {
+      ev.preventDefault()
+      location.reload()
+    }
   })
 }
