@@ -7,7 +7,7 @@
   ],
   "permissions": [
     "core:default",
-    "webview:allow-open-devtools",
+    "core:webview:allow-internal-toggle-devtools",
     {
       "identifier": "shell:allow-spawn",
       "allow": [
@@ -59,3 +59,4 @@
     "process:allow-restart"
   ]
 }
+
