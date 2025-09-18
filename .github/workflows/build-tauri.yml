@@ -48,6 +48,12 @@ jobs:
       - name: setup .env
         run: cp .env.app .env.local
 
+      - name: Disable updater artifacts if no signing key
+        if: ${{ !secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          node -e "const fs=require('fs');const p='src-tauri/tauri.conf.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.bundle=j.bundle||{};if(j.bundle.createUpdaterArtifacts){j.bundle.createUpdaterArtifacts=false;fs.writeFileSync(p,JSON.stringify(j,null,2));console.log('Disabled updater artifacts due to missing TAURI_SIGNING_PRIVATE_KEY');}"
+
       - name: Build & Publish (release event)
         if: ${{ github.event_name == 'release' }}
         uses: tauri-apps/tauri-action@v0
