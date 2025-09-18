@@ -26,6 +26,10 @@ type StreamResponse = {
   headers: Record<string, string>;
 };
 
+function debugHttpEnabled() {
+  try { return localStorage.getItem('AIAW_DEBUG_HTTP') === '1' } catch { return false }
+}
+
 export function fetch(url: string, options?: RequestInit): Promise<Response> {
   if (!IsTauri) return window.fetch(url, options)
   const {
@@ -34,6 +38,19 @@ export function fetch(url: string, options?: RequestInit): Promise<Response> {
     headers: _headers = {},
     body = []
   } = options || {}
+  if (debugHttpEnabled()) {
+    // eslint-disable-next-line no-console
+    console.groupCollapsed(`[HTTP] ${method.toUpperCase()} ${url} (tauri-stream)`)
+    // eslint-disable-next-line no-console
+    console.log('Request headers:', Object.fromEntries(new Headers(_headers as any).entries()))
+    if (typeof body === 'string') {
+      // eslint-disable-next-line no-console
+      console.log('Request body:', body.length > 2000 ? body.slice(0, 2000) + `…(${body.length - 2000} more)` : body)
+    } else if (Array.isArray(body)) {
+      // eslint-disable-next-line no-console
+      console.log('Request body:', `[array length=${body.length}]`)
+    }
+  }
   let unlisten: Function | undefined
   let setRequestId: Function | undefined
   const requestIdPromise = new Promise((resolve) => (setRequestId = resolve))
@@ -92,6 +109,14 @@ export function fetch(url: string, options?: RequestInit): Promise<Response> {
     .then((res: StreamResponse) => {
       const { request_id, status, status_text: statusText, headers } = res
       setRequestId?.(request_id)
+      if (debugHttpEnabled()) {
+        // eslint-disable-next-line no-console
+        console.log('Response status:', status, statusText)
+        // eslint-disable-next-line no-console
+        console.log('Response headers:', headers)
+        // eslint-disable-next-line no-console
+        console.groupEnd()
+      }
       const response = new Response(ts.readable, {
         status,
         statusText,
@@ -103,6 +128,12 @@ export function fetch(url: string, options?: RequestInit): Promise<Response> {
       return response
     })
     .catch(msg => {
+      if (debugHttpEnabled()) {
+        // eslint-disable-next-line no-console
+        console.error('HTTP error:', msg)
+        // eslint-disable-next-line no-console
+        console.groupEnd()
+      }
       throw new Error(msg)
     })
 }

@@ -13,7 +13,85 @@ export const IsCapacitor = Capacitor.isNativePlatform()
 export const IsWeb = !IsTauri && !IsCapacitor
 export const TauriPlatform = IsTauri ? platform() : undefined
 
-export const fetch = IsTauri ? tauriFetch : IsCapacitor ? capFetch : window.fetch.bind(window)
+// --- Debug HTTP wrapper -------------------------------------------------------
+function shouldDebugHttp() {
+  try {
+    return localStorage.getItem('AIAW_DEBUG_HTTP') === '1'
+  } catch (_) {
+    return false
+  }
+}
+
+function redactHeaders(h?: HeadersInit): Record<string, string> {
+  const out: Record<string, string> = {}
+  const sensitive = new Set(['authorization', 'x-api-key', 'api-key', 'x-goog-api-key', 'x-api-token', 'proxy-authorization'])
+  const src = new Headers(h as any)
+  for (const [k, v] of src.entries()) {
+    if (sensitive.has(k.toLowerCase())) {
+      const tail = v.slice(-4)
+      out[k] = `***${tail}`
+    } else {
+      out[k] = v
+    }
+  }
+  return out
+}
+
+function bodyPreview(body: any, headers?: HeadersInit): string {
+  if (!body) return ''
+  try {
+    const contentType = new Headers(headers as any).get('content-type') || ''
+    const max = 2000
+    if (typeof body === 'string') {
+      if (contentType.includes('application/json')) {
+        return body.length > max ? body.slice(0, max) + `…(${body.length - max} more)` : body
+      }
+      return `[text ${body.length} bytes]` + (body.length > max ? ' (truncated)' : '')
+    }
+    if (Array.isArray(body)) return `[array length=${body.length}]`
+    if (body instanceof Blob) return `[blob ${body.type} size=${body.size}]`
+    return `[body ${typeof body}]`
+  } catch {
+    return '[body]'
+  }
+}
+
+function wrapFetch<F extends (url: any, init?: any) => Promise<Response>>(base: F): F {
+  return (async (url: any, init?: RequestInit) => {
+    if (!shouldDebugHttp()) return await base(url, init)
+
+    const method = (init?.method || 'GET').toUpperCase()
+    const headers = redactHeaders(init?.headers)
+    const bPrev = bodyPreview((init as any)?.body, init?.headers)
+    // eslint-disable-next-line no-console
+    console.groupCollapsed(`[HTTP] ${method} ${url}`)
+    // eslint-disable-next-line no-console
+    console.log('Request headers:', headers)
+    if (bPrev) {
+      // eslint-disable-next-line no-console
+      console.debug('Request body:', bPrev)
+    }
+    let res: Response
+    try {
+      res = await base(url, init)
+      // eslint-disable-next-line no-console
+      console.log('Response status:', res.status, res.statusText)
+      // eslint-disable-next-line no-console
+      console.log('Response headers:', Object.fromEntries(res.headers.entries()))
+      return res
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('HTTP error:', e)
+      throw e
+    } finally {
+      // eslint-disable-next-line no-console
+      console.groupEnd()
+    }
+  }) as F
+}
+
+const baseFetch = IsTauri ? tauriFetch : IsCapacitor ? capFetch : window.fetch.bind(window)
+export const fetch = wrapFetch(baseFetch)
 
 export async function clipboardReadText(): Promise<string> {
   if (IsTauri) {

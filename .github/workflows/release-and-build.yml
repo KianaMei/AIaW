@@ -68,3 +68,14 @@ jobs:
           releaseId: ${{ steps.rel.outputs.id }}
           includeDebug: true
 
+      - name: Upload raw installers (.exe/.msi)
+        if: always()
+        shell: bash
+        run: |
+          TAG='${{ inputs.tag }}'
+          shopt -s globstar nullglob
+          files=(src-tauri/target/**/bundle/*/*.{exe,msi})
+          echo "Found: ${files[@]}"
+          for f in "${files[@]}"; do
+            [ -f "$f" ] && gh release upload "$TAG" "$f" --clobber || true
+          done

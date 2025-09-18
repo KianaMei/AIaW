@@ -85,4 +85,16 @@ jobs:
           includeDebug: true
           args: ${{ matrix.args }}
 
+      - name: Upload raw installers (.exe/.msi)
+        if: always()
+        shell: bash
+        run: |
+          TAG='${{ steps.vars.outputs.tag }}'
+          shopt -s globstar nullglob
+          files=(src-tauri/target/**/bundle/*/*.{exe,msi})
+          echo "Found: ${files[@]}"
+          for f in "${files[@]}"; do
+            [ -f "$f" ] && gh release upload "$TAG" "$f" --clobber || true
+          done
+
       # Skip latest.json linux-deb augmentation since Linux builds are disabled
