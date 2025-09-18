@@ -12,6 +12,10 @@ jobs:
   publish-tauri:
     permissions:
       contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     strategy:
       fail-fast: false
       matrix:
@@ -49,35 +53,35 @@ jobs:
         run: cp .env.app .env.local
 
       - name: Disable updater artifacts if no signing key
-        if: ${{ !secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        if: ${{ env.TAURI_SIGNING_PRIVATE_KEY == '' }}
         shell: bash
         run: |
           node -e "const fs=require('fs');const p='src-tauri/tauri.conf.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.bundle=j.bundle||{};if(j.bundle.createUpdaterArtifacts){j.bundle.createUpdaterArtifacts=false;fs.writeFileSync(p,JSON.stringify(j,null,2));console.log('Disabled updater artifacts due to missing TAURI_SIGNING_PRIVATE_KEY');}"
 
-      - name: Build & Publish (release event)
-        if: ${{ github.event_name == 'release' }}
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        with:
-          releaseId: ${{ github.event.release.id }}
-          includeDebug: true
-          args: ${{ matrix.args }}
+      - name: Determine tag
+        id: vars
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Build & Publish (tag push)
-        if: ${{ github.event_name == 'push' }}
+      - name: Ensure release exists via gh
+        id: ensure_release
+        shell: bash
+        run: |
+          TAG='${{ steps.vars.outputs.tag }}'
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" -t "$TAG" -n "Automated release" || exit 1
+          fi
+          echo "release_id=$(gh release view "$TAG" --json id -q .id)" >> "$GITHUB_OUTPUT"
+
+      - name: Build & Publish (using releaseId)
         uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: ${{ github.ref_name }}
-          releaseDraft: false
-          prerelease: false
+          releaseId: ${{ steps.ensure_release.outputs.release_id }}
           includeDebug: true
           args: ${{ matrix.args }}
 
