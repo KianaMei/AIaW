@@ -1,12 +1,10 @@
 import { IsTauri } from 'src/utils/platform-api'
-// eslint-disable-next-line import/no-unresolved
-import { invoke } from '@tauri-apps/api/core'
 
 // Tauri-only debug helpers: open devtools and reload shortcuts in any build
 export default () => {
   if (!IsTauri) return
 
-  // Register global hotkeys to open DevTools via Tauri command (works in release)
+  // Register global hotkeys to open DevTools (works in release if capability allows)
   window.addEventListener('keydown', (ev) => {
     const ctrlCmd = ev.ctrlKey || ev.metaKey
     const shift = ev.shiftKey
@@ -14,7 +12,14 @@ export default () => {
     // F12 or Ctrl/Cmd+Shift+I => open DevTools
     if ((ev.key === 'F12') || (ctrlCmd && shift && (ev.key.toUpperCase() === 'I'))) {
       ev.preventDefault()
-      invoke('open_devtools').catch(() => {})
+      // lazy import to avoid bundling for web
+      import('@tauri-apps/api/webviewWindow').then(({ getCurrentWebviewWindow }) => {
+        const win = getCurrentWebviewWindow()
+        // in Tauri 2, openDevtools is available when capability
+        // core:webview:allow-internal-toggle-devtools is enabled
+        // @ts-expect-error openDevtools runtime optional
+        win.openDevtools?.()
+      }).catch(() => {})
     }
 
     // Ctrl/Cmd+Shift+R => reload current window
