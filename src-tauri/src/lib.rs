@@ -14,7 +14,8 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             stream::stream_fetch,
-            is_deb::is_deb_package
+            is_deb::is_deb_package,
+            open_devtools
         ])
         .setup(|app| {
             // Enable logging in both debug and release; level controlled by env AIAW_LOG
@@ -41,4 +42,9 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[tauri::command]
+fn open_devtools(window: tauri::WebviewWindow) {
+    let _ = window.open_devtools();
 }
