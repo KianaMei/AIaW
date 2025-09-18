@@ -13,6 +13,10 @@ export const IsCapacitor = Capacitor.isNativePlatform()
 export const IsWeb = !IsTauri && !IsCapacitor
 export const TauriPlatform = IsTauri ? platform() : undefined
 
+// Type aliases for DOM lib types so eslint/no-undef doesn't complain
+type HeadersInit = globalThis.HeadersInit
+type RequestInit = globalThis.RequestInit
+
 // --- Debug HTTP wrapper -------------------------------------------------------
 function shouldDebugHttp() {
   try {
