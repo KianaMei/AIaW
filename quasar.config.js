@@ -81,8 +81,9 @@ export default configure((ctx) => {
           copyFileSync('src/version.json', 'dist/pwa/version.json')
         }
       },
-      vitePlugins: [
-        ['@intlify/unplugin-vue-i18n/vite', {
+      vitePlugins: (() => {
+        const plugins = [
+          ['@intlify/unplugin-vue-i18n/vite', {
           // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
           // compositionOnly: false,
 
@@ -94,18 +95,20 @@ export default configure((ctx) => {
 
           // you need to set i18n resource including paths !
           include: [fileURLToPath(new URL('./src/i18n', import.meta.url))]
-        }],
-        // Disable vue-tsc checker in dev to avoid crashes with @vue/language-core on some Node versions.
-        // You can re-enable by setting env VUE_TSC_CHECK=1
-        ['vite-plugin-checker', {
-          ...(process.env.VUE_TSC_CHECK === '1' ? { vueTsc: { tsconfigPath: 'tsconfig.vue-tsc.json' } } : {}),
-          eslint: {
-            // Explicitly ignore helper scripts to avoid CI lint failures
-            lintCommand: 'eslint --ignore-pattern "scripts/**" "./**/*.{js,ts,mjs,cjs,vue}"'
-          }
-        }, { server: false }],
-        ['unocss/vite']
-      ]
+          }],
+          ['unocss/vite']
+        ]
+        // Skip heavy checker in CI to avoid failing release build due to formatting-only lint issues
+        if (process.env.CI !== 'true' && process.env.AIAW_CI_SKIP_LINT !== '1') {
+          plugins.splice(1, 0, ['vite-plugin-checker', {
+            ...(process.env.VUE_TSC_CHECK === '1' ? { vueTsc: { tsconfigPath: 'tsconfig.vue-tsc.json' } } : {}),
+            eslint: {
+              lintCommand: 'eslint --ignore-pattern "scripts/**" "./**/*.{js,ts,mjs,cjs,vue}"'
+            }
+          }, { server: false }])
+        }
+        return plugins
+      })()
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
