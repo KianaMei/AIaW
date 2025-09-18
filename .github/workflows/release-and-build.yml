@@ -1,0 +1,70 @@
+name: Release & Build (gh)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag (e.g. v1.8.5)
+        required: true
+      title:
+        description: Release title (default = tag)
+        required: false
+      notes:
+        description: Release notes (optional)
+        required: false
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          cache: 'pnpm'
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Setup .env
+        run: cp .env.app .env.local
+
+      - name: Ensure release exists (gh)
+        id: rel
+        shell: bash
+        run: |
+          TAG='${{ inputs.tag }}'
+          TITLE='${{ inputs.title }}'
+          NOTES='${{ inputs.notes }}'
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" -t "${TITLE:-$TAG}" ${NOTES:+-n "$NOTES"}
+          fi
+          gh release view "$TAG" --json id -q .id > rid.txt
+          echo "id=$(cat rid.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Disable updater artifacts if no signing key
+        if: ${{ env.TAURI_SIGNING_PRIVATE_KEY == '' }}
+        shell: bash
+        run: |
+          node -e "const fs=require('fs');const p='src-tauri/tauri.conf.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.bundle=j.bundle||{};if(j.bundle.createUpdaterArtifacts){j.bundle.createUpdaterArtifacts=false;fs.writeFileSync(p,JSON.stringify(j,null,2));console.log('Disabled updater artifacts due to missing TAURI_SIGNING_PRIVATE_KEY');}"
+
+      - name: Build & Upload to release
+        uses: tauri-apps/tauri-action@v0
+        with:
+          releaseId: ${{ steps.rel.outputs.id }}
+          includeDebug: true
+
