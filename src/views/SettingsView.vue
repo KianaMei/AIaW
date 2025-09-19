@@ -286,6 +286,15 @@
             />
           </q-item-section>
         </q-item>
+        <q-item>
+          <q-item-section>
+            <q-item-label>Network Log (UI)</q-item-label>
+            <q-item-label caption>Open a built-in viewer for captured requests.</q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <q-btn label="Open" flat color="primary" @click="openNetlog" />
+          </q-item-section>
+        </q-item>
         <q-item
           clickable
           v-ripple

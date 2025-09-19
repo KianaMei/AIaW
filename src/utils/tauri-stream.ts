@@ -10,6 +10,18 @@ import { listen } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
 import { IsTauri } from './platform-api'
 
+function uiDebugEnabled() {
+  try { return localStorage.getItem('AIAW_HTTP_UI') === '1' || localStorage.getItem('AIAW_DEBUG_HTTP') === '1' } catch { return false }
+}
+function pushHttpLog(entry: any) {
+  try {
+    const g = window as any
+    g.__AIAW_HTTP_LOGS = g.__AIAW_HTTP_LOGS || []
+    g.__AIAW_HTTP_LOGS.push(entry)
+    window.dispatchEvent(new CustomEvent('aiaw-http-log', { detail: entry }))
+  } catch {}
+}
+
 type ResponseEvent = {
   id: number;
   payload: {
@@ -51,6 +63,7 @@ export function fetch(url: string, options?: RequestInit): Promise<Response> {
       console.log('Request body:', `[array length=${body.length}]`)
     }
   }
+  if (uiDebugEnabled()) pushHttpLog({ phase: 'start', ts: Date.now(), method: method.toUpperCase(), url: String(url), headers: Object.fromEntries(new Headers(_headers as any).entries()) })
   let unlisten: Function | undefined
   let setRequestId: Function | undefined
   const requestIdPromise = new Promise((resolve) => (setRequestId = resolve))
@@ -96,6 +109,7 @@ export function fetch(url: string, options?: RequestInit): Promise<Response> {
   for (const [key, value] of new Headers(_headers || {})) {
     headers.set(key, value)
   }
+  const startTs = Date.now()
   return invoke('stream_fetch', {
     method: method.toUpperCase(),
     url,
@@ -117,6 +131,7 @@ export function fetch(url: string, options?: RequestInit): Promise<Response> {
         // eslint-disable-next-line no-console
         console.groupEnd()
       }
+      if (uiDebugEnabled()) pushHttpLog({ phase: 'end', ts: Date.now(), dur: Date.now() - startTs, method: method.toUpperCase(), url: String(url), status, statusText, respHeaders: headers })
       const response = new Response(ts.readable, {
         status,
         statusText,
@@ -134,6 +149,7 @@ export function fetch(url: string, options?: RequestInit): Promise<Response> {
         // eslint-disable-next-line no-console
         console.groupEnd()
       }
+      if (uiDebugEnabled()) pushHttpLog({ phase: 'error', ts: Date.now(), dur: Date.now() - startTs, method: method.toUpperCase(), url: String(url), error: String(msg) })
       throw new Error(msg)
     })
 }

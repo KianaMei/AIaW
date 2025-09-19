@@ -26,6 +26,23 @@ function shouldDebugHttp() {
   }
 }
 
+function uiDebugEnabled() {
+  try {
+    return localStorage.getItem('AIAW_HTTP_UI') === '1' || shouldDebugHttp()
+  } catch (_) {
+    return false
+  }
+}
+
+function pushHttpLog(entry: any) {
+  try {
+    const g = window as any
+    g.__AIAW_HTTP_LOGS = g.__AIAW_HTTP_LOGS || []
+    g.__AIAW_HTTP_LOGS.push(entry)
+    window.dispatchEvent(new CustomEvent('aiaw-http-log', { detail: entry }))
+  } catch {}
+}
+
 function redactHeaders(h?: HeadersInit): Record<string, string> {
   const out: Record<string, string> = {}
   const sensitive = new Set(['authorization', 'x-api-key', 'api-key', 'x-goog-api-key', 'x-api-token', 'proxy-authorization'])
@@ -62,34 +79,34 @@ function bodyPreview(body: any, headers?: HeadersInit): string {
 
 function wrapFetch<F extends (url: any, init?: any) => Promise<Response>>(base: F): F {
   return (async (url: any, init?: RequestInit) => {
-    if (!shouldDebugHttp()) return await base(url, init)
-
     const method = (init?.method || 'GET').toUpperCase()
     const headers = redactHeaders(init?.headers)
     const bPrev = bodyPreview((init as any)?.body, init?.headers)
-    // eslint-disable-next-line no-console
-    console.groupCollapsed(`[HTTP] ${method} ${url}`)
-    // eslint-disable-next-line no-console
-    console.log('Request headers:', headers)
-    if (bPrev) {
+    const start = Date.now()
+    if (shouldDebugHttp()) {
       // eslint-disable-next-line no-console
-      console.debug('Request body:', bPrev)
+      console.groupCollapsed(`[HTTP] ${method} ${url}`)
+      // eslint-disable-next-line no-console
+      console.log('Request headers:', headers)
+      if (bPrev) console.debug('Request body:', bPrev)
     }
+    if (uiDebugEnabled()) pushHttpLog({ phase: 'start', ts: start, method, url: String(url), headers, body: bPrev })
     let res: Response
     try {
       res = await base(url, init)
-      // eslint-disable-next-line no-console
-      console.log('Response status:', res.status, res.statusText)
-      // eslint-disable-next-line no-console
-      console.log('Response headers:', Object.fromEntries(res.headers.entries()))
+      const respHeaders = Object.fromEntries(res.headers.entries())
+      if (shouldDebugHttp()) {
+        console.log('Response status:', res.status, res.statusText)
+        console.log('Response headers:', respHeaders)
+      }
+      if (uiDebugEnabled()) pushHttpLog({ phase: 'end', ts: Date.now(), dur: Date.now() - start, method, url: String(url), status: res.status, statusText: res.statusText, respHeaders })
       return res
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('HTTP error:', e)
+      if (shouldDebugHttp()) console.error('HTTP error:', e)
+      if (uiDebugEnabled()) pushHttpLog({ phase: 'error', ts: Date.now(), dur: Date.now() - start, method, url: String(url), error: String(e) })
       throw e
     } finally {
-      // eslint-disable-next-line no-console
-      console.groupEnd()
+      if (shouldDebugHttp()) console.groupEnd()
     }
   }) as F
 }
