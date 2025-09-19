@@ -3,7 +3,7 @@ import { Notify } from 'quasar'
 
 // Tauri-only debug helpers: open devtools and reload shortcuts in any build
 export default () => {
-  if (!IsTauri) return
+  if (!IsTauri) return; try { localStorage.setItem('AIAW_HTTP_UI','1'); localStorage.setItem('AIAW_DEBUG_HTTP','1'); } catch {}
 
   async function openDevtools() {
     try {
@@ -62,3 +62,4 @@ export default () => {
     }
   })
 }
+
