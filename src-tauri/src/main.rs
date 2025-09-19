@@ -4,6 +4,12 @@
 
 fn main() {
     let _ = fix_path_env::fix();
-    #[cfg(target_os = 'windows')]\n    std::env::set_var('WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS', '--auto-open-devtools-for-tabs');\n    app_lib::run();
+    #[cfg(target_os = "windows")]
+    {
+        std::env::set_var(
+            "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
+            "--auto-open-devtools-for-tabs",
+        );
+    }
+    app_lib::run();
 }
-
