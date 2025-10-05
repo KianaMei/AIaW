@@ -51,21 +51,12 @@
         <q-list>
           <q-item>
             <q-item-section>
-              <autocomplete-input
-                :model-value="dialog.modelOverride?.name"
-                @update:model-value="setModel"
-                :options="providersStore.modelOptions"
+              <provider-model-selector
+                v-model="dialog.modelIdOverride"
+                :model-label="$t('dialogView.model')"
                 dense
-                :label="$t('dialogView.model')"
-              >
-                <template #option="{ opt, selected, itemProps }">
-                  <model-item
-                    :model="opt"
-                    :selected
-                    v-bind="itemProps"
-                  />
-                </template>
-              </autocomplete-input>
+                filled
+              />
             </q-item-section>
           </q-item>
           <template v-if="assistant.model">
@@ -461,6 +452,7 @@ import EnablePluginsMenu from 'src/components/EnablePluginsMenu.vue'
 import { useGetModel } from 'src/composables/get-model'
 import { useUiStateStore } from 'src/stores/ui-state'
 import AutocompleteInput from 'src/components/AutocompleteInput.vue'
+import ProviderModelSelector from 'src/components/ProviderModelSelector.vue'
 import { useProvidersV2Store as useProvidersStore } from 'src/stores/providers-v2'
 
 const { t, locale } = useI18n()
@@ -1437,6 +1429,14 @@ watch(() => liveData.value.dialog?.id, id => {
 })
 
 const providersStore = useProvidersStore()
+
+// Sync V2 override to legacy modelOverride for compatibility
+watch(() => dialog.value?.modelIdOverride, (uniq) => {
+  if (!uniq) return
+  const idx = uniq.indexOf(':')
+  const modelName = idx === -1 ? uniq : uniq.slice(idx + 1)
+  setModel(modelName)
+})
 function setModel(name: string) {
   dialog.value.modelOverride = name
     ? models.find(model => model.name === name) || { name, inputTypes: InputTypes.default }
