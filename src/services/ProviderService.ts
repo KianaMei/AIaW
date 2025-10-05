@@ -4,6 +4,14 @@ import { db } from 'src/utils/db'
 import { fetch } from 'src/utils/platform-api'
 import { OfficialBaseURLs } from 'src/config/providers'
 import { genId } from 'src/utils/functions'
+import {
+  isSupportArrayContent as cap_isSupportArrayContent,
+  isSupportDeveloperRole as cap_isSupportDeveloperRole,
+  isSupportServiceTier as cap_isSupportServiceTier,
+  isSupportVision as cap_isSupportVision,
+  isSupportUrlContext as cap_isSupportUrlContext,
+  isGeminiNativeWebSearchProvider as cap_isGeminiNativeWebSearchProvider
+} from 'src/config/provider-capabilities'
 
 /**
  * Provider Service - Cherry Studio Architecture
@@ -181,18 +189,27 @@ export class ProviderService {
    * Based on Cherry Studio's capability detection
    */
   static isSupportArrayContent(provider: ProviderV2): boolean {
-    const NOT_SUPPORT = ['deepseek', 'baichuan', 'minimax']
-    return !NOT_SUPPORT.includes(provider.id)
+    return cap_isSupportArrayContent(provider)
   }
 
   static isSupportDeveloperRole(provider: ProviderV2): boolean {
-    const NOT_SUPPORT = ['poe', 'qiniu']
-    return !NOT_SUPPORT.includes(provider.id)
+    return cap_isSupportDeveloperRole(provider)
   }
 
   static isSupportVision(provider: ProviderV2): boolean {
-    const SUPPORT = ['openai', 'anthropic', 'google', 'openai-compatible']
-    return SUPPORT.includes(provider.type)
+    return cap_isSupportVision(provider)
+  }
+
+  static isSupportServiceTier(provider: ProviderV2): boolean {
+    return cap_isSupportServiceTier(provider)
+  }
+
+  static isSupportUrlContext(provider: ProviderV2): boolean {
+    return cap_isSupportUrlContext(provider)
+  }
+
+  static isGeminiNativeWebSearchProvider(provider: ProviderV2): boolean {
+    return cap_isGeminiNativeWebSearchProvider(provider)
   }
 
   /**
@@ -208,6 +225,14 @@ export class ProviderService {
     const headers: Record<string, string> = {}
     const url = new URL(base)
 
+    // timeout controller
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
+    const timeoutMs = 12000
+    let timer: any
+    if (controller) {
+      timer = setTimeout(() => controller.abort('request-timeout'), timeoutMs)
+    }
+
     const setBearer = () => { if (provider.apiKey) headers['Authorization'] = `Bearer ${provider.apiKey}` }
 
     switch (type) {
@@ -221,32 +246,42 @@ export class ProviderService {
       case 'mistral':
       case 'togetherai': {
         setBearer()
-        const res = await fetch(new URL('/models', url).toString(), { headers })
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-        const data = await res.json()
-        const list: string[] = Array.isArray(data?.data) ? data.data.map((d: any) => d.id).filter(Boolean) : []
-        return list
+        try {
+          const res = await fetch(new URL('/models', url).toString(), { headers, signal: controller?.signal as any })
+          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+          const data = await res.json()
+          const list: string[] = Array.isArray(data?.data) ? data.data.map((d: any) => d.id).filter(Boolean) : []
+          return list
+        } catch (e: any) {
+          throw new Error(`[${provider.id}] listModels failed: ${e?.message || String(e)}`)
+        } finally { if (timer) clearTimeout(timer) }
       }
       case 'anthropic': {
         if (provider.apiKey) headers['x-api-key'] = provider.apiKey
         // Some Anthropic endpoints require version header; provide a default
         headers['anthropic-version'] = headers['anthropic-version'] || '2023-06-01'
-        const res = await fetch(new URL('/models', url).toString(), { headers })
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-        const data = await res.json()
-        return Array.isArray(data?.data) ? data.data.map((d: any) => d.id).filter(Boolean) : []
+        try {
+          const res = await fetch(new URL('/models', url).toString(), { headers, signal: controller?.signal as any })
+          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+          const data = await res.json()
+          return Array.isArray(data?.data) ? data.data.map((d: any) => d.id).filter(Boolean) : []
+        } catch (e: any) {
+          throw new Error(`[${provider.id}] listModels failed: ${e?.message || String(e)}`)
+        } finally { if (timer) clearTimeout(timer) }
       }
       case 'google': {
         // Gemini API lists models via ?key=xxx
         const listUrl = new URL('/models', url)
         if (provider.apiKey) listUrl.searchParams.set('key', provider.apiKey)
-        const res = await fetch(listUrl.toString())
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-        const data = await res.json()
-        // google returns { models: [ { name: 'models/gemini-2.0-pro' } ] }
-        const names = Array.isArray(data?.models) ? data.models.map((m: any) => m.name).filter(Boolean) : []
-        // Strip leading 'models/' if present
-        return names.map((n: string) => n.replace(/^models\//, ''))
+        try {
+          const res = await fetch(listUrl.toString(), { signal: controller?.signal as any })
+          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+          const data = await res.json()
+          const names = Array.isArray(data?.models) ? data.models.map((m: any) => m.name).filter(Boolean) : []
+          return names.map((n: string) => n.replace(/^models\//, ''))
+        } catch (e: any) {
+          throw new Error(`[${provider.id}] listModels failed: ${e?.message || String(e)}`)
+        } finally { if (timer) clearTimeout(timer) }
       }
       case 'azure': {
         // Azure OpenAI: require resourceName and apiVersion in settings
@@ -255,20 +290,26 @@ export class ProviderService {
         if (!resourceName || !provider.apiKey) throw new Error('Azure settings missing (resourceName/apiVersion/apiKey)')
         const baseUrl = `https://${resourceName}.openai.azure.com`
         const listUrl = `${baseUrl}/openai/deployments?api-version=${encodeURIComponent(apiVersion)}`
-        const res = await fetch(listUrl, { headers: { 'api-key': provider.apiKey } })
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-        const data = await res.json()
-        // Azure returns { data: [ { id: 'deploymentName', model: { name: 'gpt-4o' } } ] }
-        const ids: string[] = Array.isArray(data?.data) ? data.data.map((d: any) => d.model?.name || d.id).filter(Boolean) : []
-        return ids
+        try {
+          const res = await fetch(listUrl, { headers: { 'api-key': provider.apiKey }, signal: controller?.signal as any })
+          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+          const data = await res.json()
+          const ids: string[] = Array.isArray(data?.data) ? data.data.map((d: any) => d.model?.name || d.id).filter(Boolean) : []
+          return ids
+        } catch (e: any) {
+          throw new Error(`[${provider.id}] listModels failed: ${e?.message || String(e)}`)
+        } finally { if (timer) clearTimeout(timer) }
       }
       case 'ollama': {
         const baseUrl = base || OfficialBaseURLs.ollama
-        const res = await fetch(new URL('/tags', baseUrl).toString())
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-        const data = await res.json()
-        // { models: [ { name } ] }
-        return Array.isArray(data?.models) ? data.models.map((m: any) => m.name).filter(Boolean) : []
+        try {
+          const res = await fetch(new URL('/tags', baseUrl).toString(), { signal: controller?.signal as any })
+          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+          const data = await res.json()
+          return Array.isArray(data?.models) ? data.models.map((m: any) => m.name).filter(Boolean) : []
+        } catch (e: any) {
+          throw new Error(`[${provider.id}] listModels failed: ${e?.message || String(e)}`)
+        } finally { if (timer) clearTimeout(timer) }
       }
       default:
         throw new Error(`Unsupported provider type for model listing: ${type}`)
