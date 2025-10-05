@@ -103,34 +103,45 @@
           >{{ $t('assistantView.promptVarsGuide2') }}</a>
         </q-item-label>
         <q-separator spaced />
-        <q-item-label
-          header
-          id="model"
-        >
-          {{ $t('assistantView.model') }}
-        </q-item-label>
-        <model-input-items v-model="assistant.model" />
-        <q-item-label
-          caption
-          p="x-4 y-2"
-          text-on-sur-var
-        >
-          {{ $t('assistantView.modelEmptyTip') }}
-        </q-item-label>
-        <q-separator spaced />
-        <q-item-label
-          header
-          id="provider"
-        >
-          {{ $t('assistantView.provider') }}
-        </q-item-label>
-        <provider-input-items v-model="assistant.provider" />
+        <!-- Provider selector (Cherry Studio architecture) -->
+        <q-item id="provider">
+          <q-item-section>
+            <provider-selector-v2
+              v-model="assistant.providerId"
+              :label="$t('assistantView.provider')"
+              filled
+              dense
+              only-enabled
+            />
+          </q-item-section>
+        </q-item>
         <q-item-label
           caption
           p="x-4 y-2"
           text-on-sur-var
         >
           {{ $t('assistantView.providerEmptyTip') }}
+        </q-item-label>
+        <q-separator spaced />
+        <!-- Model selector (Cherry Studio architecture, filtered by provider) -->
+        <q-item id="model">
+          <q-item-section>
+            <model-selector-v2
+              v-model="assistant.modelId"
+              :label="$t('assistantView.model')"
+              :filter-provider="assistant.providerId"
+              filled
+              dense
+              show-group
+            />
+          </q-item-section>
+        </q-item>
+        <q-item-label
+          caption
+          p="x-4 y-2"
+          text-on-sur-var
+        >
+          {{ $t('assistantView.modelEmptyTip') }}
         </q-item-label>
         <q-separator spaced />
         <q-item id="plugins">
@@ -466,14 +477,14 @@
 import { syncRef } from 'src/composables/sync-ref'
 import { useAssistantsStore } from 'src/stores/assistants'
 import { computed, inject, toRaw } from 'vue'
-import ProviderInputItems from 'src/components/ProviderInputItems.vue'
+import ProviderSelectorV2 from 'src/components/ProviderSelectorV2.vue'
+import ModelSelectorV2 from 'src/components/ModelSelectorV2.vue'
 import PromptVarEditor from 'src/components/PromptVarEditor.vue'
 import { Assistant } from 'src/utils/types'
 import ViewCommonHeader from 'src/components/ViewCommonHeader.vue'
 import AAvatar from 'src/components/AAvatar.vue'
 import { copyToClipboard, useQuasar } from 'quasar'
 import PickAvatarDialog from 'src/components/PickAvatarDialog.vue'
-import ModelInputItems from 'src/components/ModelInputItems.vue'
 import ErrorNotFound from 'src/pages/ErrorNotFound.vue'
 import ATip from 'src/components/ATip.vue'
 import { useLocateId } from 'src/composables/locate-id'
@@ -490,11 +501,33 @@ const props = defineProps<{
 defineEmits(['toggle-drawer'])
 
 const store = useAssistantsStore()
-const assistant = syncRef<Assistant>(
+const assistantRaw = syncRef<Assistant>(
   () => store.assistants.find(a => a.id === props.id),
   val => { store.put(toRaw(val)) },
   { valueDeep: true }
 )
+
+// Compatibility layer: auto-convert between legacy and new format
+const assistant = computed({
+  get: () => {
+    const raw = assistantRaw.value
+    if (!raw) return raw
+
+    // If new fields don't exist, derive from legacy fields
+    if (!raw.providerId && raw.provider) {
+      raw.providerId = (raw.provider as any).type || 'openai'
+    }
+    if (!raw.modelId && raw.model) {
+      // Store only model ID (e.g., "gpt-4"), not "provider:modelId"
+      raw.modelId = (raw.model as any).id || (raw.model as any).name || 'gpt-4o'
+    }
+
+    return raw
+  },
+  set: (val) => {
+    assistantRaw.value = val
+  }
+})
 
 const $q = useQuasar()
 function pickAvatar() {

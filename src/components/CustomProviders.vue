@@ -1,7 +1,7 @@
 <template>
   <q-list>
     <q-item
-      v-for="provider in providersStore.providers"
+      v-for="provider in providersStore.customProviders"
       :key="provider.id"
       clickable
       :to="`/settings/providers/${provider.id}`"
@@ -27,7 +27,7 @@
             icon="sym_o_check_box"
             :label="$t('customProviders.setAsDefault')"
             @click="setAsDefault(provider)"
-            :class="{ 'route-active': perfs.provider?.type === `custom:${provider.id}` }"
+            :class="{ 'route-active': perfs.providerId === provider.id }"
           />
           <menu-item
             icon="sym_o_delete"
@@ -60,11 +60,11 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
 import AAvatar from './AAvatar.vue'
-import { useProvidersStore } from 'src/stores/providers'
+import { useProvidersV2Store as useProvidersStore } from 'src/stores/providers-v2'
 import { useI18n } from 'vue-i18n'
 import MenuItem from './MenuItem.vue'
 import { useRouter } from 'vue-router'
-import { CustomProvider } from 'src/utils/types'
+import { CustomProviderV2 } from 'src/utils/types'
 import { useUserPerfsStore } from 'src/stores/user-perfs'
 
 const { t } = useI18n()
@@ -75,15 +75,16 @@ const $q = useQuasar()
 
 const router = useRouter()
 async function addItem() {
-  const id = await providersStore.add()
+  const id = await providersStore.addCustomProvider()
   router.push(`/settings/providers/${id}`)
 }
 
 const { perfs } = useUserPerfsStore()
-function setAsDefault({ id }: CustomProvider) {
-  perfs.provider = { type: `custom:${id}`, settings: {} }
+function setAsDefault({ id }: CustomProviderV2) {
+  // V2: Store provider ID directly, no "custom:" prefix
+  perfs.providerId = id
 }
-function deleteItem({ id, name }: CustomProvider) {
+function deleteItem({ id, name }: { id: string, name: string }) {
   $q.dialog({
     title: t('customProviders.deleteProvider'),
     message: t('customProviders.deleteConfirm', { name }),
@@ -94,7 +95,7 @@ function deleteItem({ id, name }: CustomProvider) {
       flat: true
     }
   }).onOk(() => {
-    providersStore.delete(id)
+    providersStore.deleteCustomProvider(id)
   })
 }
 </script>

@@ -17,7 +17,17 @@
         >
           {{ $t('settingsView.defaultProviderHeader') }}
         </q-item-label>
-        <provider-input-items v-model="perfs.provider" />
+        <q-item>
+          <q-item-section>
+            <provider-selector-v2
+              v-model="perfs.providerId"
+              :label="$t('settingsView.defaultProviderHeader')"
+              filled
+              dense
+              only-enabled
+            />
+          </q-item-section>
+        </q-item>
         <q-item v-if="perfs.provider && !perfs.provider.type.startsWith('custom:')">
           <q-item-section>
             <q-item-label>{{ $t('settingsView.shareLinkLabel') }}</q-item-label>
@@ -73,7 +83,18 @@
         >
           {{ $t('settingsView.defaultModelHeader') }}
         </q-item-label>
-        <model-input-items v-model="perfs.model" />
+        <q-item>
+          <q-item-section>
+            <model-selector-v2
+              v-model="perfs.modelId"
+              :label="$t('settingsView.defaultModelHeader')"
+              :filter-provider="perfs.providerId"
+              filled
+              dense
+              show-group
+            />
+          </q-item-section>
+        </q-item>
         <q-item>
           <q-item-section>
             <q-item-label>
@@ -110,8 +131,29 @@
         >
           {{ $t('settingsView.systemAssistantHeader') }}
         </q-item-label>
-        <provider-input-items v-model="perfs.systemProvider" />
-        <model-input-items v-model="perfs.systemModel" />
+        <q-item>
+          <q-item-section>
+            <provider-selector-v2
+              v-model="perfs.systemProviderId"
+              :label="$t('settingsView.systemAssistantHeader') + ' - Provider'"
+              filled
+              dense
+              only-enabled
+            />
+          </q-item-section>
+        </q-item>
+        <q-item>
+          <q-item-section>
+            <model-selector-v2
+              v-model="perfs.systemModelId"
+              :label="$t('settingsView.systemAssistantHeader') + ' - Model'"
+              :filter-provider="perfs.systemProviderId"
+              filled
+              dense
+              show-group
+            />
+          </q-item-section>
+        </q-item>
         <q-item-label
           caption
           p="x-4 y-2"
@@ -546,10 +588,10 @@ import { dialogOptions, mdCodeThemes, mdPreviewThemes } from 'src/utils/values'
 import CopyBtn from 'src/components/CopyBtn.vue'
 import AAvatar from 'src/components/AAvatar.vue'
 import PickAvatarDialog from 'src/components/PickAvatarDialog.vue'
-import ModelInputItems from 'src/components/ModelInputItems.vue'
+import ProviderSelectorV2 from 'src/components/ProviderSelectorV2.vue'
+import ModelSelectorV2 from 'src/components/ModelSelectorV2.vue'
 import { useObservable } from '@vueuse/rxjs'
 import { db } from 'src/utils/db'
-import ProviderInputItems from 'src/components/ProviderInputItems.vue'
 import { useLocateId } from 'src/composables/locate-id'
 import { pageFhStyle } from 'src/utils/functions'
 import { DexieDBURL, LitellmBaseURL } from 'src/utils/config'

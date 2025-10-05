@@ -15,6 +15,34 @@ interface ModelSettings {
   seed?: number
 }
 
+// Cherry Studio architecture types
+interface SystemProvider {
+  id: string
+  name: string
+  type: string
+  apiKey?: string
+  apiHost?: string
+  models?: Model[]
+  isSystem: true
+  enabled: boolean
+  settings: Record<string, any>
+}
+
+interface CustomProviderV2 {
+  id: string
+  name: string
+  type: string
+  apiKey?: string
+  apiHost?: string
+  models?: Model[]
+  isSystem: false
+  enabled: boolean
+  settings: Record<string, any>
+  avatar?: any // Avatar from legacy CustomProvider
+}
+
+type ProviderV2 = SystemProvider | CustomProviderV2
+
 type PromptVarValue = string | number | boolean | string[]
 
 interface PromptVar {
@@ -387,8 +415,18 @@ interface ModelInputTypes {
   tool: string[]
 }
 
-interface Model {
+// Legacy Model (deprecated, for backward compatibility)
+interface LegacyModel {
   name: string
+  inputTypes: ModelInputTypes
+}
+
+// Cherry Studio Model architecture
+interface Model {
+  id: string // Model ID (may be duplicated across providers)
+  provider: string // Provider ID (ensures uniqueness with id)
+  name: string // Display name
+  group?: string // Model group/family
   inputTypes: ModelInputTypes
 }
 
@@ -426,6 +464,8 @@ interface Dialog {
   msgRoute: number[]
   inputVars: Record<string, PromptVarValue>
   modelOverride?: Model
+  // Cherry Studio architecture fields
+  modelIdOverride?: string  // Format: "provider:modelId"
 }
 
 interface Message {
@@ -449,8 +489,11 @@ interface Assistant {
   prompt: string
   promptVars: PromptVar[]
   promptTemplate: string
-  provider: Provider
-  model?: Model
+  provider: Provider // Legacy field (for backward compatibility)
+  model?: Model // Legacy field (for backward compatibility)
+  // Cherry Studio architecture fields
+  providerId?: string // Provider ID
+  modelId?: string // Format: "provider:modelId" for unique identification
   modelSettings: ModelSettings
   workspaceId: string
   plugins: AssistantPlugins
@@ -521,19 +564,8 @@ interface ConvertArtifactOptions {
   reserveOriginal: boolean
 }
 
-interface Subprovider {
-  id: string
-  provider?: Provider
-  modelMap: Record<string, string>
-}
-
-interface CustomProvider {
-  id: string
-  name: string
-  avatar: Avatar
-  subproviders: Subprovider[]
-  fallbackProvider?: Provider
-}
+// Legacy Subprovider/CustomProvider types have been removed.
+// Custom providers must use the flat CustomProviderV2 shape only.
 
 export {
   ApiCallError,
@@ -547,6 +579,11 @@ export {
 export type {
   Provider,
   ProviderType,
+  // Cherry Studio architecture types
+  SystemProvider,
+  CustomProviderV2,
+  ProviderV2,
+  LegacyModel,
   ModelSettings,
   PromptVar,
   PromptVarValue,
@@ -605,6 +642,5 @@ export type {
   McpPluginDump,
   McpPluginManifest,
   TransportConf,
-  Subprovider,
-  CustomProvider
+  
 }

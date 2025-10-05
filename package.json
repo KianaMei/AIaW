@@ -10,11 +10,19 @@
     "lint": "eslint --ext .js,.ts,.vue ./",
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
+    "dev:bg": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\dev-bg.ps1 start",
+    "dev:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\dev-bg.ps1 stop",
+    "dev:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\dev-bg.ps1 status",
+    "dev:log": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\dev-bg.ps1 logs",
     "build": "quasar build",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "sync-version": "node scripts/sync-version.js"
+    "sync-version": "node scripts/sync-version.js",
+    "backend:bg": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\\\backend-bg.ps1 start",
+    "backend:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\\\backend-bg.ps1 stop",
+    "backend:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\\\backend-bg.ps1 status",
+    "backend:log": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\\\backend-bg.ps1 logs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.6",

@@ -10,6 +10,7 @@ import { useSetTheme } from './composables/set-theme'
 import { useSubscriptionNotify } from './composables/subscription-notify'
 import { onMounted } from 'vue'
 import { checkUpdate, ready } from './utils/update'
+import { useProvidersV2Store } from './stores/providers-v2'
 
 defineOptions({
   name: 'App'
@@ -19,6 +20,9 @@ useSetTheme()
 useLoginDialogs()
 useFirstVisit()
 useSubscriptionNotify()
+
+// Initialize Cherry Studio Architecture - this loads system providers
+useProvidersV2Store()
 
 const router = useRouter()
 router.afterEach(to => {

@@ -461,7 +461,7 @@ import EnablePluginsMenu from 'src/components/EnablePluginsMenu.vue'
 import { useGetModel } from 'src/composables/get-model'
 import { useUiStateStore } from 'src/stores/ui-state'
 import AutocompleteInput from 'src/components/AutocompleteInput.vue'
-import { useProvidersStore } from 'src/stores/providers'
+import { useProvidersV2Store as useProvidersStore } from 'src/stores/providers-v2'
 
 const { t, locale } = useI18n()
 

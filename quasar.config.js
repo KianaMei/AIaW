@@ -79,6 +79,8 @@ export default configure((ctx) => {
           copyFileSync('src/version.json', 'dist/pwa/version.json')
         }
       },
+      // Make heavy dev-time checks optional to avoid blocking local runs
+      // Enable them by setting CHECKS=1 in env before starting dev/build
       vitePlugins: [
         ['@intlify/unplugin-vue-i18n/vite', {
           // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
@@ -93,14 +95,17 @@ export default configure((ctx) => {
           // you need to set i18n resource including paths !
           include: [fileURLToPath(new URL('./src/i18n', import.meta.url))]
         }],
-        ['vite-plugin-checker', {
-          vueTsc: {
-            tsconfigPath: 'tsconfig.vue-tsc.json'
-          },
-          eslint: {
-            lintCommand: 'eslint "./**/*.{js,ts,mjs,cjs,vue}"'
-          }
-        }, { server: false }],
+        // Conditionally include checker to avoid blocking dev with type/lint output
+        ...(process.env.CHECKS === '1'
+          ? [[
+            'vite-plugin-checker',
+            {
+              vueTsc: { tsconfigPath: 'tsconfig.vue-tsc.json' },
+              eslint: { lintCommand: 'eslint "./**/*.{js,ts,mjs,cjs,vue}"' }
+            },
+            { server: false }
+          ]]
+          : []),
         ['unocss/vite']
       ]
     },

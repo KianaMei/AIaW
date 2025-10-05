@@ -6,9 +6,11 @@ import { db } from 'src/utils/db'
 import { DexieDBURL, LitellmBaseURL } from 'src/utils/config'
 import { wrapLanguageModel, extractReasoningMiddleware } from 'ai'
 import { AuthropicCors, FormattingReenabled, MarkdownFormatting } from 'src/utils/middlewares'
-import { fetch } from 'src/utils/platform-api'
-import { useProvidersStore } from 'src/stores/providers'
-import { LanguageModelV2 } from '@openrouter/ai-sdk-provider'
+import type { LanguageModelV2 } from '@ai-sdk/provider'
+import { providerRegistry } from 'src/aiCore/providers/registry'
+import { ensureProviderRegisteredSync } from 'src/services/cherry/registry'
+import type { ProviderV2 } from 'src/utils/types'
+import { getAiSdkProviderId } from 'src/services/cherry/providerConfig'
 
 const FormattingModels = ['o1', 'o3-mini', 'o3-mini-2025-01-31']
 
@@ -21,36 +23,66 @@ function wrapMiddlewares(model: LanguageModelV2) {
 }
 export function useGetModel() {
   const user = DexieDBURL ? useObservable(db.cloud.currentUser) : null
-  const defaultProvider = computed(() => user?.value.isLoggedIn ? {
-    type: 'openai-compatible',
-    settings: {
-      apiKey: user.value.data.apiKey,
-      baseURL: new URL(LitellmBaseURL, location.origin).toString()
+  const defaultProviderV2 = computed<ProviderV2 | null>(() => {
+    if (!user?.value?.isLoggedIn) return null
+    let base: string | undefined
+    try {
+      base = LitellmBaseURL ? new URL(LitellmBaseURL, location.origin).toString() : undefined
+    } catch {
+      base = undefined
     }
-  } : null)
+    if (!base) return null
+    return {
+      id: 'openai-compatible',
+      name: 'OpenAI Compatible',
+      type: 'openai-compatible',
+      apiKey: user.value.data.apiKey,
+      apiHost: base,
+      isSystem: false,
+      enabled: true,
+      settings: {}
+    }
+  })
   const { perfs } = useUserPerfsStore()
-  const providersStore = useProvidersStore()
   function getProvider(provider?: Provider) {
-    return provider || perfs.provider || defaultProvider.value
+    return provider || perfs.provider || null
   }
   function getModel(model?: Model) {
     return model || perfs.model
   }
-  function getSdkProvider(provider?: Provider) {
-    provider = getProvider(provider)
-    if (!provider) return null
-    return providersStore.providerTypes.find(p => p.name === provider.type)?.constructor({
-      ...provider.settings,
-      fetch
-    })
+  function toProviderV2(p?: Provider): ProviderV2 | null {
+    if (!p) return null
+    return {
+      id: p.type,
+      name: p.type,
+      type: p.type,
+      apiKey: (p as any).settings?.apiKey,
+      apiHost: (p as any).settings?.baseURL,
+      isSystem: false,
+      enabled: true,
+      settings: (p as any).settings || {}
+    }
+  }
+  function getSdkProvider(_provider?: Provider) {
+    console.warn('[get-model] getSdkProvider is deprecated under Cherry provider refactor')
+    return null
   }
   function getSdkModel(provider?: Provider, model?: Model) {
-    const sdkProvider = getSdkProvider(provider)
-    if (!sdkProvider) return null
-    model = getModel(model)
-    if (!model) return null
-    const m = sdkProvider(model.name) || getSdkProvider(defaultProvider.value)(model.name)
-    return m && wrapMiddlewares(m)
+    const legacyProvider = getProvider(provider)
+    const m = getModel(model)
+    if (!m) return null
+    const p2 = toProviderV2(legacyProvider) || defaultProviderV2.value
+    if (!p2) return null
+    try {
+      ensureProviderRegisteredSync(p2, m.name)
+      const pid = getAiSdkProviderId(p2)
+      const uniqId = `${pid}:${m.name}`
+      // If provider is registered, this returns synchronously
+      const languageModel = providerRegistry.languageModel(uniqId as any)
+      return languageModel ? wrapMiddlewares(languageModel) : null
+    } catch (e) {
+      return null
+    }
   }
   return { getProvider, getModel, getSdkProvider, getSdkModel }
 }

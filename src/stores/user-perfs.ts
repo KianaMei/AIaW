@@ -9,12 +9,17 @@ import { watchEffect } from 'vue'
 interface Perfs {
   darkMode: boolean | 'auto'
   themeHue: number
-  provider: Provider
-  model: Model
-  systemProvider: Provider
-  systemModel: Model
+  provider: Provider // Legacy field (for backward compatibility)
+  model: Model // Legacy field (for backward compatibility)
+  systemProvider: Provider // Legacy field
+  systemModel: Model // Legacy field
+  // Cherry Studio Architecture fields
+  providerId?: string // New: Provider ID
+  modelId?: string // New: Model unique ID (format: "provider:modelId")
+  systemProviderId?: string
+  systemModelId?: string
   userAvatar: Avatar
-  commonModelOptions: string[]
+  commonModelOptions: string[] // Will contain modelIds in new format
   autoGenTitle: boolean
   sendKey: 'ctrl+enter' | 'shift+enter' | 'meta+enter' | 'enter'
   messageSelectionBtn: boolean
@@ -59,12 +64,18 @@ export const useUserPerfsStore = defineStore('user-perfs', () => {
     model: models.find(m => m.name === 'gpt-5'),
     systemProvider: null,
     systemModel: models.find(m => m.name === 'gpt-5-nano'),
+    // Cherry Studio Architecture defaults
+    providerId: 'openai',
+    modelId: 'gpt-5', // Only model ID, not "provider:modelId"
+    systemProviderId: 'openai',
+    systemModelId: 'gpt-5-nano', // Only model ID, not "provider:modelId"
     userAvatar: {
       type: 'text',
       text: 'U',
       hue: 300
     },
     commonModelOptions: [
+      // Only model IDs (provider is selected separately in two-level selector)
       'gpt-5',
       'gpt-5-mini',
       'o4-mini',
@@ -111,6 +122,23 @@ export const useUserPerfsStore = defineStore('user-perfs', () => {
     expandReasoningContent: true
   }
   const [perfs, ready] = persistentReactive('#user-perfs', { ...defaultPerfs })
+
+  // Migration: Initialize new Cherry Studio fields if missing
+  if (!perfs.providerId && perfs.provider) {
+    perfs.providerId = (perfs.provider as any)?.type || 'openai'
+  }
+  if (!perfs.modelId && perfs.model) {
+    // Store only model ID (e.g., "gpt-5"), not "provider:modelId"
+    perfs.modelId = (perfs.model as any)?.id || (perfs.model as any)?.name || 'gpt-5'
+  }
+  if (!perfs.systemProviderId && perfs.systemProvider) {
+    perfs.systemProviderId = (perfs.systemProvider as any)?.type || 'openai'
+  }
+  if (!perfs.systemModelId && perfs.systemModel) {
+    // Store only model ID (e.g., "gpt-5-nano"), not "provider:modelId"
+    perfs.systemModelId = (perfs.systemModel as any)?.id || (perfs.systemModel as any)?.name || 'gpt-5-nano'
+  }
+
   watchEffect(() => {
     Dark.set(perfs.darkMode)
   })

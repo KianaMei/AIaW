@@ -76,7 +76,7 @@ import AutocompleteInput from './AutocompleteInput.vue'
 import ModelItem from './ModelItem.vue'
 import ListInput from './ListInput.vue'
 import { Model } from 'src/utils/types'
-import { useProvidersStore } from 'src/stores/providers'
+import { useProvidersV2Store as useProvidersStore } from 'src/stores/providers-v2'
 
 const model = defineModel<Model>()
 function setModel(name: string) {
