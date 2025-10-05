@@ -1,0 +1,81 @@
+{
+  "id": "my-emotions-random",
+  "title": "随机表情包（自定义图床）",
+  "description": "根据模式（随机/固定/不插）控制是否插入图片。默认随机且不描述过程。",
+  "baseUrl": "https://example.com",
+  "avatar": {
+    "type": "icon",
+    "icon": "sym_o_mood",
+    "hue": 80
+  },
+  "noRoundtrip": false,
+  "promptVars": [
+    {
+      "id": "mode",
+      "name": "mode",
+      "type": "select",
+      "label": "选择模式",
+      "options": ["pseudo", "fixed", "none"],
+      "default": "pseudo"
+    },
+    {
+      "id": "displayWidth",
+      "name": "displayWidth",
+      "type": "number",
+      "label": "显示宽度(px)",
+      "default": 120
+    },
+    {
+      "id": "insertProbability",
+      "name": "insertProbability",
+      "type": "number",
+      "label": "插入概率(0~1)",
+      "default": 0.6
+    },
+    {
+      "id": "index",
+      "name": "index",
+      "type": "number",
+      "label": "固定模式下的索引(0基)",
+      "default": 0
+    }
+  ],
+  "links": [
+    "https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/4763/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240120181408.jpg/webp",
+    "https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/tD4C/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240120181402_-_%E5%89%AF%E6%9C%AC.jpg/webp",
+    "https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/4eY3/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240120181402.jpg/webp",
+    "https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/gyJW/864X1920/HQ/QQ%E5%9B%BE%E7%89%8720240113230911.jpg/webp",
+    "https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/lH0B/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240108000817.jpg/webp",
+    "https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/n9i8/1440X1920/HQ/6e940a49cc4ee5c.jpg/webp",
+    "https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/HrmD/4896X6528/HQ/5pxirca9qiho3t53hkvi9vys9.jpg/webp",
+    "https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/NJBJ/4896X6528/HQ/5b67eca78dafe56f.jpg/webp",
+    "https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/jxgh/4896X6528/HQ/53borpqo7hd7kv63tefy07nbk.jpg/webp",
+    "https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/gzZh/4896X6528/HQ/4rir6qc7nzguoqzyd30uhzqh7.jpg/webp",
+    "https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/i1Xb/1280X960/HQ/4c0dcbb5a492a8de.jpg/webp"
+  ],
+  "promptPretty": [
+    "在回答中，根据变量 mode 选择是否插入图片并确定链接：",
+    "- 当 mode = 'pseudo'：以 {{ insertProbability }} 的概率插入；从‘可用链接列表’中均匀随机选择 1 张。随机必须在内部完成（自选随机数/掷硬币等），不得调用任何工具/函数/插件获取随机数；不要在回答中提及或展示随机过程、随机数或索引。",
+    "- 当 mode = 'fixed'：必须插入；选择第 {{ index }} 个链接（0 基；越界则使用第 0 个）。",
+    "- 当 mode = 'none'：不插入。",
+    "- 使用 HTML 的 <img> 标签，格式：<img src=\"[链接]\" alt=\"表情\" width=\"{{ displayWidth }}\">。不要使用 Markdown 图片语法，不要放在代码块里。",
+    "- 图片放在回答末尾、单独一行；除图片外不要输出与随机或选择过程相关的解释。",
+    "- 如用户明确要求不插图，或回答必须为纯代码/JSON/表格等结构化输出，则不要插入图片。",
+    "- 仅使用下方链接；不要引用其它本地/插件图片（如 aiaw-emotions）。",
+    "",
+    "可用链接列表：",
+    "- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/4763/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240120181408.jpg/webp",
+    "- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/tD4C/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240120181402_-_%E5%89%AF%E6%9C%AC.jpg/webp",
+    "- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/4eY3/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240120181402.jpg/webp",
+    "- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/gyJW/864X1920/HQ/QQ%E5%9B%BE%E7%89%8720240113230911.jpg/webp",
+    "- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/lH0B/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240108000817.jpg/webp",
+    "- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/n9i8/1440X1920/HQ/6e940a49cc4ee5c.jpg/webp",
+    "- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/HrmD/4896X6528/HQ/5pxirca9qiho3t53hkvi9vys9.jpg/webp",
+    "- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/NJBJ/4896X6528/HQ/5b67eca78dafe56f.jpg/webp",
+    "- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/jxgh/4896X6528/HQ/53borpqo7hd7kv63tefy07nbk.jpg/webp",
+    "- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/gzZh/4896X6528/HQ/4rir6qc7nzguoqzyd30uhzqh7.jpg/webp",
+    "- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/i1Xb/1280X960/HQ/4c0dcbb5a492a8de.jpg/webp"
+  ],
+  "prompt": "在回答中，根据变量 mode 选择是否插入图片并确定链接：\n- 当 mode = 'pseudo'：以 {{ insertProbability }} 的概率插入；从‘可用链接列表’中均匀随机选择 1 张。随机必须在内部完成（自选随机数/掷硬币等），不得调用任何工具/函数/插件获取随机数；不要在回答中提及或展示随机过程、随机数或索引。\n- 当 mode = 'fixed'：必须插入；选择第 {{ index }} 个链接（0 基；越界则使用第 0 个）。\n- 当 mode = 'none'：不插入。\n- 使用 HTML 的 <img> 标签，格式：<img src=\"[链接]\" alt=\"表情\" width=\"{{ displayWidth }}\">。不要使用 Markdown 图片语法，不要放在代码块里。\n- 图片放在回答末尾、单独一行；除图片外不要输出与随机或选择过程相关的解释。\n- 如用户明确要求不插图，或回答必须为纯代码/JSON/表格等结构化输出，则不要插入图片。\n- 仅使用下方链接；不要引用其它本地/插件图片（如 aiaw-emotions）。\n\n可用链接列表：\n- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/4763/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240120181408.jpg/webp\n- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/tD4C/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240120181402_-_%E5%89%AF%E6%9C%AC.jpg/webp\n- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/4eY3/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240120181402.jpg/webp\n- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/gyJW/864X1920/HQ/QQ%E5%9B%BE%E7%89%8720240113230911.jpg/webp\n- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/lH0B/1440X1920/HQ/QQ%E5%9B%BE%E7%89%8720240108000817.jpg/webp\n- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/n9i8/1440X1920/HQ/6e940a49cc4ee5c.jpg/webp\n- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/HrmD/4896X6528/HQ/5pxirca9qiho3t53hkvi9vys9.jpg/webp\n- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/NJBJ/4896X6528/HQ/5b67eca78dafe56f.jpg/webp\n- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/jxgh/4896X6528/HQ/53borpqo7hd7kv63tefy07nbk.jpg/webp\n- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/gzZh/4896X6528/HQ/4rir6qc7nzguoqzyd30uhzqh7.jpg/webp\n- https://tc-new.z.wiki/autoupload/JxI1H0hG7v7k5agH6_kJerKXl_QqVl-bpSwqP4fJO68/20250913/i1Xb/1280X960/HQ/4c0dcbb5a492a8de.jpg/webp",
+  "endpoints": []
+}
