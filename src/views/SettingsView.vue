@@ -278,21 +278,17 @@
             <q-select
               class="w-150px"
               v-model="perfs.sendKey"
-              :options="[{ label: 'Ctrl + Enter', value: 'ctrl+enter' }, { label: 'Shift + Enter', value: 'shift+enter' }, { label: 'Enter', value: 'enter' }]"
+              :options="[
+                { label: 'Ctrl + Enter', value: 'ctrl+enter' },
+                { label: 'Shift + Enter', value: 'shift+enter' },
+                { label: 'Command + Enter', value: 'meta+enter' },
+                { label: 'Enter', value: 'enter' }
+              ]"
               filled
               dense
               emit-value
               map-options
             />
-          </q-item-section>
-        </q-item>
-        <q-item>
-          <q-item-section>
-            <q-item-label>Network Log (UI)</q-item-label>
-            <q-item-label caption>Open a built-in viewer for captured requests.</q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn label="Open" flat color="primary" @click="openNetlog" />
           </q-item-section>
         </q-item>
         <q-item
@@ -321,6 +317,7 @@
               dense
               filled
               class="w-120px"
+              suffix="ms"
             />
           </q-item-section>
         </q-item>
@@ -534,42 +531,6 @@
             <q-icon name="sym_o_chevron_right" />
           </q-item-section>
         </q-item>
-        <q-separator spaced />
-        <q-item-label header>Debug Tools</q-item-label>
-        <q-item>
-          <q-item-section>
-            <q-item-label>
-              Open DevTools
-            </q-item-label>
-            <q-item-label caption>
-              Open the system DevTools window (requires permission).
-            </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              label="Open"
-              color="primary"
-              flat
-              @click="openDevtools"
-            />
-          </q-item-section>
-        </q-item>
-        <q-item>
-          <q-item-section>
-            <q-item-label>
-              HTTP Debug Logs
-            </q-item-label>
-            <q-item-label caption>
-              Show all outgoing requests in Console. Toggle requires reload.
-            </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-toggle
-              v-model="httpDebug"
-              @update:model-value="toggleHttpDebug"
-            />
-          </q-item-section>
-        </q-item>
       </q-list>
     </q-page>
   </q-page-container>
@@ -675,41 +636,4 @@ function sortModels() {
 }
 
 useLocateId(ref(true))
-
-// ---- Debug helpers ----
-async function openDevtools() {
-  try {
-    const { getCurrentWebviewWindow } = await import('@tauri-apps/api/webviewWindow')
-    const win: any = getCurrentWebviewWindow()
-    const methods = ['openDevtools', 'openDevTools', 'internalToggleDevtools', 'toggleDevtools']
-    for (const m of methods) {
-      if (typeof win[m] === 'function') {
-        $q.notify({ message: 'Opening DevTools…', color: 'primary', timeout: 800 })
-        // @ts-expect-error dynamic method across versions
-        await win[m]()
-        return
-      }
-    }
-    try {
-      const webview: any = await import('@tauri-apps/api/webview')
-      const fns = ['internalToggleDevtools', 'toggleDevtools', 'openDevtools']
-      for (const fn of fns) {
-        if (typeof webview[fn] === 'function') {
-          $q.notify({ message: 'Opening DevTools…', color: 'primary', timeout: 800 })
-          await webview[fn]()
-          return
-        }
-      }
-    } catch (_) {}
-    $q.notify({ message: 'DevTools API not available (check permissions)', color: 'negative' })
-  } catch (e) {
-    $q.notify({ message: `Open DevTools failed: ${String(e)}`, color: 'negative' })
-  }
-}
-const httpDebug = ref(localStorage.getItem('AIAW_DEBUG_HTTP') === '1')
-function toggleHttpDebug(val: boolean) {
-  if (val) localStorage.setItem('AIAW_DEBUG_HTTP', '1')
-  else localStorage.removeItem('AIAW_DEBUG_HTTP')
-  $q.notify({ message: 'Reload to apply', color: 'primary', timeout: 800 })
-}
 </script>
