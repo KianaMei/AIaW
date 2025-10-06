@@ -52,7 +52,8 @@
           <q-item>
             <q-item-section>
               <provider-model-selector
-                v-model="dialog.modelIdOverride"
+                v-model:providerId="dialog.providerIdOverride"
+                v-model:modelId="dialog.modelIdOverride"
                 :model-label="$t('dialogView.model')"
                 dense
                 filled
