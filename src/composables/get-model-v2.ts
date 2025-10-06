@@ -74,22 +74,15 @@ export function useGetModelV2() {
   }
 
   /**
-   * Get model by unique ID
+   * Get model by provider + modelId
    * Falls back to user preference
-   * @param modelUniqId Format: "provider:modelId"
    */
-  function getModel(modelUniqId?: string): Model | null {
-    if (modelUniqId) {
-      const model = providersStore.getModelByUniqId(modelUniqId)
-      if (model) return model
-    }
-
-    // Fallback to user preference
-    if (perfs.modelId) {
-      return providersStore.getModelByUniqId(perfs.modelId)
-    }
-
-    return null
+  function getModelBy(providerId?: string, modelId?: string): Model | null {
+    const pid = providerId || perfs.providerId || undefined
+    const mid = modelId || perfs.modelId || undefined
+    if (!pid || !mid) return null
+    const uniq = `${pid}:${mid}`
+    return providersStore.getModelByUniqId(uniq)
   }
 
   /**
@@ -107,10 +100,10 @@ export function useGetModelV2() {
    * @param modelUniqId Model unique ID (format: "provider:modelId")
    * @returns Language model instance ready to use
    */
-  async function getSdkModel(modelUniqId?: string) {
-    const model = getModel(modelUniqId)
+  async function getSdkModelBy(providerId?: string, modelId?: string) {
+    const model = getModelBy(providerId, modelId)
     if (!model) {
-      console.warn('No model found for:', modelUniqId)
+      console.warn('No model found for:', providerId, modelId)
       return null
     }
     const provider = getProvider(model.provider)
@@ -132,7 +125,6 @@ export function useGetModelV2() {
       return wrapMiddlewares(lm)
     } catch (error) {
       console.error('Failed to resolve SDK model via Cherry provider core:', error)
-      // Fallback: try default provider when available
       if (defaultProvider.value) {
         try {
           await ensureProviderRegistered(defaultProvider.value, model.id)
@@ -156,8 +148,9 @@ export function useGetModelV2() {
    * Get model display name
    * @param modelUniqId Model unique ID
    */
-  function getModelDisplayName(modelUniqId: string): string {
-    return providersStore.getModelDisplayName(modelUniqId)
+  function getModelDisplayNameBy(providerId: string, modelId: string): string {
+    const uniq = `${providerId}:${modelId}`
+    return providersStore.getModelDisplayName(uniq)
   }
 
   /**
@@ -170,10 +163,10 @@ export function useGetModelV2() {
 
   return {
     getProvider,
-    getModel,
+    getModelBy,
     getSdkProvider,
-    getSdkModel,
-    getModelDisplayName,
+    getSdkModelBy,
+    getModelDisplayNameBy,
     parseModelId
   }
 }

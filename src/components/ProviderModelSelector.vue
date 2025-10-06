@@ -1,7 +1,8 @@
 <template>
   <div class="column gap-2">
     <provider-selector-v2
-      v-model="currProviderId"
+      :model-value="providerId"
+      @update:model-value="onProviderChange"
       :label="providerLabel || $t('pms.provider')"
       :only-enabled="true"
       :show-type="true"
@@ -11,15 +12,16 @@
     />
 
     <model-selector-v2
-      v-model="currModelId"
+      :model-value="modelId"
+      @update:model-value="onModelChange"
       :label="modelLabel || $t('pms.model')"
-      :filter-provider="currProviderId || undefined"
-      :hint="currProviderId ? '' : $t('pms.pickProviderFirst')"
+      :filter-provider="providerId || undefined"
+      :hint="providerId ? '' : $t('pms.pickProviderFirst')"
       :clearable="true"
       :dense="dense"
       :filled="filled"
       :show-group="showGroup"
-      :disable="!currProviderId"
+      :disable="!providerId"
     />
   </div>
 </template>
@@ -30,7 +32,8 @@ import ProviderSelectorV2 from './ProviderSelectorV2.vue'
 import ModelSelectorV2 from './ModelSelectorV2.vue'
 
 interface Props {
-  modelValue?: string // provider:modelId
+  providerId?: string
+  modelId?: string
   providerLabel?: string
   modelLabel?: string
   dense?: boolean
@@ -45,43 +48,38 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
+  'update:providerId': [value: string]
+  'update:modelId': [value: string]
 }>()
+const providerId = ref<string>(props.providerId || '')
+const modelId = ref<string>(props.modelId || '')
 
-const currProviderId = ref<string>('')
-const currModelId = ref<string>('')
+// init
+onMounted(() => {
+  providerId.value = props.providerId || ''
+  modelId.value = props.modelId || ''
+})
 
-function parseUniqId(uniq?: string): { provider?: string; model?: string } {
-  if (!uniq) return {}
-  const idx = uniq.indexOf(':')
-  if (idx === -1) return { model: uniq }
-  return { provider: uniq.slice(0, idx), model: uniq.slice(idx + 1) }
+// sync in
+watch(() => props.providerId, (v) => {
+  if (typeof v === 'string') providerId.value = v
+})
+watch(() => props.modelId, (v) => {
+  if (typeof v === 'string') modelId.value = v
+})
+
+function onProviderChange(v: string) {
+  providerId.value = v
+  emit('update:providerId', v)
+  // clear model until re-picked
+  modelId.value = ''
+  emit('update:modelId', '')
 }
 
-// init from v-model
-onMounted(() => {
-  const { provider, model } = parseUniqId(props.modelValue)
-  if (provider) currProviderId.value = provider
-  if (model) currModelId.value = model
-})
-
-// reflect external changes
-watch(() => props.modelValue, (val) => {
-  const { provider, model } = parseUniqId(val)
-  if (provider && provider !== currProviderId.value) currProviderId.value = provider
-  if (model && model !== currModelId.value) currModelId.value = model
-})
-
-// when provider changes, clear model and wait user pick
-watch(currProviderId, () => {
-  currModelId.value = ''
-})
-
-// when model chosen, emit combined uniq id
-watch(currModelId, (m) => {
-  if (!m || !currProviderId.value) return
-  emit('update:modelValue', `${currProviderId.value}:${m}`)
-})
+function onModelChange(v: string) {
+  modelId.value = v
+  emit('update:modelId', v)
+}
 </script>
 
 <i18n>
@@ -109,4 +107,3 @@ watch(currModelId, (m) => {
   }
 }
 </i18n>
-

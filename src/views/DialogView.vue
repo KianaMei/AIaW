@@ -887,10 +887,12 @@ const { callApi } = useCallApi({ workspace, dialog })
 
 const providerOptions = ref({})
 const providerTools = ref({})
-const { getModel, getSdkModel } = useGetModelV2()
-// Prefer V2 fields: dialog.modelIdOverride or assistant.modelId (format: provider:model)
-const model = computed(() => getModel(dialog.value?.modelIdOverride || assistant.value?.modelId))
-const sdkModel = computed(() => getSdkModel(dialog.value?.modelIdOverride || assistant.value?.modelId))
+const { getModelBy, getSdkModelBy } = useGetModelV2()
+// Prefer dialog overrides; fallback to assistant defaults (Cherry-style separate fields)
+const currentProviderId = computed(() => dialog.value?.providerIdOverride || assistant.value?.providerId)
+const currentModelId = computed(() => dialog.value?.modelIdOverride || assistant.value?.modelId)
+const model = computed(() => getModelBy(currentProviderId.value, currentModelId.value))
+const sdkModel = computed(() => getSdkModelBy(currentProviderId.value, currentModelId.value))
 const $q = useQuasar()
 const { data } = useUserDataStore()
 async function send() {
@@ -1431,26 +1433,13 @@ watch(() => liveData.value.dialog?.id, id => {
 
 const providersStore = useProvidersStore()
 
-// Sync V2 override to legacy modelOverride for compatibility
-watch(() => dialog.value?.modelIdOverride, (uniq) => {
-  if (!uniq) return
-  const idx = uniq.indexOf(':')
-  const modelName = idx === -1 ? uniq : uniq.slice(idx + 1)
-  setModel(modelName)
-})
 function setModel(name: string) {
   // legacy override (kept for compatibility with existing UI pieces)
   dialog.value.modelOverride = name
     ? models.find(model => model.name === name) || { name, inputTypes: InputTypes.default }
     : null
-
-  // V2 override (preferred in new flow): provider:model
-  if (name) {
-    const pid = assistant.value?.providerId || 'openai'
-    dialog.value.modelIdOverride = `${pid}:${name}`
-  } else {
-    dialog.value.modelIdOverride = null as any
-  }
+  // V2 override (Cherry style): store pure modelId; provider override handled separately
+  dialog.value.modelIdOverride = (name || null) as any
 }
 
 const { createDialog } = useCreateDialog(workspace)
