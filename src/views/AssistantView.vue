@@ -547,18 +547,6 @@ useLocateId(assistant)
 
 useSetTitle(computed(() => assistant.value?.name))
 
-// Normalize assistant.modelId to provider:modelId if user picks model only
-watch(
-  () => assistant.value?.modelId,
-  (val) => {
-    if (!assistant.value) return
-    if (!val) return
-    if (val.includes(':')) return
-    const pid = assistant.value.providerId
-    if (pid) assistant.value.modelId = `${pid}:${val}`
-  }
-)
-
 async function exportAssistant(target: 'file' | 'clipboard') {
   let { avatar } = assistant.value
   if (avatar.type === 'image') {

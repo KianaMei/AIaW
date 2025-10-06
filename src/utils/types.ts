@@ -465,7 +465,9 @@ interface Dialog {
   inputVars: Record<string, PromptVarValue>
   modelOverride?: Model
   // Cherry Studio architecture fields
-  modelIdOverride?: string  // Format: "provider:modelId"
+  // Separate override fields to align with Cherry design
+  providerIdOverride?: string // Provider ID override (optional)
+  modelIdOverride?: string    // Model ID override (no provider prefix)
 }
 
 interface Message {
@@ -493,7 +495,7 @@ interface Assistant {
   model?: Model // Legacy field (for backward compatibility)
   // Cherry Studio architecture fields
   providerId?: string // Provider ID
-  modelId?: string // Format: "provider:modelId" for unique identification
+  modelId?: string // Model ID (no provider prefix)
   modelSettings: ModelSettings
   workspaceId: string
   plugins: AssistantPlugins
