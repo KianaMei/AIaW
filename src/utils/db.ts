@@ -368,5 +368,21 @@ db.messages.hook('reading', message => {
   return message
 })
 
+// Normalize dialog overrides to Cherry-style separated fields when reading
+db.dialogs.hook('reading', (dialog: any) => {
+  if (dialog && typeof dialog === 'object' && dialog.modelIdOverride && typeof dialog.modelIdOverride === 'string') {
+    if (dialog.modelIdOverride.includes(':')) {
+      // Split provider:model into separate fields
+      const [pid, ...rest] = dialog.modelIdOverride.split(':')
+      const mid = rest.join(':')
+      if (pid && mid) {
+        dialog.providerIdOverride ||= pid
+        dialog.modelIdOverride = mid
+      }
+    }
+  }
+  return dialog
+})
+
 export { schema, db, defaultModelSettings }
 export type { Db }
