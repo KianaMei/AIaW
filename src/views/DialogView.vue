@@ -449,7 +449,7 @@ import { useI18n } from 'vue-i18n'
 import Mark from 'mark.js'
 import { useCreateDialog } from 'src/composables/create-dialog'
 import EnablePluginsMenu from 'src/components/EnablePluginsMenu.vue'
-import { useGetModel } from 'src/composables/get-model'
+import { useGetModelV2 } from 'src/composables/get-model-v2'
 import { useUiStateStore } from 'src/stores/ui-state'
 import AutocompleteInput from 'src/components/AutocompleteInput.vue'
 import ProviderModelSelector from 'src/components/ProviderModelSelector.vue'
@@ -887,9 +887,10 @@ const { callApi } = useCallApi({ workspace, dialog })
 
 const providerOptions = ref({})
 const providerTools = ref({})
-const { getModel, getSdkModel } = useGetModel()
-const model = computed(() => getModel(dialog.value?.modelOverride || assistant.value?.model))
-const sdkModel = computed(() => getSdkModel(assistant.value?.provider, model.value))
+const { getModel, getSdkModel } = useGetModelV2()
+// Prefer V2 fields: dialog.modelIdOverride or assistant.modelId (format: provider:model)
+const model = computed(() => getModel(dialog.value?.modelIdOverride || assistant.value?.modelId))
+const sdkModel = computed(() => getSdkModel(dialog.value?.modelIdOverride || assistant.value?.modelId))
 const $q = useQuasar()
 const { data } = useUserDataStore()
 async function send() {
