@@ -1439,9 +1439,18 @@ watch(() => dialog.value?.modelIdOverride, (uniq) => {
   setModel(modelName)
 })
 function setModel(name: string) {
+  // legacy override (kept for compatibility with existing UI pieces)
   dialog.value.modelOverride = name
     ? models.find(model => model.name === name) || { name, inputTypes: InputTypes.default }
     : null
+
+  // V2 override (preferred in new flow): provider:model
+  if (name) {
+    const pid = assistant.value?.providerId || 'openai'
+    dialog.value.modelIdOverride = `${pid}:${name}`
+  } else {
+    dialog.value.modelIdOverride = null as any
+  }
 }
 
 const { createDialog } = useCreateDialog(workspace)
