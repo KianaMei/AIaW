@@ -336,8 +336,9 @@ db.assistants.hook('reading', assistant => {
   }
 
   if (!assistant.modelId && assistant.model && assistant.provider) {
-    import('./migration').then(({ generateModelUniqId }) => {
-      assistant.modelId = generateModelUniqId(assistant.model, assistant.provider)
+    import('./migration').then(({ generateModelUniqId, extractModelId }) => {
+      const uniq = generateModelUniqId(assistant.model, assistant.provider)
+      assistant.modelId = uniq ? extractModelId(uniq) : undefined
     })
   }
 
