@@ -13,7 +13,7 @@
 
 ### ✅ Phase 1: 数据层迁移
 - [x] Legacy数据转换器 (`LegacyProviderConverter.ts`)
-- [x] V2 Store增强 (`providers-v2.ts`)
+- [x] V2 Store增强 (`providers.ts`)
 - [x] 完整向后兼容API
 - [x] 自动数据转换（无需迁移脚本）
 
@@ -32,7 +32,7 @@
 - [x] `CustomProvider.vue` - Provider编辑
 
 ### ✅ Phase 4: 新UI组件（Cherry Studio风格）
-- [x] `ProvidersListV2.vue` - Provider列表页
+- [x] `` - Provider列表页
 - [x] `ProviderSettingV2.vue` - Provider设置页
 - [x] `AddProviderDialogV2.vue` - 添加Provider对话框
 - [x] `ModelSelectorV3.vue` - 现代模型选择器
@@ -51,7 +51,7 @@
 ```typescript
 // 所有旧代码只需改一行import就能工作！
 // 旧: import { useProvidersStore } from 'src/stores/providers'
-// 新: import { useProvidersV2Store as useProvidersStore } from 'src/stores/providers-v2'
+// 新: import { useProvidersV2Store as useProvidersStore } from 'src/stores/providers'
 ```
 
 ### 2. 自动数据转换
@@ -93,7 +93,7 @@ src/components/
   └── ModelAvatar.vue                // 模型头像
 
 src/views/
-  ├── ProvidersListV2.vue            // Provider列表页
+  ├──             // Provider列表页
   └── ProviderSettingV2.vue          // Provider设置页
 ```
 
@@ -218,7 +218,7 @@ CustomProviderV2 {
 ### 1. 访问Provider列表
 ```
 导航: 设置 → Providers V2
-路由: /settings/providers-v2
+路由: /settings/providers
 ```
 
 ### 2. 添加Provider
@@ -254,7 +254,7 @@ CustomProviderV2 {
 
 ### 使用V2 Store
 ```typescript
-import { useProvidersV2Store } from 'src/stores/providers-v2'
+import { useProvidersV2Store } from 'src/stores/providers'
 
 const store = useProvidersV2Store()
 
@@ -265,7 +265,7 @@ const all = store.allProviders
 const models = store.availableModels
 
 // 创建provider
-const id = await store.add({
+const id = await store.addCustomProvider({
   name: 'My Provider',
   type: 'openai-compatible',
   apiHost: 'https://api.example.com'
@@ -308,11 +308,11 @@ const selectedModel = ref('openai:gpt-4')
   path: '/settings',
   children: [
     {
-      path: 'providers-v2',
-      component: () => import('src/views/ProvidersListV2.vue')
+      path: 'providers',
+      component: () => import('src/views/')
     },
     {
-      path: 'providers-v2/:id',
+      path: 'providers/:id',
       component: () => import('src/views/ProviderSettingV2.vue'),
       props: true
     }
