@@ -3,7 +3,7 @@
  * Clean V2 store with NO legacy conversion code
  */
 import { defineStore } from 'pinia'
-import { computed, Ref } from 'vue'
+import { computed, Ref, ref, watch } from 'vue'
 import { useLiveQuery } from 'src/composables/live-query'
 import { db } from 'src/utils/db'
 import { ProviderV2, SystemProvider, CustomProviderV2, Model } from 'src/utils/types'
@@ -24,7 +24,12 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
   /**
    * System providers (read-only configuration)
    */
-  const systemProviders = computed<SystemProvider[]>(() => getAllSystemProviders())
+  const systemProvidersRevision = ref(0)
+  const systemProviders = ref<SystemProvider[]>(getAllSystemProviders())
+
+  watch(systemProvidersRevision, () => {
+    systemProviders.value = getAllSystemProviders()
+  })
 
   /**
    * Custom providers - Direct V2 format from DB
@@ -147,6 +152,11 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
     await ProviderService.deleteCustomProvider(id)
   }
 
+  function updateSystemProvider(id: string, updates: Partial<SystemProvider>): void {
+    ProviderService.updateSystemProvider(id, updates)
+    systemProvidersRevision.value += 1
+  }
+
   /**
    * Toggle provider enabled state
    */
@@ -197,21 +207,40 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
 
   /**
    * Fetch models from provider API (for dynamic model listing)
+   * @returns Array of model IDs with fallback to static models
    */
-  async function fetchProviderModels(providerId: string): Promise<string[]> {
+  async function fetchProviderModels(providerId: string): Promise<{
+    models: string[]
+    source: 'remote' | 'static' | 'cached'
+    error?: string
+  }> {
     const provider = getProviderById(providerId)
-    if (!provider) return []
+    if (!provider) {
+      return { models: [], source: 'static', error: 'Provider not found' }
+    }
 
     try {
       const remote = await ProviderService.listModels(provider)
-      if (remote && remote.length) return remote
-    } catch (e) {
+      if (remote && remote.length) {
+        return { models: remote, source: 'remote' }
+      }
+    } catch (e: any) {
       console.warn('[providers-v2] Remote model listing failed:', e)
+
+      // Fallback to static models
+      const models = getModelsByProvider(providerId)
+      const staticModels = models.map(m => m.id)
+
+      return {
+        models: staticModels,
+        source: 'static',
+        error: e?.message || String(e)
+      }
     }
 
-    // Fallback to static models
+    // No remote models, use static
     const models = getModelsByProvider(providerId)
-    return models.map(m => m.id)
+    return { models: models.map(m => m.id), source: 'static' }
   }
 
   // ====================
@@ -235,6 +264,7 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
     addCustomProvider,
     updateCustomProvider,
     deleteCustomProvider,
+    updateSystemProvider,
     toggleProvider,
 
     // Model methods

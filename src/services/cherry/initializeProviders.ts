@@ -12,4 +12,3 @@ export function initializeNewProviders(): void {
     console.warn('initializeNewProviders failed:', error)
   }
 }
-

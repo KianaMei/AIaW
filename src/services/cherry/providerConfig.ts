@@ -71,4 +71,3 @@ export function providerToAiSdkConfig(provider: ProviderV2, modelId?: string): {
 
   return { providerId, options: { ...baseConfig, ...extraOptions } }
 }
-

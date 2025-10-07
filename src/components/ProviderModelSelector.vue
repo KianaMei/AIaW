@@ -42,6 +42,10 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  providerId: '',
+  modelId: '',
+  providerLabel: '',
+  modelLabel: '',
   dense: false,
   filled: true,
   showGroup: false

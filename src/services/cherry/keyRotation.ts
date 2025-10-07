@@ -18,4 +18,3 @@ export function getRotatedApiKey(providerId: string, apiKey?: string, modelId?: 
     return keys[0]
   }
 }
-

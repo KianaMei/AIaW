@@ -15,4 +15,3 @@ export class ImageGenerationError extends Error {
     this.name = 'ImageGenerationError'
   }
 }
-

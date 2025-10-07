@@ -63,7 +63,7 @@ export function useGetModel() {
       settings: (p as any).settings || {}
     }
   }
-  function getSdkProvider(_provider?: Provider) {
+  function getSdkProvider() {
     console.warn('[get-model] getSdkProvider is deprecated under Cherry provider refactor')
     return null
   }

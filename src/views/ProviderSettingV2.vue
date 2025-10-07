@@ -32,11 +32,17 @@
         </q-item>
 
         <!-- Provider Logo -->
-        <q-item clickable @click="pickAvatar">
+        <q-item
+          clickable
+          @click="pickAvatar"
+        >
           <q-item-section>
             <q-item-label>{{ $t('providerSetting.logo') }}</q-item-label>
           </q-item-section>
-          <q-item-section side text-on-sur>
+          <q-item-section
+            side
+            text-on-sur
+          >
             <a-avatar :avatar="localProvider.avatar" />
           </q-item-section>
         </q-item>
@@ -47,7 +53,9 @@
         <q-item>
           <q-item-section>
             <q-item-label>{{ $t('providerSetting.type') }}</q-item-label>
-            <q-item-label caption>{{ $t('providerSetting.typeCaption') }}</q-item-label>
+            <q-item-label caption>
+              {{ $t('providerSetting.typeCaption') }}
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-select
@@ -68,7 +76,9 @@
         <q-item>
           <q-item-section>
             <q-item-label>{{ $t('providerSetting.apiHost') }}</q-item-label>
-            <q-item-label caption>{{ $t('providerSetting.apiHostCaption') }}</q-item-label>
+            <q-item-label caption>
+              {{ $t('providerSetting.apiHostCaption') }}
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
             <a-input
@@ -86,7 +96,9 @@
         <q-item v-if="!hideApiKey">
           <q-item-section>
             <q-item-label>{{ $t('providerSetting.apiKey') }}</q-item-label>
-            <q-item-label caption>{{ $t('providerSetting.apiKeyCaption') }}</q-item-label>
+            <q-item-label caption>
+              {{ $t('providerSetting.apiKeyCaption') }}
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
             <a-input
@@ -113,13 +125,42 @@
         <q-item>
           <q-item-section>
             <q-item-label>{{ $t('providerSetting.enabled') }}</q-item-label>
-            <q-item-label caption>{{ $t('providerSetting.enabledCaption') }}</q-item-label>
+            <q-item-label caption>
+              {{ $t('providerSetting.enabledCaption') }}
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-toggle
               v-model="localProvider.enabled"
               @update:model-value="debouncedUpdate"
             />
+          </q-item-section>
+        </q-item>
+
+        <!-- Validate Provider -->
+        <q-item v-if="!isSystemProvider">
+          <q-item-section>
+            <q-btn
+              :label="$t('providerSetting.validate')"
+              icon="sym_o_verified"
+              flat
+              color="primary"
+              @click="validateProvider"
+              :loading="validating"
+            />
+          </q-item-section>
+          <q-item-section
+            side
+            v-if="validationResult"
+          >
+            <q-badge
+              :color="validationResult.valid ? 'positive' : 'negative'"
+              :label="validationResult.valid ? $t('providerSetting.valid') : $t('providerSetting.invalid')"
+            >
+              <q-tooltip v-if="!validationResult.valid">
+                {{ validationResult.error }}
+              </q-tooltip>
+            </q-badge>
           </q-item-section>
         </q-item>
 
@@ -146,7 +187,10 @@
             <q-item-label caption>
               {{ $t('providerSetting.modelsCaption') }}
             </q-item-label>
-            <models-input v-model="localProvider.models" class="mt-2" />
+            <models-input
+              v-model="localProvider.models"
+              class="mt-2"
+            />
           </q-item-section>
         </q-item>
 
@@ -178,6 +222,7 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ProviderV2, CustomProviderV2 } from 'src/utils/types'
+import { ProviderService } from 'src/services/ProviderService'
 import ViewCommonHeader from 'src/components/ViewCommonHeader.vue'
 import AAvatar from 'src/components/AAvatar.vue'
 import AInput from 'src/components/AInput.vue'
@@ -294,15 +339,36 @@ async function fetchModels() {
 
   fetchingModels.value = true
   try {
-    const models = await providersStore.fetchProviderModels(props.id)
-    localProvider.value.models = models.map(id => ({ id, name: id }))
+    const result = await providersStore.fetchProviderModels(props.id)
+    // models is already string[], no need to map
+    localProvider.value.models = result.models
     await debouncedUpdate()
 
-    $q.notify({
-      message: t('providerSetting.fetchModelsSuccess', { count: models.length }),
-      type: 'positive',
-      position: 'top'
-    })
+    // Show different messages based on source
+    if (result.source === 'remote') {
+      $q.notify({
+        message: t('providerSetting.fetchModelsSuccess', { count: result.models.length }),
+        type: 'positive',
+        position: 'top'
+      })
+    } else if (result.source === 'static' && result.error) {
+      $q.notify({
+        message: t('providerSetting.fetchModelsFallback', {
+          count: result.models.length,
+          error: result.error
+        }),
+        type: 'warning',
+        position: 'top',
+        timeout: 5000,
+        html: true
+      })
+    } else {
+      $q.notify({
+        message: t('providerSetting.fetchModelsStatic', { count: result.models.length }),
+        type: 'info',
+        position: 'top'
+      })
+    }
   } catch (error: any) {
     $q.notify({
       message: t('providerSetting.fetchModelsError', { error: error.message }),
@@ -311,6 +377,46 @@ async function fetchModels() {
     })
   } finally {
     fetchingModels.value = false
+  }
+}
+
+// Validate provider credentials
+const validating = ref(false)
+const validationResult = ref<{ valid: boolean; error?: string } | null>(null)
+
+async function validateProvider() {
+  if (!provider.value) return
+
+  validating.value = true
+  validationResult.value = null
+
+  try {
+    const result = await ProviderService.validateProvider(provider.value)
+    validationResult.value = result
+
+    if (result.valid) {
+      $q.notify({
+        message: t('providerSetting.validateSuccess'),
+        type: 'positive',
+        position: 'top'
+      })
+    } else {
+      $q.notify({
+        message: t('providerSetting.validateError', { error: result.error || 'Unknown error' }),
+        type: 'negative',
+        position: 'top',
+        timeout: 5000
+      })
+    }
+  } catch (error: any) {
+    validationResult.value = { valid: false, error: error.message }
+    $q.notify({
+      message: t('providerSetting.validateError', { error: error.message }),
+      type: 'negative',
+      position: 'top'
+    })
+  } finally {
+    validating.value = false
   }
 }
 

@@ -10,4 +10,3 @@ export function resolveAzureVariant(apiVersion?: string): AzureVariant {
   }
   return { mode: 'chat', useDeploymentBasedUrls: true }
 }
-

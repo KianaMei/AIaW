@@ -14,23 +14,43 @@
         v-bind="itemProps"
         :class="{ 'bg-primary-container': selected }"
       >
-        <q-item-section avatar v-if="showAvatar">
+        <q-item-section
+          avatar
+          v-if="showAvatar"
+        >
           <model-avatar :model-id="opt.value" />
         </q-item-section>
         <q-item-section>
           <q-item-label>{{ opt.label }}</q-item-label>
-          <q-item-label caption v-if="showProvider">
+          <q-item-label
+            caption
+            v-if="showProvider"
+          >
             {{ opt.provider }}
           </q-item-label>
         </q-item-section>
       </q-item>
     </template>
 
-    <template #selected v-if="selectedModelDisplay">
-      <div flex items-center gap-2>
-        <model-avatar v-if="showAvatar" :model-id="modelValue" size="sm" />
+    <template
+      #selected
+      v-if="selectedModelDisplay"
+    >
+      <div
+        flex
+        items-center
+        gap-2
+      >
+        <model-avatar
+          v-if="showAvatar"
+          :model-id="modelValue"
+          size="sm"
+        />
         <span>{{ selectedModelDisplay.name }}</span>
-        <span v-if="showProvider" class="text-xs opacity-60">
+        <span
+          v-if="showProvider"
+          class="text-xs opacity-60"
+        >
           | {{ selectedModelDisplay.provider }}
         </span>
       </div>
@@ -57,11 +77,15 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  modelValue: '',
+  label: '',
+  placeholder: '',
   showAvatar: true,
   showProvider: true,
   grouped: false,
   dense: false,
-  filled: true
+  filled: true,
+  providerId: ''
 })
 
 const emit = defineEmits<{

@@ -450,11 +450,10 @@ import { useI18n } from 'vue-i18n'
 import Mark from 'mark.js'
 import { useCreateDialog } from 'src/composables/create-dialog'
 import EnablePluginsMenu from 'src/components/EnablePluginsMenu.vue'
+import { useGetModel } from 'src/composables/get-model'
 import { useGetModelV2 } from 'src/composables/get-model-v2'
 import { useUiStateStore } from 'src/stores/ui-state'
-import AutocompleteInput from 'src/components/AutocompleteInput.vue'
 import ProviderModelSelector from 'src/components/ProviderModelSelector.vue'
-import { useProvidersV2Store as useProvidersStore } from 'src/stores/providers-v2'
 
 const { t, locale } = useI18n()
 
@@ -888,6 +887,7 @@ const { callApi } = useCallApi({ workspace, dialog })
 
 const providerOptions = ref({})
 const providerTools = ref({})
+const { getSdkModel } = useGetModel()
 const { getModelBy, getSdkModelBy } = useGetModelV2()
 // Prefer dialog overrides; fallback to assistant defaults (Cherry-style separate fields)
 const currentProviderId = computed(() => dialog.value?.providerIdOverride || assistant.value?.providerId)
@@ -1431,8 +1431,6 @@ watch(() => liveData.value.dialog?.id, id => {
     scrollContainer.value?.scrollTo({ top: scrollTops[id] ?? 0 })
   })
 })
-
-const providersStore = useProvidersStore()
 
 function setModel(name: string) {
   // legacy override (kept for compatibility with existing UI pieces)

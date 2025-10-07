@@ -22,7 +22,9 @@
         </q-item-section>
         <q-item-section>
           <q-item-label>{{ getModelName(opt) }}</q-item-label>
-          <q-item-label caption>{{ getProviderName(opt) }}</q-item-label>
+          <q-item-label caption>
+            {{ getProviderName(opt) }}
+          </q-item-label>
         </q-item-section>
         <q-item-section
           v-if="showGroup"
@@ -42,7 +44,10 @@
       <q-icon name="sym_o_neurology" />
     </template>
 
-    <template #hint v-if="hint">
+    <template
+      #hint
+      v-if="hint"
+    >
       {{ hint }}
     </template>
   </autocomplete-input>
@@ -51,7 +56,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useProvidersV2Store } from 'src/stores/providers-v2'
-import { ModelService } from 'src/services/ModelService'
 import AutocompleteInput from './AutocompleteInput.vue'
 import AAvatar from './AAvatar.vue'
 
@@ -68,11 +72,15 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  modelValue: '',
+  label: '',
   dense: false,
   filled: true,
   outlined: false,
   clearable: true,
-  showGroup: false
+  filterProvider: '',
+  showGroup: false,
+  hint: ''
 })
 
 defineEmits<{
@@ -81,68 +89,56 @@ defineEmits<{
 
 const providersStore = useProvidersV2Store()
 
-/**
- * All available model options (only model IDs, not provider:modelId format)
- */
-const modelOptions = computed(() => {
-  let models = providersStore.availableModels
-
-  // Filter by provider if specified (REQUIRED for two-level selector)
+const filteredModels = computed(() => {
+  const models = providersStore.availableModels
   if (props.filterProvider) {
-    models = models.filter(m => m.provider === props.filterProvider)
+    return models.filter(model => model.provider === props.filterProvider)
   }
-
-  // Return only model IDs (not provider:modelId)
-  return models.map(m => m.id)
+  return models
 })
 
-/**
- * Get model name from model ID
- */
+const modelOptions = computed(() => {
+  return filteredModels.value.map(model => model.id)
+})
+
+function resolveModel(modelId: string) {
+  return filteredModels.value.find(model => model.id === modelId)
+}
+
+function resolveProviderId(modelId: string): string | undefined {
+  if (props.filterProvider) return props.filterProvider
+  const model = resolveModel(modelId)
+  return model?.provider
+}
+
 function getModelName(modelId: string): string {
-  // Find model in the filtered provider
-  const models = providersStore.availableModels.filter(m =>
-    props.filterProvider ? m.provider === props.filterProvider : true
-  )
-  const model = models.find(m => m.id === modelId)
+  const model = resolveModel(modelId)
   return model?.name || modelId
 }
 
-/**
- * Get provider name (from filterProvider prop)
- */
-function getProviderName(_modelId: string): string {
-  if (!props.filterProvider) return ''
-  return providersStore.getProviderName(props.filterProvider)
+function getProviderName(modelId: string): string {
+  const providerId = resolveProviderId(modelId)
+  if (!providerId) return ''
+  return providersStore.getProviderName(providerId)
 }
 
-/**
- * Get model group from model ID
- */
 function getModelGroup(modelId: string): string | undefined {
-  // Find model in the filtered provider
-  const models = providersStore.availableModels.filter(m =>
-    props.filterProvider ? m.provider === props.filterProvider : true
-  )
-  const model = models.find(m => m.id === modelId)
-  return model?.group
+  return resolveModel(modelId)?.group
 }
 
-/**
- * Get provider avatar for model
- */
-function getProviderAvatar(modelUniqId: string): any {
-  const model = providersStore.getModelByUniqId(modelUniqId)
-  if (!model) return { type: 'icon', icon: 'sym_o_neurology' }
-
-  const provider = providersStore.getProviderById(model.provider)
-  if (!provider) return { type: 'icon', icon: 'sym_o_neurology' }
-
-  // System providers have predefined avatars
-  // For custom providers, use their avatar
-  return provider.isSystem
-    ? getSystemProviderAvatar(provider.id)
-    : { type: 'icon', icon: 'sym_o_dashboard_customize' }
+function getProviderAvatar(modelId: string): any {
+  const providerId = resolveProviderId(modelId)
+  if (!providerId) {
+    return { type: 'icon', icon: 'sym_o_neurology' }
+  }
+  const provider = providersStore.getProviderById(providerId)
+  if (!provider) {
+    return { type: 'icon', icon: 'sym_o_neurology' }
+  }
+  if (!provider.isSystem) {
+    return provider.avatar || { type: 'icon', icon: 'sym_o_dashboard_customize' }
+  }
+  return getSystemProviderAvatar(provider.id)
 }
 
 /**

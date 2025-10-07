@@ -1,16 +1,15 @@
 import { ProviderV2, SystemProvider, CustomProviderV2 } from 'src/utils/types'
-import { SYSTEM_PROVIDERS, getSystemProviderById, getAllSystemProviders } from 'src/config/providers'
+import { SYSTEM_PROVIDERS, getSystemProviderById, getAllSystemProviders, OfficialBaseURLs } from 'src/config/providers'
 import { db } from 'src/utils/db'
 import { fetch } from 'src/utils/platform-api'
-import { OfficialBaseURLs } from 'src/config/providers'
 import { genId } from 'src/utils/functions'
 import {
-  isSupportArrayContent as cap_isSupportArrayContent,
-  isSupportDeveloperRole as cap_isSupportDeveloperRole,
-  isSupportServiceTier as cap_isSupportServiceTier,
-  isSupportVision as cap_isSupportVision,
-  isSupportUrlContext as cap_isSupportUrlContext,
-  isGeminiNativeWebSearchProvider as cap_isGeminiNativeWebSearchProvider
+  isSupportArrayContent as capIsSupportArrayContent,
+  isSupportDeveloperRole as capIsSupportDeveloperRole,
+  isSupportServiceTier as capIsSupportServiceTier,
+  isSupportVision as capIsSupportVision,
+  isSupportUrlContext as capIsSupportUrlContext,
+  isGeminiNativeWebSearchProvider as capIsGeminiNativeWebSearchProvider
 } from 'src/config/provider-capabilities'
 
 /**
@@ -166,7 +165,7 @@ export class ProviderService {
 
     // Attempt to list models as a lightweight validation
     try {
-      const models = await this.listModels(provider)
+      await this.listModels(provider)
       // If we could reach the endpoint without throwing, consider valid
       return { valid: true }
     } catch (e: any) {
@@ -189,27 +188,27 @@ export class ProviderService {
    * Based on Cherry Studio's capability detection
    */
   static isSupportArrayContent(provider: ProviderV2): boolean {
-    return cap_isSupportArrayContent(provider)
+    return capIsSupportArrayContent(provider)
   }
 
   static isSupportDeveloperRole(provider: ProviderV2): boolean {
-    return cap_isSupportDeveloperRole(provider)
+    return capIsSupportDeveloperRole(provider)
   }
 
   static isSupportVision(provider: ProviderV2): boolean {
-    return cap_isSupportVision(provider)
+    return capIsSupportVision(provider)
   }
 
   static isSupportServiceTier(provider: ProviderV2): boolean {
-    return cap_isSupportServiceTier(provider)
+    return capIsSupportServiceTier(provider)
   }
 
   static isSupportUrlContext(provider: ProviderV2): boolean {
-    return cap_isSupportUrlContext(provider)
+    return capIsSupportUrlContext(provider)
   }
 
   static isGeminiNativeWebSearchProvider(provider: ProviderV2): boolean {
-    return cap_isGeminiNativeWebSearchProvider(provider)
+    return capIsGeminiNativeWebSearchProvider(provider)
   }
 
   /**
@@ -233,7 +232,7 @@ export class ProviderService {
       timer = setTimeout(() => controller.abort('request-timeout'), timeoutMs)
     }
 
-    const setBearer = () => { if (provider.apiKey) headers['Authorization'] = `Bearer ${provider.apiKey}` }
+    const setBearer = () => { if (provider.apiKey) headers.Authorization = `Bearer ${provider.apiKey}` }
 
     switch (type) {
       case 'openai':

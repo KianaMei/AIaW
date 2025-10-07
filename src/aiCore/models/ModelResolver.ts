@@ -63,4 +63,3 @@ export class ModelResolver {
 }
 
 export const globalModelResolver = new ModelResolver()
-

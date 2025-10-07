@@ -13,10 +13,9 @@ import { AuthropicCors, FormattingReenabled, MarkdownFormatting } from 'src/util
 import { useProvidersV2Store } from 'src/stores/providers-v2'
 import type { LanguageModelV2, LanguageModelV2Middleware } from '@ai-sdk/provider'
 import { globalModelResolver } from 'src/aiCore/models'
-import { ensureProviderRegistered, ensureProviderRegisteredSync } from 'src/services/cherry/registry'
+import { ensureProviderRegistered } from 'src/services/cherry/registry'
 import { getAiSdkProviderId, providerToAiSdkConfig } from 'src/services/cherry/providerConfig'
 import { ModelService } from 'src/services/ModelService'
-import { ApiClientFactory } from 'src/services/ApiClientFactory'
 
 const FormattingModels = ['o1', 'o3-mini', 'o3-mini-2025-01-31']
 
@@ -90,7 +89,7 @@ export function useGetModelV2() {
    * @param providerId Provider ID
    */
   // Deprecated: keep signature for compatibility; now we resolve by registry on-demand
-  function getSdkProvider(_providerId?: string) {
+  function getSdkProvider() {
     console.warn('[get-model-v2] getSdkProvider is deprecated in Cherry provider refactor')
     return null
   }

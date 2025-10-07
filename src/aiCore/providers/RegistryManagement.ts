@@ -131,4 +131,3 @@ export class RegistryManagement<SEPARATOR extends string = typeof DEFAULT_SEPARA
 }
 
 export const globalRegistryManagement = new RegistryManagement()
-

@@ -49,7 +49,10 @@
       <q-icon name="sym_o_cloud" />
     </template>
 
-    <template #hint v-if="hint">
+    <template
+      #hint
+      v-if="hint"
+    >
       {{ hint }}
     </template>
   </q-select>
@@ -76,6 +79,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  modelValue: '',
+  label: '',
   dense: false,
   filled: true,
   outlined: false,
@@ -84,7 +89,8 @@ const props = withDefaults(defineProps<Props>(), {
   onlySystem: false,
   onlyCustom: false,
   showType: false,
-  showStatus: false
+  showStatus: false,
+  hint: ''
 })
 
 defineEmits<{

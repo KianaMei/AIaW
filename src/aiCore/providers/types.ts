@@ -69,4 +69,3 @@ export type AiSdkModelReturnMap = {
 export type AiSdkMethodName<T extends AiSdkModelType> = (typeof METHOD_MAP)[T]
 
 export type AiSdkModelReturn<T extends AiSdkModelType> = AiSdkModelReturnMap[T]
-

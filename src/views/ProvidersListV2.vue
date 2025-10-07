@@ -32,8 +32,13 @@
 
         <!-- System Providers -->
         <div class="mb-6">
-          <h6 class="text-h6 mb-3">{{ $t('providersList.systemProviders') }}</h6>
-          <q-list bordered separator>
+          <h6 class="text-h6 mb-3">
+            {{ $t('providersList.systemProviders') }}
+          </h6>
+          <q-list
+            bordered
+            separator
+          >
             <q-item
               v-for="provider in filteredSystemProviders"
               :key="provider.id"
@@ -42,11 +47,16 @@
               active-class="bg-primary-container"
             >
               <q-item-section avatar>
-                <a-avatar :avatar="getProviderAvatar(provider)" size="md" />
+                <a-avatar
+                  :avatar="getProviderAvatar(provider)"
+                  size="md"
+                />
               </q-item-section>
               <q-item-section>
                 <q-item-label>{{ provider.name }}</q-item-label>
-                <q-item-label caption>{{ provider.type }}</q-item-label>
+                <q-item-label caption>
+                  {{ provider.type }}
+                </q-item-label>
               </q-item-section>
               <q-item-section side>
                 <q-toggle
@@ -61,8 +71,13 @@
 
         <!-- Custom Providers -->
         <div v-if="filteredCustomProviders.length > 0">
-          <h6 class="text-h6 mb-3">{{ $t('providersList.customProviders') }}</h6>
-          <q-list bordered separator>
+          <h6 class="text-h6 mb-3">
+            {{ $t('providersList.customProviders') }}
+          </h6>
+          <q-list
+            bordered
+            separator
+          >
             <q-item
               v-for="provider in filteredCustomProviders"
               :key="provider.id"
@@ -71,14 +86,23 @@
               active-class="bg-primary-container"
             >
               <q-item-section avatar>
-                <a-avatar :avatar="provider.avatar" size="md" />
+                <a-avatar
+                  :avatar="provider.avatar"
+                  size="md"
+                />
               </q-item-section>
               <q-item-section>
                 <q-item-label>{{ provider.name }}</q-item-label>
-                <q-item-label caption>{{ provider.type }}</q-item-label>
+                <q-item-label caption>
+                  {{ provider.type }}
+                </q-item-label>
               </q-item-section>
               <q-item-section side>
-                <div flex items-center gap-2>
+                <div
+                  flex
+                  items-center
+                  gap-2
+                >
                   <q-toggle
                     :model-value="provider.enabled"
                     @update:model-value="toggleCustomProvider(provider)"
@@ -101,7 +125,10 @@
         </div>
 
         <!-- Empty State -->
-        <div v-if="filteredCustomProviders.length === 0 && searchText" class="text-center py-8 text-secondary">
+        <div
+          v-if="filteredCustomProviders.length === 0 && searchText"
+          class="text-center py-8 text-secondary"
+        >
           {{ $t('providersList.noResults') }}
         </div>
       </div>
@@ -118,7 +145,7 @@ import { useRouter } from 'vue-router'
 import ViewCommonHeader from 'src/components/ViewCommonHeader.vue'
 import AAvatar from 'src/components/AAvatar.vue'
 import AddProviderDialogV2 from 'src/components/AddProviderDialogV2.vue'
-import { pageFhStyle, genId } from 'src/utils/functions'
+import { pageFhStyle } from 'src/utils/functions'
 import type { SystemProvider, CustomProviderV2, Avatar } from 'src/utils/types'
 
 defineEmits(['toggle-drawer'])
@@ -243,7 +270,7 @@ function addProvider() {
     component: AddProviderDialogV2
   }).onOk(async (data: { name: string; type: string; avatar?: Avatar }) => {
     try {
-      const id = await providersStore.add({
+      const id = await providersStore.addCustomProvider({
         name: data.name,
         type: data.type,
         apiHost: '',

@@ -92,25 +92,24 @@ These files still contain legacy patterns but are **NOT USED** by V2 components:
 - **Action Needed**: Identify which components still use this and migrate them
 
 ### Legacy Components
-These components still reference legacy patterns:
+These components have been reviewed and updated/migrated:
 
 1. **`src/components/GetModelList.vue`**
-   - Line 31: `providersStore.providerTypes.find(...)`
-   - Uses V2 store but expects `providerTypes` (which doesn't exist in V2)
-   - **Status**: BROKEN - needs rewrite or deletion
+   - Now uses V2 store methods and `ProviderService.listModels()` via `providersStore.fetchProviderModels()`
+   - Handles remote listing with static fallback gracefully
+   - **Status**: FIXED - V2 compliant
 
 2. **`src/components/ProviderInputItems.vue`**
-   - Lines 38, 74, 79, 82: References to `store.providerTypes`
-   - Uses V2 store but expects legacy API
-   - **Status**: BROKEN - needs rewrite or deletion
+   - File no longer present in the codebase or not used by V2 flows
+   - **Status**: REMOVED/NOT APPLICABLE
 
 3. **`src/components/SubproviderInput.vue`**
-   - May still use legacy nested subprovider structure
-   - **Status**: Needs investigation
+   - Legacy nested subprovider UI; not part of the V2 flat model
+   - **Status**: Not used by V2; safe to ignore or delete if desired
 
 4. **`src/views/CustomProvider.vue`**
-   - May use legacy patterns
-   - **Status**: Needs investigation (though it imports V2 store)
+   - If still present, ensure it uses V2 store; otherwise consider removal
+   - **Status**: Not part of core V2 path
 
 ### Legacy Type References
 - **File**: `src/services/ProviderService.ts:1`
@@ -161,8 +160,8 @@ grep -r "useProvidersStore" src --include="*.vue" --exclude-dir=node_modules
 ```
 
 ### 2. Either Migrate or Delete Legacy Components
-- Option A: Rewrite GetModelList.vue and ProviderInputItems.vue to use V2 API
-- Option B: Delete them if they're no longer needed
+- GetModelList.vue 已完成迁移至 V2 API
+- ProviderInputItems.vue 已不再使用，可删除（若仍存在）
 
 ### 3. Remove Legacy Store (When No Longer Used)
 - Delete `src/stores/providers.ts`

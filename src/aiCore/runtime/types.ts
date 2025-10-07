@@ -1,5 +1,3 @@
-import type { LanguageModelV2Middleware } from '@ai-sdk/provider'
-
 export type generateTextParams = Parameters<(typeof import('ai'))['generateText']>[0]
 export type streamTextParams = Parameters<(typeof import('ai'))['streamText']>[0]
 export type generateObjectParams = Parameters<(typeof import('ai'))['generateObject']>[0]
@@ -22,4 +20,3 @@ export type AiPlugin = {
   resolveModel?: (modelId: string) => Promise<any>
   configureContext?: (context: AiRequestContext) => Promise<void>
 }
-

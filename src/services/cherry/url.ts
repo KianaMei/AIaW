@@ -11,4 +11,3 @@ export function normalizeBaseUrl(baseURL?: string, versionSegment?: string): str
   }
   return url
 }
-

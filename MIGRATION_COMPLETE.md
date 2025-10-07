@@ -78,16 +78,17 @@ The `providers-v2` store automatically converts legacy data:
 - Converts to V2 format on-the-fly
 - No data migration needed!
 
-### API Compatibility
-Old store methods are available in V2:
+### API Usage (V2 Only)
+Use the clean V2 store methods:
 ```typescript
-// These still work:
-providersStore.providers       // Legacy providers
-providersStore.providerTypes   // Provider types
-providersStore.add()           // Add provider
-providersStore.update()        // Update provider
-providersStore.delete()        // Delete provider
-providersStore.modelOptions    // Model autocomplete
+import { useProvidersV2Store } from 'src/stores/providers-v2'
+const providersStore = useProvidersV2Store()
+
+const id = await providersStore.addCustomProvider({ name: 'My Provider', type: 'openai-compatible' })
+await providersStore.updateCustomProvider(id, { enabled: true })
+await providersStore.deleteCustomProvider(id)
+
+const { models, source, error } = await providersStore.fetchProviderModels('openai')
 ```
 
 ## Key Features
@@ -102,10 +103,9 @@ providersStore.modelOptions    // Model autocomplete
 - Custom models included in `modelOptions`
 - Fallback providers converted to separate providers with suffix
 
-### 3. Provider Types
-- Custom providers exposed as `custom:${id}` types
-- Compatible with old provider selection logic
-- Maintains avatar and metadata
+### 3. Provider Identifiers
+- Use provider IDs directly (e.g., `openai`, `anthropic`, or custom provider IDs)
+- Unique model ID format: `provider:modelId`
 
 ## Migration Path for Users
 
@@ -138,7 +138,7 @@ const legacyProvider = convertToLegacyCustomProvider(v2Providers)
 - [ ] Model autocomplete includes custom models
 - [ ] Legacy providers with subproviders still work
 - [ ] Fallback provider logic preserved
-- [ ] Provider types dropdown works
+- [ ] Unique model ID format works across flows
 - [ ] No console errors
 
 ## Known Limitations

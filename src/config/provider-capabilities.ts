@@ -56,4 +56,3 @@ export function isSupportUrlContext(provider: ProviderV2): boolean {
 export function isGeminiNativeWebSearchProvider(provider: ProviderV2): boolean {
   return SUPPORT_NATIVE_WEB_SEARCH_PROVIDER_IDS.has(provider.id)
 }
-

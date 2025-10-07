@@ -1,5 +1,4 @@
-import { createAndRegisterProvider, hasProviderConfig, providerRegistry } from 'src/aiCore/providers/registry'
-import { getProviderConfig } from 'src/aiCore/providers/registry'
+import { createAndRegisterProvider, hasProviderConfig, providerRegistry, getProviderConfig } from 'src/aiCore/providers/registry'
 import { initializeNewProviders } from './initializeProviders'
 import { providerToAiSdkConfig } from './providerConfig'
 import type { ProviderV2 } from 'src/utils/types'

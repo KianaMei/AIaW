@@ -3,9 +3,14 @@
     ref="dialogRef"
     @hide="onDialogHide"
   >
-    <q-card class="q-dialog-plugin" style="min-width: 400px">
+    <q-card
+      class="q-dialog-plugin"
+      style="min-width: 400px"
+    >
       <q-card-section>
-        <div class="text-h6">{{ $t('addProvider.title') }}</div>
+        <div class="text-h6">
+          {{ $t('addProvider.title') }}
+        </div>
       </q-card-section>
 
       <q-card-section class="q-pt-none">
@@ -36,8 +41,14 @@
 
         <!-- Avatar -->
         <div class="mb-4">
-          <div class="text-caption text-secondary mb-2">{{ $t('addProvider.avatar') }}</div>
-          <div flex items-center gap-4>
+          <div class="text-caption text-secondary mb-2">
+            {{ $t('addProvider.avatar') }}
+          </div>
+          <div
+            flex
+            items-center
+            gap-4
+          >
             <a-avatar
               :avatar="avatar"
               size="lg"
@@ -72,7 +83,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useDialogPluginComponent, useQuasar } from 'quasar'
-import { useI18n } from 'vue-i18n'
 import AAvatar from './AAvatar.vue'
 import PickAvatarDialog from './PickAvatarDialog.vue'
 import type { Avatar } from 'src/utils/types'
@@ -83,8 +93,6 @@ defineEmits([
 
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const $q = useQuasar()
-const { t } = useI18n()
-
 const name = ref('')
 const type = ref('openai-compatible')
 const avatar = ref<Avatar>({

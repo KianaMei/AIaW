@@ -60,7 +60,7 @@ const results = providersStore.searchModels('gpt')
 
 #### Create Custom Provider
 ```typescript
-const id = await providersStore.add({
+const id = await providersStore.addCustomProvider({
   name: 'My Provider',
   type: 'openai-compatible',
   apiHost: 'https://api.example.com',
@@ -88,28 +88,16 @@ await providersStore.deleteCustomProvider('provider-id')
 
 ### Fetch Models from Provider
 ```typescript
-const models = await providersStore.fetchProviderModels('openai')
+const { models, source, error } = await providersStore.fetchProviderModels('openai')
+// source is 'remote' | 'static' | 'cached'
+// models is string[] of model IDs
+// error (optional) contains remote error message when falling back to static
 ```
 
-## Legacy Compatibility
+## Notes on Legacy APIs
 
-### Provider Types (for old code)
-```typescript
-// Get provider types (includes custom as 'custom:id')
-const types = providersStore.providerTypes
-
-// Find type
-const type = types.find(t => t.name === 'custom:my-provider')
-
-// Get model list
-const models = await type.getModelList()
-```
-
-### Raw Providers (old format)
-```typescript
-// Access legacy DB data directly
-const legacy = providersStore.providers
-```
+- V2 store has no `providerTypes` and no legacy `providers` collection.
+- Use `providersStore.fetchProviderModels(providerId)` or `ProviderService.listModels(provider)` for model discovery.
 
 ## Model Service
 
@@ -124,18 +112,15 @@ import { ModelService } from 'src/services/ModelService'
 const uniqId = ModelService.getModelUniqId(model)  // "openai:gpt-4"
 
 // Parse unique ID
-const parsed = ModelService.parseModelUniqId('openai:gpt-4')
-// { provider: 'openai', modelId: 'gpt-4' }
+const parsed = ModelService.parseModelId('openai:gpt-4')
+// { providerId: 'openai', modelId: 'gpt-4' }
 
 // Get model by unique ID
 const model = ModelService.getModelByUniqId('openai:gpt-4')
 
-// Check capabilities
-const caps = ModelService.getModelCapabilities(model)
-// { supportsText, supportsImage, supportsFile, ... }
-
-// Check input type support
-const supports = ModelService.supportsInputType(model, 'image/*', 'user')
+// Grouping and search
+const grouped = ModelService.getGroupedModels()
+const results = ModelService.searchModels('gpt')
 ```
 
 ## Provider Service

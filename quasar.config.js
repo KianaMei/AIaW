@@ -98,13 +98,13 @@ export default configure((ctx) => {
         // Conditionally include checker to avoid blocking dev with type/lint output
         ...(process.env.CHECKS === '1'
           ? [[
-            'vite-plugin-checker',
-            {
-              vueTsc: { tsconfigPath: 'tsconfig.vue-tsc.json' },
-              eslint: { lintCommand: 'eslint "./**/*.{js,ts,mjs,cjs,vue}"' }
-            },
-            { server: false }
-          ]]
+              'vite-plugin-checker',
+              {
+                vueTsc: { tsconfigPath: 'tsconfig.vue-tsc.json' },
+                eslint: { lintCommand: 'eslint "./**/*.{js,ts,mjs,cjs,vue}"' }
+              },
+              { server: false }
+            ]]
           : []),
         ['unocss/vite']
       ]

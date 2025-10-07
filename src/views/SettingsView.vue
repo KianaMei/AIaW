@@ -103,7 +103,8 @@
             <q-item-label caption>
               {{ $t('settingsView.commonModelsCaption') }}<br>
               <get-model-list
-                :provider
+                :provider="provider"
+                :provider-id="perfs.providerId"
                 v-model="perfs.commonModelOptions"
               /> -
               <a

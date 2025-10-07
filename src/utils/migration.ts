@@ -13,20 +13,20 @@ export function mapOldTypeToProviderId(type?: string): string {
 
   const mapping: Record<string, string> = {
     // Standard providers
-    'openai': 'openai',
+    openai: 'openai',
     'openai-response': 'openai-responses',
-    'anthropic': 'anthropic',
-    'google': 'google',
-    'azure': 'azure',
+    anthropic: 'anthropic',
+    google: 'google',
+    azure: 'azure',
     'openai-compatible': 'openai-compatible',
-    'openrouter': 'openrouter',
-    'xai': 'xai',
-    'deepseek': 'deepseek',
-    'ollama': 'ollama',
-    'togetherai': 'togetherai',
-    'groq': 'groq',
-    'cohere': 'cohere',
-    'mistral': 'mistral',
+    openrouter: 'openrouter',
+    xai: 'xai',
+    deepseek: 'deepseek',
+    ollama: 'ollama',
+    togetherai: 'togetherai',
+    groq: 'groq',
+    cohere: 'cohere',
+    mistral: 'mistral'
 
     // Custom providers (format: custom:id)
     // These will be handled separately

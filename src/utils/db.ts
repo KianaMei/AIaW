@@ -203,9 +203,9 @@ db.version(8).stores(schema).upgrade(async tx => {
       await tx.table('providers').bulkAdd(newProviders)
 
       console.log(`[Migration v8] ✅ Migrated ${migratedCount} providers to V2 format`)
-      console.log(`[Migration v8] ✅ Database now contains ONLY V2 format - NO conversion layer needed!`)
+      console.log('[Migration v8] ✅ Database now contains ONLY V2 format - NO conversion layer needed!')
     } else {
-      console.log(`[Migration v8] All providers already in V2 format, no migration needed`)
+      console.log('[Migration v8] All providers already in V2 format, no migration needed')
     }
   } catch (error) {
     console.error('[Migration v8] ❌ Migration failed:', error)

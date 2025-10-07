@@ -15,6 +15,27 @@ interface ModelSettings {
   seed?: number
 }
 
+interface ModelInputTypes {
+  user: string[]
+  assistant: string[]
+  tool: string[]
+}
+
+// Legacy Model (deprecated, for backward compatibility)
+interface LegacyModel {
+  name: string
+  inputTypes: ModelInputTypes
+}
+
+// Cherry Studio Model architecture
+interface Model {
+  id: string // Model ID (may be duplicated across providers)
+  provider: string // Provider ID (ensures uniqueness with id)
+  name: string // Display name
+  group?: string // Model group/family
+  inputTypes: ModelInputTypes
+}
+
 // Cherry Studio architecture types
 interface SystemProvider {
   id: string
@@ -409,27 +430,6 @@ interface PluginData {
 
 type PluginsData = Record<string, PluginData>
 
-interface ModelInputTypes {
-  user: string[]
-  assistant: string[]
-  tool: string[]
-}
-
-// Legacy Model (deprecated, for backward compatibility)
-interface LegacyModel {
-  name: string
-  inputTypes: ModelInputTypes
-}
-
-// Cherry Studio Model architecture
-interface Model {
-  id: string // Model ID (may be duplicated across providers)
-  provider: string // Provider ID (ensures uniqueness with id)
-  name: string // Display name
-  group?: string // Model group/family
-  inputTypes: ModelInputTypes
-}
-
 interface Folder {
   id: string
   name: string
@@ -467,7 +467,7 @@ interface Dialog {
   // Cherry Studio architecture fields
   // Separate override fields to align with Cherry design
   providerIdOverride?: string // Provider ID override (optional)
-  modelIdOverride?: string    // Model ID override (no provider prefix)
+  modelIdOverride?: string // Model ID override (no provider prefix)
 }
 
 interface Message {
@@ -643,6 +643,6 @@ export type {
   ConvertArtifactOptions,
   McpPluginDump,
   McpPluginManifest,
-  TransportConf,
-  
+  TransportConf
+
 }

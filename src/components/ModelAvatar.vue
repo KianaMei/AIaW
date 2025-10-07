@@ -1,11 +1,17 @@
 <template>
-  <q-avatar :size="sizeValue" :class="avatarClass">
+  <q-avatar
+    :size="sizeValue"
+    :class="avatarClass"
+  >
     <q-icon
       v-if="modelIcon"
       :name="modelIcon"
       :size="iconSize"
     />
-    <span v-else class="text-xs">{{ modelInitial }}</span>
+    <span
+      v-else
+      class="text-xs"
+    >{{ modelInitial }}</span>
   </q-avatar>
 </template>
 
@@ -19,6 +25,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  modelId: '',
   size: 'md'
 })
 
