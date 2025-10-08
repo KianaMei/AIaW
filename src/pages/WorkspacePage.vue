@@ -1,5 +1,5 @@
 <template>
-  <template v-if="workspace">
+  <div v-if="workspace">
     <router-view @toggle-drawer="drawerOpen = !drawerOpen" />
     <q-drawer
       show-if-above
@@ -137,7 +137,7 @@
         />
       </div>
     </q-drawer>
-  </template>
+  </div>
   <error-not-found
     v-else
     drawer-toggle

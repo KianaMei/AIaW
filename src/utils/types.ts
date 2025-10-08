@@ -55,7 +55,7 @@ interface CustomProviderV2 {
   type: string
   apiKey?: string
   apiHost?: string
-  models?: Model[]
+  models?: string[] // Array of model IDs (NOT full Model objects - differs from Cherry Studio)
   isSystem: false
   enabled: boolean
   settings: Record<string, any>

@@ -369,5 +369,12 @@ export default {
   },
   enablePluginsMenu: {
     moreInfo: '更多資訊'
+  },
+  selectModel: {
+    title: '選擇模型',
+    search: '搜尋模型...',
+    selectModel: '選擇模型',
+    pinned: '固定模型',
+    noResults: '未找到模型'
   }
 }

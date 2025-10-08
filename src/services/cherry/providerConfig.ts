@@ -43,8 +43,26 @@ export function providerToAiSdkConfig(provider: ProviderV2, modelId?: string): {
   const providerId = getAiSdkProviderId(provider)
   const rotatedKey = getRotatedApiKey(provider.id, provider.apiKey, modelId)
 
+  // ⭐ Format apiHost based on provider type (align with Cherry Studio)
+  let formattedApiHost = provider.apiHost || undefined
+  console.log('[providerToAiSdkConfig] Original apiHost:', provider.apiHost, 'providerId:', providerId)
+
+  if (formattedApiHost) {
+    if (providerId === 'google') {
+      formattedApiHost = normalizeBaseUrl(formattedApiHost, 'v1beta')
+    } else if (providerId === 'azure') {
+      // Azure handled separately below
+      formattedApiHost = normalizeBaseUrl(formattedApiHost, 'openai')
+    } else {
+      // ⭐ For all other providers (including openai-compatible), add /v1/ suffix
+      formattedApiHost = normalizeBaseUrl(formattedApiHost, 'v1')
+    }
+  }
+
+  console.log('[providerToAiSdkConfig] Formatted apiHost:', formattedApiHost)
+
   const baseConfig: any = {
-    baseURL: provider.apiHost || undefined,
+    baseURL: formattedApiHost,
     apiKey: rotatedKey
   }
 
@@ -61,12 +79,6 @@ export function providerToAiSdkConfig(provider: ProviderV2, modelId?: string): {
     if (useDeploymentBasedUrls) extraOptions.useDeploymentBasedUrls = true
     baseConfig.resourceName = provider.settings?.resourceName
     baseConfig.apiVersion = provider.settings?.apiVersion
-    // Azure service usually places openai at /openai
-    baseConfig.baseURL = baseConfig.baseURL ? normalizeBaseUrl(baseConfig.baseURL, 'openai') : undefined
-  }
-
-  if (providerId === 'google') {
-    baseConfig.baseURL = baseConfig.baseURL ? normalizeBaseUrl(baseConfig.baseURL, 'v1beta') : undefined
   }
 
   return { providerId, options: { ...baseConfig, ...extraOptions } }

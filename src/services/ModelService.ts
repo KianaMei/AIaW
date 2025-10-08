@@ -69,11 +69,63 @@ export class ModelService {
   /**
    * Get models for a specific provider
    * @param providerId Provider ID
+   * @param provider Optional provider object to check for embedded models
    * @returns Array of models
    */
-  static getModelsByProvider(providerId: string): Model[] {
+  static getModelsByProvider(providerId: string, provider?: ProviderV2): Model[] {
     const allModels = getAllModels()
-    return allModels.filter(m => m.provider === providerId)
+    const staticModels = allModels.filter(m => m.provider === providerId)
+
+    console.log(`[ModelService] getModelsByProvider(${providerId})`)
+    console.log(`[ModelService]   Static models:`, staticModels.length)
+    console.log(`[ModelService]   Provider.models:`, provider?.models)
+
+    // If provider has embedded models, merge them
+    if (provider && 'models' in provider && Array.isArray(provider.models) && provider.models.length > 0) {
+      const embeddedModels: Model[] = []
+
+      for (const item of provider.models) {
+        // System providers have Model[], custom providers have string[]
+        if (typeof item === 'string') {
+          // Custom provider: model IDs as strings - look up in static models
+          const found = allModels.find(m => m.id === item)
+          if (found) {
+            embeddedModels.push(found)
+          } else {
+            // If not found in static models, create a minimal Model object
+            // This handles custom models not in our static config
+            console.warn(`[ModelService] Model ID "${item}" not found in static config, creating dynamic model`)
+            embeddedModels.push({
+              id: item,
+              provider: providerId,
+              name: item,
+              inputTypes: {
+                user: ['text'],
+                assistant: ['text'],
+                tool: ['text']
+              }
+            })
+          }
+        } else {
+          // System provider: full Model objects
+          embeddedModels.push(item)
+        }
+      }
+
+      console.log(`[ModelService]   Embedded models:`, embeddedModels.length)
+
+      // Merge static and embedded, removing duplicates by ID
+      const modelMap = new Map<string, Model>()
+      for (const m of [...staticModels, ...embeddedModels]) {
+        modelMap.set(m.id, m)
+      }
+      const merged = Array.from(modelMap.values())
+      console.log(`[ModelService]   Merged result:`, merged.length, merged.map(m => m.name))
+      return merged
+    }
+
+    console.log(`[ModelService]   Returning static only:`, staticModels.length)
+    return staticModels
   }
 
   /**

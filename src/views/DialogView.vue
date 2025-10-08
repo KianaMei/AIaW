@@ -3,11 +3,10 @@
     @toggle-drawer="$emit('toggle-drawer')"
     @contextmenu="createDialog"
   >
-    <div>
+    <div v-if="dialog">
       <assistant-item
         clickable
         :assistant
-        v-if="dialog"
         text-base
         item-rd
         py-1
@@ -28,100 +27,12 @@
         </q-list>
       </q-menu>
     </div>
-    <div
-      v-if="model"
-      text-on-sur-var
-      my-2
-      of-hidden
-      whitespace-nowrap
-      text-ellipsis
-      cursor-pointer
-    >
-      <q-icon
-        name="sym_o_neurology"
-        size="24px"
-      />
-      <code
-        bg-sur-c-high
-        px="6px"
-        py="3px"
-        text="xs"
-      >{{ model.name }}</code>
-      <q-menu important:max-w="300px">
-        <q-list>
-          <q-item>
-            <q-item-section>
-              <provider-model-selector
-                v-model:providerId="dialog.providerIdOverride"
-                v-model:modelId="dialog.modelIdOverride"
-                :model-label="$t('dialogView.model')"
-                dense
-                filled
-              />
-            </q-item-section>
-          </q-item>
-          <template v-if="assistant.model">
-            <q-item-label
-              header
-              py-2
-            >
-              {{ $t('dialogView.assistantModel') }}
-            </q-item-label>
-            <model-item
-              v-if="assistant.model"
-              :model="assistant.model.name"
-              @click="dialog.modelOverride = null"
-              :selected="!dialog.modelOverride"
-              clickable
-              v-close-popup
-            />
-          </template>
-          <template v-else-if="perfs.model">
-            <q-item-label
-              header
-              py-2
-            >
-              {{ $t('dialogView.globalDefault') }}
-            </q-item-label>
-            <model-item
-              v-if="perfs.model"
-              :model="perfs.model.name"
-              @click="dialog.modelOverride = null"
-              :selected="!dialog.modelOverride"
-              clickable
-              v-close-popup
-            />
-          </template>
-          <q-item-label
-            header
-            py-2
-          >
-            {{ $t('dialogView.commonModels') }}
-          </q-item-label>
-          <a-tip
-            tip-key="configure-common-models"
-            rd-0
-          >
-            {{ $t('dialogView.modelsConfigGuide1') }}
-            <router-link
-              to="/settings"
-              pri-link
-            >
-              {{ $t('dialogView.settings') }}
-            </router-link> {{ $t('dialogView.modelsConfigGuide2') }}
-          </a-tip>
-          <model-item
-            v-for="m of perfs.commonModelOptions"
-            :key="m"
-            clickable
-            :model="m"
-            @click="setModel(m)"
-            :selected="dialog.modelOverride?.name === m"
-            v-close-popup
-          />
-        </q-list>
-      </q-menu>
-    </div>
+    <!-- Cherry Studio Style Model Selector -->
+    <select-model-button
+      v-if="dialog"
+      v-model:providerId="dialog.providerIdOverride"
+      v-model:modelId="dialog.modelIdOverride"
+    />
     <q-space />
   </view-common-header>
   <q-page-container
@@ -300,9 +211,9 @@
             :class="{ 'text-ter': showVars }"
           />
           <provider-options-btn
-            v-if="sdkModel"
-            :provider-name="sdkModel.provider"
-            :model-id="sdkModel.modelId"
+            v-if="model && providerNameForOptions"
+            :provider-name="providerNameForOptions"
+            :model-id="model.id"
             v-model:provider-options="providerOptions"
             v-model:tools="providerTools"
             flat
@@ -434,6 +345,7 @@ import ModelItem from 'src/components/ModelItem.vue'
 import ParseFilesDialog from 'src/components/ParseFilesDialog.vue'
 import MessageFile from 'src/components/MessageFile.vue'
 import { dialogOptions, InputTypes, models } from 'src/utils/values'
+import { getAllModels } from 'src/config/models'
 import { useUserDataStore } from 'src/stores/user-data'
 import ErrorNotFound from 'src/pages/ErrorNotFound.vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -452,8 +364,12 @@ import { useCreateDialog } from 'src/composables/create-dialog'
 import EnablePluginsMenu from 'src/components/EnablePluginsMenu.vue'
 import { useGetModel } from 'src/composables/get-model'
 import { useGetModelV2 } from 'src/composables/get-model-v2'
+import { useProvidersV2Store } from 'src/stores/providers-v2'
+import { computedAsync } from '@vueuse/core'
+import { getAiSdkProviderId } from 'src/services/cherry/providerConfig'
 import { useUiStateStore } from 'src/stores/ui-state'
 import ProviderModelSelector from 'src/components/ProviderModelSelector.vue'
+import SelectModelButton from 'src/components/SelectModelButton.vue'
 
 const { t, locale } = useI18n()
 
@@ -866,20 +782,21 @@ function getSystemPrompt(enabledPlugins) {
   }
 }
 
-function getCommonVars() {
-  return {
-    _currentTime: new Date().toString(),
-    _userLanguage: navigator.language,
-    _workspaceId: workspace.value.id,
-    _workspaceName: workspace.value.name,
-    _assistantId: assistant.value.id,
-    _assistantName: assistant.value.name,
-    _dialogId: dialog.value.id,
-    _modelId: model.value.name,
-    _isDarkMode: $q.dark.isActive,
-    _platform: $q.platform
+  function getCommonVars() {
+    return {
+      _currentTime: new Date().toString(),
+      _userLanguage: navigator.language,
+      _workspaceId: workspace.value.id,
+      _workspaceName: workspace.value.name,
+      _assistantId: assistant.value.id,
+      _assistantName: assistant.value.name,
+      _dialogId: dialog.value.id,
+      // model may be null during lazy resolution; provide a safe fallback
+      _modelId: model.value?.name || (currentProviderId.value && currentModelId.value ? `${currentProviderId.value}:${currentModelId.value}` : ''),
+      _isDarkMode: $q.dark.isActive,
+      _platform: $q.platform
+    }
   }
-}
 
 const pluginsStore = usePluginsStore()
 
@@ -888,12 +805,48 @@ const { callApi } = useCallApi({ workspace, dialog })
 const providerOptions = ref({})
 const providerTools = ref({})
 const { getSdkModel } = useGetModel()
-const { getModelBy, getSdkModelBy } = useGetModelV2()
+const { getProvider, getModelBy, getSdkModelBy } = useGetModelV2()
+const providersV2 = useProvidersV2Store()
 // Prefer dialog overrides; fallback to assistant defaults (Cherry-style separate fields)
 const currentProviderId = computed(() => dialog.value?.providerIdOverride || assistant.value?.providerId)
 const currentModelId = computed(() => dialog.value?.modelIdOverride || assistant.value?.modelId)
-const model = computed(() => getModelBy(currentProviderId.value, currentModelId.value))
-const sdkModel = computed(() => getSdkModelBy(currentProviderId.value, currentModelId.value))
+const model = computed(() => {
+  const m = getModelBy(currentProviderId.value, currentModelId.value)
+
+  // Fallback: if no static model found, create a dynamic model object
+  if (!m && currentProviderId.value && currentModelId.value) {
+    const provider = getProvider(currentProviderId.value)
+    if (provider) {
+      return {
+        id: currentModelId.value,
+        provider: currentProviderId.value,
+        name: currentModelId.value,
+        inputTypes: InputTypes.default
+      } as Model
+    }
+  }
+
+  return m
+})
+// Resolve SDK model asynchronously to avoid passing a Promise to template/children
+const sdkModel = computedAsync(
+  () => {
+    const pid = currentProviderId.value
+    const mid = currentModelId.value
+    if (!pid || !mid) return null
+    return getSdkModelBy(pid, mid)
+  },
+  null
+)
+
+// Derive provider string for ProviderOptionsBtn rules
+const providerNameForOptions = computed(() => {
+  const prov = getProvider(currentProviderId.value)
+  if (!prov) return ''
+  if ((prov.id === 'openai-responses') || (prov.type === 'openai-response')) return 'openai.responses'
+  const pid = getAiSdkProviderId(prov)
+  return pid ? `${pid}.` : ''
+})
 const $q = useQuasar()
 const { data } = useUserDataStore()
 async function send() {
@@ -955,7 +908,7 @@ async function stream(target, insert = false) {
       contents,
       status: 'pending',
       generatingSession: sessions.id,
-      modelName: model.value.name
+      modelName: (model.value?.name || `${currentProviderId.value}:${currentModelId.value}`)
     }, insert)
     !insert && await appendMessage(id, {
       type: 'user',
@@ -1433,12 +1386,31 @@ watch(() => liveData.value.dialog?.id, id => {
 })
 
 function setModel(name: string) {
+  // Map clicked label to canonical model id + provider (Cherry-style)
+  const all = getAllModels()
+  const matched = all.filter(m => m.id === name || m.name === name)
+  const hit = matched[0]
+
   // legacy override (kept for compatibility with existing UI pieces)
   dialog.value.modelOverride = name
     ? models.find(model => model.name === name) || { name, inputTypes: InputTypes.default }
     : null
-  // V2 override (Cherry style): store pure modelId; provider override handled separately
-  dialog.value.modelIdOverride = (name || null) as any
+
+  // V2 override
+  if (hit) {
+    dialog.value.modelIdOverride = hit.id as any
+    dialog.value.providerIdOverride ||= hit.provider
+  } else {
+    // Try resolve from custom providers' dynamic models
+    const custom = providersV2.customProviders.find(p => Array.isArray(p.models) && p.models.includes(name))
+    if (custom) {
+      dialog.value.providerIdOverride ||= custom.id
+      dialog.value.modelIdOverride = name as any
+      return
+    }
+    // Fallback: keep previous behavior, but this may not resolve to a concrete model
+    dialog.value.modelIdOverride = (name || null) as any
+  }
 }
 
 const { createDialog } = useCreateDialog(workspace)
@@ -1447,3 +1419,4 @@ defineEmits(['toggle-drawer'])
 
 useSetTitle(computed(() => dialog.value?.name))
 </script>
+

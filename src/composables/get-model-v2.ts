@@ -102,7 +102,34 @@ export function useGetModelV2() {
   async function getSdkModelBy(providerId?: string, modelId?: string) {
     const model = getModelBy(providerId, modelId)
     if (!model) {
-      console.warn('No model found for:', providerId, modelId)
+      // 尝试 Cherry 风格兜底：当静态模型表缺失时，直接用 provider+modelId 解析
+      const pid = providerId || perfs.providerId || undefined
+      const mid = modelId || perfs.modelId || undefined
+      if (pid && mid) {
+        const provider = getProvider(pid)
+        if (!provider) {
+          console.warn('No provider found for (fallback):', pid)
+          return null
+        }
+        try {
+          await ensureProviderRegistered(provider, mid)
+          // Pass raw modelId and rely on normalized fallback provider
+          const lm = await globalModelResolver.resolveLanguageModel(
+            mid,
+            getAiSdkProviderId(provider),
+            providerToAiSdkConfig(provider, mid).options,
+            []
+          )
+          return wrapMiddlewares(lm)
+        } catch (e) {
+          console.warn('Fallback resolveLanguageModel failed:', e)
+          return null
+        }
+      }
+      // 仅在调用方已提供任一参数时提示，避免初始化阶段的刷屏告警
+      if (providerId || modelId) {
+        console.warn('No model found for:', providerId, modelId)
+      }
       return null
     }
     const provider = getProvider(model.provider)
@@ -112,11 +139,11 @@ export function useGetModelV2() {
     }
 
     try {
-      const uniqId = `${model.provider}:${model.id}`
       await ensureProviderRegistered(provider, model.id)
       const middlewares: LanguageModelV2Middleware[] = []
+      // Pass raw modelId and rely on normalized fallback provider
       const lm = await globalModelResolver.resolveLanguageModel(
-        uniqId,
+        model.id,
         getAiSdkProviderId(provider),
         providerToAiSdkConfig(provider, model.id).options,
         middlewares
@@ -127,9 +154,8 @@ export function useGetModelV2() {
       if (defaultProvider.value) {
         try {
           await ensureProviderRegistered(defaultProvider.value, model.id)
-          const fallbackUniqId = `${defaultProvider.value.id}:${model.id}`
           const lm = await globalModelResolver.resolveLanguageModel(
-            fallbackUniqId,
+            model.id,
             getAiSdkProviderId(defaultProvider.value),
             providerToAiSdkConfig(defaultProvider.value, model.id).options,
             []

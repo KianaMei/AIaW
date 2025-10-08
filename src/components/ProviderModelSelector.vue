@@ -2,8 +2,8 @@
   <div class="column gap-2">
     <provider-selector-v2
       :model-value="providerId"
-      @update:model-value="onProviderChange"
-      :label="providerLabel || $t('pms.provider')"
+      @update:modelValue="onProviderChange"
+      :label="providerLabel || t('pms.provider')"
       :only-enabled="true"
       :show-type="true"
       :show-status="true"
@@ -13,10 +13,10 @@
 
     <model-selector-v2
       :model-value="modelId"
-      @update:model-value="onModelChange"
-      :label="modelLabel || $t('pms.model')"
+      @update:modelValue="onModelChange"
+      :label="modelLabel || t('pms.model')"
       :filter-provider="providerId || undefined"
-      :hint="providerId ? '' : $t('pms.pickProviderFirst')"
+      :hint="providerId ? '' : t('pms.pickProviderFirst')"
       :clearable="true"
       :dense="dense"
       :filled="filled"
@@ -28,6 +28,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ProviderSelectorV2 from './ProviderSelectorV2.vue'
 import ModelSelectorV2 from './ModelSelectorV2.vue'
 
@@ -51,6 +52,7 @@ const props = withDefaults(defineProps<Props>(), {
   showGroup: false
 })
 
+const { t } = useI18n({ useScope: 'local' })
 const emit = defineEmits<{
   'update:providerId': [value: string]
   'update:modelId': [value: string]

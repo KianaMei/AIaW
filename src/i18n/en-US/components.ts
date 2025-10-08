@@ -369,5 +369,12 @@ export default {
   },
   enablePluginsMenu: {
     moreInfo: 'More Info'
+  },
+  selectModel: {
+    title: 'Select Model',
+    search: 'Search models...',
+    selectModel: 'Select a model',
+    pinned: 'Pinned Models',
+    noResults: 'No models found'
   }
 }

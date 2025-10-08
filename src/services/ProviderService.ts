@@ -147,7 +147,7 @@ export class ProviderService {
     if (provider.type === 'ollama') {
       try {
         const base = provider.apiHost || OfficialBaseURLs.ollama
-        const res = await fetch(new URL('/tags', base).toString())
+        const res = await fetch(new URL('tags', new URL(base)).toString())
         if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
         return { valid: true }
       } catch (e: any) {
@@ -219,10 +219,49 @@ export class ProviderService {
     const type = provider.type
 
     // Normalize base URL
-    const base = provider.apiHost || (OfficialBaseURLs as any)[provider.id] || ''
+    // Prefer explicit apiHost; else fall back by type, then by id
+    let base = (provider.apiHost || '').trim()
+    if (!base) {
+      const byType = (OfficialBaseURLs as any)[provider.type]
+      const byId = (OfficialBaseURLs as any)[provider.id]
+      base = byType || byId || ''
+    }
+
+    // If still missing for types that require host, throw early with clearer error
+    const requiresHost = !['azure', 'google', 'ollama'].includes(provider.type)
+    if (!base && requiresHost) {
+      throw new Error('Missing API host; please set a valid base URL (e.g. https://api.example.com/v1)')
+    }
 
     const headers: Record<string, string> = {}
-    const url = new URL(base)
+    // Ensure base includes scheme
+    const normalizedBase = base && /^https?:\/\//i.test(base) ? base : (base ? `https://${base}` : base)
+    const url = new URL(normalizedBase || 'http://localhost')
+
+    // helper: build URL by appending relative path (keeps base pathname)
+    const join = (p: string) => new URL(p.replace(/^\/+/, ''), url).toString()
+    const fetchJson = async (u: string, init?: any) => {
+      const res = await fetch(u, init)
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+      try {
+        return await res.json()
+      } catch (e) {
+        const text = await res.text().catch(() => '')
+        throw new Error(`Invalid JSON from ${u}: ${text.slice(0, 120)}`)
+      }
+    }
+    const extractModelIds = (payload: any): string[] => {
+      const arr = Array.isArray(payload)
+        ? payload
+        : (Array.isArray(payload?.data)
+          ? payload.data
+          : (Array.isArray(payload?.models)
+            ? payload.models
+            : (Array.isArray(payload?.list) ? payload.list : [])))
+      return arr
+        .map((d: any) => typeof d === 'string' ? d : (d?.id || d?.name || d?.model_name))
+        .filter((x: any) => typeof x === 'string' && x)
+    }
 
     // timeout controller
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
@@ -246,11 +285,33 @@ export class ProviderService {
       case 'togetherai': {
         setBearer()
         try {
-          const res = await fetch(new URL('/models', url).toString(), { headers, signal: controller?.signal as any })
-          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-          const data = await res.json()
-          const list: string[] = Array.isArray(data?.data) ? data.data.map((d: any) => d.id).filter(Boolean) : []
-          return list
+          const defaultCandidates = [
+            // Prefer common gateway prefixes first to avoid HTML from root '/models'
+            'api/user/models',
+            'api/v1/models',
+            'api/models',
+            'v1/models',
+            'models'
+          ]
+          const host = url.hostname.toLowerCase()
+          const preferred = (host.includes('yunai'))
+            ? ['api/user/models']
+            : []
+          const candidates = [...new Set([...preferred, ...defaultCandidates])].map(join)
+          let data: any
+          let lastErr: any
+          for (const u of candidates) {
+            try {
+              data = await fetchJson(u, { headers, signal: controller?.signal as any })
+              const list: string[] = extractModelIds(data)
+              if (list.length || 'data' in (data || {}) || 'models' in (data || {})) return list
+            } catch (err) {
+              lastErr = err
+              continue
+            }
+          }
+          if (lastErr) throw lastErr
+          return []
         } catch (e: any) {
           throw new Error(`[${provider.id}] listModels failed: ${e?.message || String(e)}`)
         } finally { if (timer) clearTimeout(timer) }
@@ -260,17 +321,18 @@ export class ProviderService {
         // Some Anthropic endpoints require version header; provide a default
         headers['anthropic-version'] = headers['anthropic-version'] || '2023-06-01'
         try {
-          const res = await fetch(new URL('/models', url).toString(), { headers, signal: controller?.signal as any })
-          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-          const data = await res.json()
-          return Array.isArray(data?.data) ? data.data.map((d: any) => d.id).filter(Boolean) : []
+          const data = await fetchJson(join('models'), { headers, signal: controller?.signal as any })
+          return extractModelIds(data)
         } catch (e: any) {
           throw new Error(`[${provider.id}] listModels failed: ${e?.message || String(e)}`)
         } finally { if (timer) clearTimeout(timer) }
       }
       case 'google': {
         // Gemini API lists models via ?key=xxx
-        const listUrl = new URL('/models', url)
+        // Use official base when apiHost was not specified
+        const gBase = normalizedBase || OfficialBaseURLs.google
+        const baseUrl = new URL(gBase)
+        const listUrl = new URL('models', baseUrl)
         if (provider.apiKey) listUrl.searchParams.set('key', provider.apiKey)
         try {
           const res = await fetch(listUrl.toString(), { signal: controller?.signal as any })
@@ -302,9 +364,7 @@ export class ProviderService {
       case 'ollama': {
         const baseUrl = base || OfficialBaseURLs.ollama
         try {
-          const res = await fetch(new URL('/tags', baseUrl).toString(), { signal: controller?.signal as any })
-          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-          const data = await res.json()
+          const data = await fetchJson(new URL('tags', new URL(baseUrl)).toString(), { signal: controller?.signal as any })
           return Array.isArray(data?.models) ? data.models.map((m: any) => m.name).filter(Boolean) : []
         } catch (e: any) {
           throw new Error(`[${provider.id}] listModels failed: ${e?.message || String(e)}`)

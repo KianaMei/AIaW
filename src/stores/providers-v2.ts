@@ -195,7 +195,8 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
    * Get models for a specific provider
    */
   function getModelsByProvider(providerId: string): Model[] {
-    return ModelService.getModelsByProvider(providerId)
+    const provider = getProviderById(providerId)
+    return ModelService.getModelsByProvider(providerId, provider)
   }
 
   /**

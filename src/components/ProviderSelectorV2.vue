@@ -167,6 +167,15 @@ function getProviderAvatar(provider: any): any {
 
 <i18n>
 {
+  "en": {
+    "providerSelector": {
+      "selectProvider": "Select Provider",
+      "system": "System Provider",
+      "custom": "Custom Provider",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    }
+  },
   "en-US": {
     "providerSelector": {
       "selectProvider": "Select Provider",
@@ -174,6 +183,15 @@ function getProviderAvatar(provider: any): any {
       "custom": "Custom Provider",
       "enabled": "Enabled",
       "disabled": "Disabled"
+    }
+  },
+  "zh": {
+    "providerSelector": {
+      "selectProvider": "选择供应商",
+      "system": "系统供应商",
+      "custom": "自定义供应商",
+      "enabled": "已启用",
+      "disabled": "已禁用"
     }
   },
   "zh-CN": {
@@ -189,10 +207,12 @@ function getProviderAvatar(provider: any): any {
     "providerSelector": {
       "selectProvider": "選擇供應商",
       "system": "系統供應商",
-      "custom": "自定義供應商",
+      "custom": "自訂供應商",
       "enabled": "已啟用",
-      "disabled": "已禁用"
+      "disabled": "已停用"
     }
   }
 }
 </i18n>
+
+
