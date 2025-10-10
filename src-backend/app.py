@@ -19,6 +19,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+# Resolve absolute path to the static directory (works regardless of CWD)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+
 ALLOWED_PREFIXES = [
     'https://lobehub.search1api.com/api/search',
     'https://pollinations.ai-chat.top/api/drawing',
@@ -113,8 +117,8 @@ async def searxng(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-app.mount('/', StaticFiles(directory='static', html=True), name='static')
+app.mount('/', StaticFiles(directory=STATIC_DIR, html=True), name='static')
 
 @app.exception_handler(404)
 async def return_index(request: Request, exc: HTTPException):
-    return FileResponse("static/index.html")
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))

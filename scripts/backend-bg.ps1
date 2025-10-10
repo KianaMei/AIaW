@@ -6,6 +6,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root    = (Resolve-Path "$PSScriptRoot\..").Path
+$workdir = Join-Path $root 'src-backend'
 Set-Location $root
 $logDir  = Join-Path $root '.logs'
 $log     = Join-Path $logDir 'backend.log'
@@ -61,9 +62,9 @@ switch ($Action) {
     $env:PORT = $env:PORT -as [int]
     if (-not $env:PORT) { $env:PORT = 8010 }
 
-    # Use --app-dir to ensure relative paths (like 'static') resolve inside src-backend
-    $cmd = "$python -m uvicorn app:app --app-dir src-backend --host 127.0.0.1 --port $env:PORT *>> '.logs\\backend.log'"
-    $p = Start-Process pwsh -WorkingDirectory $root -WindowStyle Hidden -ArgumentList @('-NoProfile','-Command', $cmd) -PassThru
+    # Launch uvicorn with working directory set to src-backend so relative paths (e.g. 'static') resolve correctly
+    $cmd = "$python -m uvicorn app:app --host 127.0.0.1 --port $env:PORT *>> '..\\.logs\\backend.log'"
+    $p = Start-Process pwsh -WorkingDirectory $workdir -WindowStyle Hidden -ArgumentList @('-NoProfile','-Command', $cmd) -PassThru
     $p.Id | Set-Content $pidFile
     Start-Sleep -Seconds 2
     Write-Output "Started FastAPI backend. PID: $($p.Id)"

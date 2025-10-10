@@ -66,6 +66,8 @@ export default configure((ctx) => {
       extendViteConf() {
         return {
           server: {
+            // Hide noisy HMR overlay (e.g. UnoCSS entry warning) during dev
+            hmr: { overlay: false },
             watch: {
               ignored: ['**/src-tauri/**', '**/.venv/**', '/android/**']
             }
@@ -92,8 +94,10 @@ export default configure((ctx) => {
 
           ssr: ctx.modeName === 'ssr',
 
-          // you need to set i18n resource including paths !
-          include: [fileURLToPath(new URL('./src/i18n', import.meta.url))]
+          // Only include i18n JSON files, NOT .vue or .ts files
+          include: [
+            fileURLToPath(new URL('./src/i18n/locales/**/*.json', import.meta.url))
+          ]
         }],
         // Conditionally include checker to avoid blocking dev with type/lint output
         ...(process.env.CHECKS === '1'
