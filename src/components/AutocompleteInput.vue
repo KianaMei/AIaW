@@ -7,7 +7,7 @@
     use-input
     hide-selected
     fill-input
-    hide-dropdown-icon
+    :hide-dropdown-icon="hideDropdownIcon"
     :input-debounce="0"
   >
     <template
@@ -28,6 +28,8 @@ import { toRef } from 'vue'
 
 const props = defineProps<{
   options: string[]
+  // When true, hide the select's dropdown arrow icon (default: false)
+  hideDropdownIcon?: boolean
 }>()
 
 const model = defineModel<string>()

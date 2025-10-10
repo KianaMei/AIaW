@@ -12,14 +12,18 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
-$primary   : #1976D2;
-$secondary : #26A69A;
-$accent    : #9C27B0;
+// 🎨 更现代的配色方案
+$primary   : #6366f1;  // 更柔和的紫蓝色（类似 Tailwind indigo-500）
+$secondary : #10b981;  // 现代绿色（类似 Tailwind emerald-500）
+$accent    : #f59e0b;  // 活力橙色（类似 Tailwind amber-500）
 
-$dark      : #1D1D1D;
-$dark-page : #121212;
+$dark      : #0f172a;  // 更深的深色背景（类似 Tailwind slate-900）
+$dark-page : #020617;  // 极深背景（类似 Tailwind slate-950）
 
-$positive : #43852C;
-$negative : #C10015;
-$info : #2196f3;
-$warning : #9D6E00;
+$positive : #22c55e;   // 更亮的成功色（类似 Tailwind green-500）
+$negative : #ef4444;   // 更鲜艳的错误色（类似 Tailwind red-500）
+$info : #3b82f6;       // 更柔和的信息色（类似 Tailwind blue-500）
+$warning : #f59e0b;    // 更醒目的警告色（类似 Tailwind amber-500）
+
+// 通用圆角
+$generic-border-radius: 12px;

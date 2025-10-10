@@ -29,22 +29,26 @@ const langList = import.meta.glob('../../node_modules/quasar/lang/(en-US|zh-CN|z
 type SupportedLang = 'en-US' | 'zh-CN' | 'zh-TW'
 
 const languages = Object.keys(messages)
-function getLanguage(): SupportedLang {
-  if (localData.language) return localData.language
+function normalizeLang(lang?: string): SupportedLang {
+  if (!lang) return 'en-US'
+  // Map generic Chinese tags to zh-CN by default
+  if (lang === 'zh' || lang.startsWith('zh-CN') || lang.startsWith('zh-Hans')) return 'zh-CN'
+  if (lang === 'zh-TW' || lang.startsWith('zh-Hant') || lang === 'zh-HK') return 'zh-TW'
+  return (languages.includes(lang) ? (lang as SupportedLang) : 'en-US')
+}
 
-  if (languages.includes(navigator.language)) {
-    return navigator.language as SupportedLang
-  } else if (navigator.language === 'zh-HK') {
-    return 'zh-TW'
-  } else {
-    return 'en-US'
-  }
+function getLanguage(): SupportedLang {
+  const preferred = localData.language as string | undefined
+  const detected = navigator.language
+  const lang = normalizeLang(preferred || detected)
+  return languages.includes(lang) ? lang : 'en-US'
 }
 
 const language = getLanguage()
 const i18n = createI18n({
   locale: language,
   legacy: false,
+  globalInjection: true,
   fallbackLocale: 'en-US',
   messages
 })

@@ -1,5 +1,5 @@
 import { liveQuery, type Subscription } from 'dexie'
-import { shallowRef, getCurrentScope, onScopeDispose, watch, type ShallowRef, type WatchOptions } from 'vue'
+import { customRef, getCurrentScope, onScopeDispose, watch, type Ref, type WatchOptions } from 'vue'
 
 type Value<T, I> = I extends undefined ? T | undefined : T | I;
 
@@ -25,12 +25,31 @@ export function useLiveQueryWithDeps<
   deps,
   querier: (...data) => T | Promise<T>,
   options: UseDexieLiveQueryWithDepsOptions<I, Immediate> = {}
-): ShallowRef<Value<T, I>> {
+): Ref<Value<T, I>> {
   const { onError, initialValue, ...rest } = options
 
-  const value = shallowRef<T | I | undefined>(initialValue)
-
   let subscription: Subscription | undefined
+  let isMounted = true
+
+  // Use customRef to have full control over when triggers happen
+  const value = customRef<T | I | undefined>((track, trigger) => {
+    let _value: T | I | undefined = initialValue
+
+    return {
+      get() {
+        track()
+        return _value
+      },
+      set(newValue) {
+        // Defer trigger to next microtask; guard unmounted race conditions
+        queueMicrotask(() => {
+          if (!isMounted) return
+          _value = newValue
+          trigger()
+        })
+      }
+    }
+  })
 
   function start(...data) {
     subscription?.unsubscribe()
@@ -39,18 +58,22 @@ export function useLiveQueryWithDeps<
 
     subscription = observable.subscribe({
       next: result => {
-        value.value = result
+        if (!isMounted) return
+        // Defer updates to avoid patching during active unmounts/updates
+        queueMicrotask(() => {
+          if (isMounted) value.value = result
+        })
       },
       error: error => {
-        onError?.(error)
+        if (!isMounted) return
+        queueMicrotask(() => { if (isMounted) onError?.(error) })
       }
     })
   }
 
   function cleanup() {
+    isMounted = false
     subscription?.unsubscribe()
-
-    // Set to undefined to avoid calling unsubscribe multiple times on a same subscription
     subscription = undefined
   }
 
@@ -60,7 +83,7 @@ export function useLiveQueryWithDeps<
     cleanup()
   })
 
-  return value as ShallowRef<Value<T, I>>
+  return value as Ref<Value<T, I>>
 }
 
 export function useLiveQuery<
@@ -69,12 +92,31 @@ export function useLiveQuery<
 >(
   querier: () => T | Promise<T>,
   options: UseDexieLiveQueryOptions<I> = {}
-): ShallowRef<Value<T, I>> {
+): Ref<Value<T, I>> {
   const { onError, initialValue } = options
 
-  const value = shallowRef<T | I | undefined>(initialValue)
-
   let subscription: Subscription | undefined
+  let isMounted = true
+
+  // Use customRef to have full control over when triggers happen
+  const value = customRef<T | I | undefined>((track, trigger) => {
+    let _value: T | I | undefined = initialValue
+
+    return {
+      get() {
+        track()
+        return _value
+      },
+      set(newValue) {
+        // Defer trigger to next microtask; guard unmounted race conditions
+        queueMicrotask(() => {
+          if (!isMounted) return
+          _value = newValue
+          trigger()
+        })
+      }
+    }
+  })
 
   function start() {
     subscription?.unsubscribe()
@@ -83,18 +125,19 @@ export function useLiveQuery<
 
     subscription = observable.subscribe({
       next: result => {
-        value.value = result
+        if (!isMounted) return
+        queueMicrotask(() => { if (isMounted) value.value = result })
       },
       error: error => {
-        onError?.(error)
+        if (!isMounted) return
+        queueMicrotask(() => { if (isMounted) onError?.(error) })
       }
     })
   }
 
   function cleanup() {
+    isMounted = false
     subscription?.unsubscribe()
-
-    // Set to undefined to avoid calling unsubscribe multiple times on a same subscription
     subscription = undefined
   }
 
@@ -104,5 +147,5 @@ export function useLiveQuery<
     cleanup()
   })
 
-  return value as ShallowRef<Value<T, I>>
+  return value as Ref<Value<T, I>>
 }

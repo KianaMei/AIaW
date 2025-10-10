@@ -80,7 +80,8 @@ const rules: Rule[] = [{
   exec: options => {
     const { webSearch, codeExecution, textVerbosity } = options
     const tools: Record<string, any> = {}
-    if (webSearch) tools.web_search_preview = openai.tools.webSearchPreview({})
+    // 使用新的 webSearch 方法（AI SDK 2.0.46+ 支持）
+    if (webSearch) tools.web_search = openai.tools.webSearch({})
     if (codeExecution) tools.code_interpreter = openai.tools.codeInterpreter({})
 
     return {

@@ -16,6 +16,7 @@ body.body--light {
 
   .q-item__label--header {
     color: var(--a-sec);
+    font-weight: 600;
   }
 
   .q-item__label--caption {
@@ -24,10 +25,12 @@ body.body--light {
 
   .q-field--filled .q-field__control {
     background-color: var(--a-sur-c);
+    border-radius: 10px;
   }
 
   .q-notification.bg-negative {
     color: var(--a-on-err) !important;
+    border-radius: 12px;
   }
 
   .q-chip,
@@ -35,14 +38,17 @@ body.body--light {
   .q-tab-panels {
     background-color: var(--a-sur-c);
     color: var(--a-on-sur);
+    border-radius: 12px;
   }
 
   .q-card {
     background-color: var(--a-sur-c);
+    border-radius: 16px;
   }
 
   .q-tooltip--style {
     --at-apply: 'bg-inv-sur text-inv-on-sur';
+    border-radius: 8px;
   }
 
   .q-checkbox__svg {
@@ -90,6 +96,7 @@ body.body--light {
   .q-item.q-router-link--active,
   .q-item--active {
     --at-apply: 'bg-sec-c text-on-sec-c';
+    border-radius: 10px;
   }
 
   .q-btn.sm-icon .q-icon,
@@ -100,7 +107,7 @@ body.body--light {
 }
 
 .q-btn--rectangle {
-  border-radius: 4px;
+  border-radius: 10px;
 }
 
 .q-field--dark:not(.q-field--highlighted) .q-field__label,
