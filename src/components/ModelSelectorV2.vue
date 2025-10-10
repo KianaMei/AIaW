@@ -3,22 +3,16 @@
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     :options="modelOptions"
-    :label="label || $t('modelSelector.selectModel')"
+    :label="label"
     :dense="dense"
     :filled="filled"
     :outlined="outlined"
     :clearable="clearable"
   >
     <template #option="{ opt, selected, itemProps }">
-      <q-item
-        v-bind="itemProps"
-        :active="selected"
-      >
+      <q-item v-bind="itemProps" :active="selected">
         <q-item-section avatar>
-          <a-avatar
-            :avatar="getProviderAvatar(opt)"
-            size="sm"
-          />
+          <a-avatar :avatar="getProviderAvatar(opt)" size="sm" />
         </q-item-section>
         <q-item-section>
           <q-item-label>{{ getModelName(opt) }}</q-item-label>
@@ -26,16 +20,8 @@
             {{ getProviderName(opt) }}
           </q-item-label>
         </q-item-section>
-        <q-item-section
-          v-if="showGroup"
-          side
-        >
-          <q-badge
-            v-if="getModelGroup(opt)"
-            :label="getModelGroup(opt)"
-            color="primary"
-            text-color="white"
-          />
+        <q-item-section v-if="showGroup" side>
+          <q-badge v-if="getModelGroup(opt)" :label="getModelGroup(opt)" color="primary" text-color="white" />
         </q-item-section>
       </q-item>
     </template>
@@ -44,10 +30,7 @@
       <q-icon name="sym_o_neurology" />
     </template>
 
-    <template
-      #hint
-      v-if="hint"
-    >
+    <template #hint v-if="hint">
       {{ hint }}
     </template>
   </autocomplete-input>
@@ -166,22 +149,3 @@ function getSystemProviderAvatar(providerId: string): any {
 }
 </script>
 
-<i18n>
-{
-  "en-US": {
-    "modelSelector": {
-      "selectModel": "Select Model"
-    }
-  },
-  "zh-CN": {
-    "modelSelector": {
-      "selectModel": "选择模型"
-    }
-  },
-  "zh-TW": {
-    "modelSelector": {
-      "selectModel": "選擇模型"
-    }
-  }
-}
-</i18n>

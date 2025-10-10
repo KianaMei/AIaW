@@ -3,7 +3,7 @@
     <provider-selector-v2
       :model-value="providerId"
       @update:modelValue="onProviderChange"
-      :label="providerLabel || t('pms.provider')"
+      :label="providerLabel || '供应商'"
       :only-enabled="true"
       :show-type="true"
       :show-status="true"
@@ -14,9 +14,9 @@
     <model-selector-v2
       :model-value="modelId"
       @update:modelValue="onModelChange"
-      :label="modelLabel || t('pms.model')"
+      :label="modelLabel || '模型'"
       :filter-provider="providerId || undefined"
-      :hint="providerId ? '' : t('pms.pickProviderFirst')"
+      :hint="providerId ? '' : '请先选择供应商'"
       :clearable="true"
       :dense="dense"
       :filled="filled"
@@ -28,7 +28,6 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 import ProviderSelectorV2 from './ProviderSelectorV2.vue'
 import ModelSelectorV2 from './ModelSelectorV2.vue'
 
@@ -52,7 +51,6 @@ const props = withDefaults(defineProps<Props>(), {
   showGroup: false
 })
 
-const { t } = useI18n({ useScope: 'local' })
 const emit = defineEmits<{
   'update:providerId': [value: string]
   'update:modelId': [value: string]
@@ -87,29 +85,3 @@ function onModelChange(v: string) {
   emit('update:modelId', v)
 }
 </script>
-
-<i18n>
-{
-  "en-US": {
-    "pms": {
-      "provider": "Provider",
-      "model": "Model",
-      "pickProviderFirst": "Pick a provider first"
-    }
-  },
-  "zh-CN": {
-    "pms": {
-      "provider": "供应商",
-      "model": "模型",
-      "pickProviderFirst": "请先选择供应商"
-    }
-  },
-  "zh-TW": {
-    "pms": {
-      "provider": "供應商",
-      "model": "模型",
-      "pickProviderFirst": "請先選擇供應商"
-    }
-  }
-}
-</i18n>

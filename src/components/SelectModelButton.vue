@@ -26,14 +26,14 @@
 
     <!-- Model Selection Menu (Dropdown) -->
     <q-menu
-      fit
       :offset="[0, 8]"
       max-height="70vh"
-      style="min-width: 400px; max-width: 500px"
+      class="model-menu"
+      style="width: 70vw"
     >
       <q-card flat>
-        <q-card-section class="q-pb-sm">
-          <!-- Search Bar -->
+        <q-card-section class="q-pa-sm">
+          <!-- Search Bar (smaller) -->
           <q-input
             v-model="searchText"
             :placeholder="$t('selectModel.search')"
@@ -41,78 +41,141 @@
             dense
             clearable
             autofocus
+            class="search-input-small"
           >
             <template v-slot:prepend>
-              <q-icon name="sym_o_search" />
+              <q-icon name="sym_o_search" size="16px" />
             </template>
           </q-input>
         </q-card-section>
 
         <q-separator />
 
-        <q-card-section class="q-pt-sm q-pb-sm" style="max-height: 50vh; overflow-y: auto">
-          <!-- Pinned Models (if any) -->
-          <div v-if="pinnedModels.length > 0 && !searchText">
-            <div class="text-caption text-weight-medium q-mb-sm text-grey-7">
-              {{ $t('selectModel.pinned') }}
+        <!-- Provider Tabs (larger) with independent scrolling -->
+        <div
+          v-if="!searchText && providersWithModels.length > 0"
+          class="provider-tabs-container"
+          ref="providerTabsContainer"
+          @wheel.prevent="handleProviderWheel"
+        >
+          <q-tabs
+            v-model="selectedProviderId"
+            dense
+            class="text-grey-7 provider-tabs"
+            active-color="primary"
+            indicator-color="primary"
+            align="left"
+            narrow-indicator
+            inline-label
+          >
+            <q-tab
+              v-for="provider in providersWithModels"
+              :key="provider.id"
+              :name="provider.id"
+              no-caps
+              class="provider-tab-custom"
+            >
+              <div class="row items-center no-wrap gap-2">
+                <span>{{ provider.name }}</span>
+                <q-avatar size="36px">
+                  <a-avatar :avatar="getProviderAvatar(provider)" size="md" />
+                </q-avatar>
+              </div>
+            </q-tab>
+          </q-tabs>
+        </div>
+
+        <q-separator v-if="!searchText" />
+
+        <q-card-section
+          class="q-pt-sm q-pb-sm model-list-container"
+        >
+          <!-- Search Results (all providers) -->
+          <div v-if="searchText">
+            <div v-for="(group, groupIndex) in filteredModelGroups" :key="`group-${group.providerId}`">
+              <div class="text-caption text-weight-medium q-mb-sm q-mt-sm text-grey-7">
+                {{ group.providerName }}
+              </div>
+              <q-list dense>
+                <q-item
+                  v-for="model in group.models"
+                  :key="`model-${model.uniqId}`"
+                  clickable
+                  v-ripple
+                  v-close-popup
+                  :active="model.uniqId === currentModelUniqId"
+                  active-class="bg-primary-1"
+                  @click="selectModel(group.providerId, model.id)"
+                  class="model-item"
+                >
+                  <q-item-section avatar class="model-icon">
+                    <q-avatar size="18px">
+                      <q-icon name="sym_o_neurology" size="16px" />
+                    </q-avatar>
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label class="model-name">{{ model.name }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+              <q-separator v-if="groupIndex < filteredModelGroups.length - 1" class="q-my-sm" />
             </div>
-            <q-list dense>
-              <q-item
-                v-for="item in pinnedModels"
-                :key="`pinned-${item.uniqId}`"
-                clickable
-                v-ripple
-                v-close-popup
-                :active="item.uniqId === currentModelUniqId"
-                active-class="bg-primary-1"
-                @click="selectModel(item.providerId, item.modelId)"
-              >
-                <q-item-section avatar>
-                  <q-avatar size="24px">
-                    <q-icon name="sym_o_neurology" />
-                  </q-avatar>
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>{{ item.modelName }}</q-item-label>
-                  <q-item-label caption>{{ item.providerName }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-            <q-separator class="q-my-md" />
+
+            <!-- Empty State -->
+            <div v-if="filteredModelGroups.length === 0" class="text-center q-pa-md text-grey-6">
+              {{ $t('selectModel.noResults') }}
+            </div>
           </div>
 
-          <!-- Models by Provider -->
-          <div v-for="(group, groupIndex) in filteredModelGroups" :key="`group-${group.providerId}`">
-            <div class="text-caption text-weight-medium q-mb-sm q-mt-sm text-grey-7">
-              {{ group.providerName }}
-            </div>
+          <!-- Selected Provider Models -->
+          <div v-else>
             <q-list dense>
               <q-item
-                v-for="model in group.models"
+                v-for="model in currentProviderModels"
                 :key="`model-${model.uniqId}`"
                 clickable
                 v-ripple
                 v-close-popup
                 :active="model.uniqId === currentModelUniqId"
                 active-class="bg-primary-1"
-                @click="selectModel(group.providerId, model.id)"
+                @click="selectModel(selectedProviderId, model.id)"
+                class="model-item"
               >
-                <q-item-section avatar>
-                  <q-avatar size="24px">
-                    <q-icon name="sym_o_neurology" />
+                <q-item-section avatar class="model-icon">
+                  <q-avatar size="18px">
+                    <q-icon name="sym_o_neurology" size="16px" />
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>{{ model.name }}</q-item-label>
+                  <q-item-label class="model-name">{{ model.name }}</q-item-label>
+                </q-item-section>
+                <q-item-section side v-if="model.inputTypes">
+                  <div class="row gap-1">
+                    <q-icon
+                      v-if="model.inputTypes.user?.includes('image')"
+                      name="sym_o_visibility"
+                      size="18px"
+                      color="green"
+                    >
+                      <q-tooltip>视觉能力</q-tooltip>
+                    </q-icon>
+                    <q-icon
+                      v-if="model.inputTypes.user?.includes('audio')"
+                      name="sym_o_mic"
+                      size="18px"
+                      color="blue"
+                    >
+                      <q-tooltip>语音能力</q-tooltip>
+                    </q-icon>
+                  </div>
                 </q-item-section>
               </q-item>
             </q-list>
-            <q-separator v-if="groupIndex < filteredModelGroups.length - 1" class="q-my-sm" />
-          </div>
 
-          <!-- Empty State -->
-          <div v-if="filteredModelGroups.length === 0" class="text-center q-pa-md text-grey-6">
-            {{ $t('selectModel.noResults') }}
+            <!-- Empty State for Provider -->
+            <div v-if="currentProviderModels.length === 0" class="text-center q-pa-md text-grey-6">
+              该供应商暂无可用模型
+            </div>
           </div>
         </q-card-section>
       </q-card>
@@ -121,11 +184,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useProvidersV2Store } from 'src/stores/providers-v2'
-import type { Model } from 'src/utils/types'
+import AAvatar from './AAvatar.vue'
+import type { Model, ProviderV2 } from 'src/utils/types'
 
 interface Props {
   providerId?: string
@@ -143,6 +207,23 @@ const $q = useQuasar()
 const providersStore = useProvidersV2Store()
 
 const searchText = ref('')
+const selectedProviderId = ref('')
+const providerTabsContainer = ref<HTMLElement | null>(null)
+
+// Handle mouse wheel for provider tabs - switch between providers
+function handleProviderWheel(event: WheelEvent) {
+  // Switch to next/previous provider based on scroll direction
+  const currentIndex = providersWithModels.value.findIndex(p => p.id === selectedProviderId.value)
+  if (currentIndex === -1) return
+
+  const direction = event.deltaY > 0 ? 1 : -1 // 向下滚动为 1，向上为 -1
+  const newIndex = currentIndex + direction
+
+  // Check bounds
+  if (newIndex >= 0 && newIndex < providersWithModels.value.length) {
+    selectedProviderId.value = providersWithModels.value[newIndex].id
+  }
+}
 
 // Current model display name
 const modelDisplayName = computed(() => {
@@ -165,12 +246,83 @@ const currentModelUniqId = computed(() => {
   return `${props.providerId}:${props.modelId}`
 })
 
-// Pinned models (can be implemented later)
-const pinnedModels = computed(() => {
-  return []
+// Enabled providers list
+const enabledProviders = computed(() => {
+  return providersStore.enabledProviders || []
 })
 
-// Group models by provider
+// Providers with models (filter out empty providers)
+const providersWithModels = computed(() => {
+  return enabledProviders.value.filter(provider => {
+    const models = providersStore.getModelsByProvider(provider.id)
+    return models && models.length > 0
+  })
+})
+
+// Initialize selected provider from props or first enabled provider with models
+watch(() => props.providerId, (newVal) => {
+  if (newVal) {
+    selectedProviderId.value = newVal
+  }
+}, { immediate: true })
+
+// Ensure selected provider has models, otherwise switch to first one
+watch(() => providersWithModels.value, (providers) => {
+  if (!providers || providers.length === 0) {
+    selectedProviderId.value = ''
+    return
+  }
+
+  // If no provider selected, or current provider doesn't have models, select first one
+  const currentHasModels = providers.some(p => p.id === selectedProviderId.value)
+  if (!selectedProviderId.value || !currentHasModels) {
+    selectedProviderId.value = providers[0].id
+  }
+}, { immediate: true })
+
+// Current provider models
+const currentProviderModels = computed(() => {
+  if (!selectedProviderId.value) return []
+
+  const models = providersStore.getModelsByProvider(selectedProviderId.value)
+  return models.map(m => ({
+    ...m,
+    uniqId: `${selectedProviderId.value}:${m.id}`
+  }))
+})
+
+// Get provider avatar
+function getProviderAvatar(provider: ProviderV2): any {
+  if (!provider.isSystem && provider.avatar) {
+    return provider.avatar
+  }
+
+  if (!provider.isSystem) {
+    return { type: 'icon', icon: 'sym_o_dashboard_customize' }
+  }
+
+  const avatarMap: Record<string, any> = {
+    openai: { type: 'svg', name: 'openai' },
+    'openai-responses': { type: 'svg', name: 'openai', hue: 88 },
+    anthropic: { type: 'svg', name: 'anthropic' },
+    google: { type: 'svg', name: 'google-c' },
+    azure: { type: 'svg', name: 'microsoft-c' },
+    'openai-compatible': { type: 'svg', name: 'openai', hue: 160 },
+    deepseek: { type: 'svg', name: 'deepseek-c' },
+    xai: { type: 'svg', name: 'grok' },
+    ollama: { type: 'svg', name: 'ollama' },
+    groq: { type: 'svg', name: 'groq' },
+    openrouter: { type: 'svg', name: 'openrouter' },
+    mistral: { type: 'svg', name: 'mistral-c' },
+    cohere: { type: 'svg', name: 'cohere-c' },
+    togetherai: { type: 'svg', name: 'togetherai-c' },
+    burncloud: { type: 'svg', name: 'burncloud-c' }
+  }
+
+  return avatarMap[provider.id] || { type: 'icon', icon: 'sym_o_cloud' }
+}
+
+// Group models by provider (for search results)
 interface ModelGroup {
   providerId: string
   providerName: string
@@ -178,59 +330,47 @@ interface ModelGroup {
 }
 
 const filteredModelGroups = computed<ModelGroup[]>(() => {
-  try {
-    const groups: ModelGroup[] = []
-    const search = searchText.value.toLowerCase().trim()
+  const groups: ModelGroup[] = []
+  const search = searchText.value.toLowerCase().trim()
 
-    const providers = providersStore.enabledProviders
-    console.log('[SelectModelButton] enabledProviders:', providers)
-    if (!providers || !Array.isArray(providers)) {
-      console.log('[SelectModelButton] No providers or not array')
-      return []
+  if (!search) return []
+
+  const providers = providersStore.enabledProviders
+  if (!providers || !Array.isArray(providers)) return []
+
+  for (const provider of providers) {
+    if (!provider || !provider.id) continue
+
+    const models = providersStore.getModelsByProvider(provider.id)
+    if (!models || !Array.isArray(models)) continue
+
+    const filteredModels = models
+      .filter(m => {
+        if (!m) return false
+        const name = m.name?.toLowerCase() || ''
+        const id = m.id?.toLowerCase() || ''
+        return name.includes(search) || id.includes(search)
+      })
+      .map(m => ({
+        ...m,
+        uniqId: `${provider.id}:${m.id}`
+      }))
+
+    if (filteredModels.length > 0) {
+      groups.push({
+        providerId: provider.id,
+        providerName: provider.name || provider.id,
+        models: filteredModels
+      })
     }
-
-    for (const provider of providers) {
-      if (!provider || !provider.id) continue
-
-      const models = providersStore.getModelsByProvider(provider.id)
-      console.log(`[SelectModelButton] Models for provider ${provider.id} (${provider.name}):`, models)
-      console.log(`[SelectModelButton] Provider object:`, provider)
-      if (!models || !Array.isArray(models)) continue
-
-      const filteredModels = models
-        .filter(m => {
-          if (!m) return false
-          if (!search) return true
-          const name = m.name?.toLowerCase() || ''
-          const id = m.id?.toLowerCase() || ''
-          return name.includes(search) || id.includes(search)
-        })
-        .map(m => ({
-          ...m,
-          uniqId: `${provider.id}:${m.id}`
-        }))
-
-      if (filteredModels.length > 0) {
-        groups.push({
-          providerId: provider.id,
-          providerName: provider.name || provider.id,
-          models: filteredModels
-        })
-      }
-    }
-
-    console.log('[SelectModelButton] Final groups:', groups)
-    return groups
-  } catch (error) {
-    console.error('[SelectModelButton] Error filtering models:', error)
-    return []
   }
+
+  return groups
 })
 
 function selectModel(providerId: string, modelId: string) {
   emit('update:providerId', providerId)
   emit('update:modelId', modelId)
-  // Menu will auto-close with v-close-popup directive
 }
 </script>
 
@@ -252,4 +392,116 @@ function selectModel(providerId: string, modelId: string) {
 .bg-primary-1 {
   background-color: rgba(var(--q-primary-rgb), 0.1);
 }
+
+/* Smaller search input */
+.search-input-small :deep(.q-field__control) {
+  min-height: 36px;
+  font-size: 13px;
+}
+
+.search-input-small :deep(.q-field__prepend) {
+  padding-right: 6px;
+}
+
+/* Provider tabs container - fixed height with independent scroll */
+.provider-tabs-container {
+  max-height: 80px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  /* 确保显示滚动条 */
+}
+
+.provider-tabs-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.provider-tabs-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.provider-tabs-container::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.4);
+  border-radius: 4px;
+}
+
+.provider-tabs-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 128, 128, 0.6);
+}
+
+/* Larger provider tabs - 不换行，强制单行 */
+.provider-tabs {
+  width: auto !important;
+  display: inline-flex;
+  flex-wrap: nowrap !important;
+  white-space: nowrap;
+}
+
+.provider-tabs :deep(.q-tab) {
+  min-height: 50px;
+  height: 50px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0 24px !important;
+  margin-right: 8px;
+}
+
+.provider-tabs :deep(.q-tab__label) {
+  font-size: 14px;
+}
+
+.provider-tab-custom {
+  /* padding 在上面统一设置了 */
+}
+
+.provider-tab-custom .q-avatar {
+  flex-shrink: 0;
+}
+
+.provider-tab-custom span {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Model list container - fixed height with independent scroll */
+.model-list-container {
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+
+.model-list-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.model-list-container::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.3);
+  border-radius: 3px;
+}
+
+.model-list-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 128, 128, 0.5);
+}
+
+/* Fixed dropdown width and slightly smaller model font */
+.model-menu {
+  /* width is set inline to keep it fixed; this class is for future overrides */
+}
+.model-item :deep(.q-item__section--main) {
+  min-width: 0;
+}
+.model-name {
+  font-size: 13px;
+}
+
+/* Compact icon column for model rows */
+.model-item :deep(.q-item__section--avatar) {
+  width: 26px;
+  min-width: 26px;
+  padding-right: 4px;
+}
 </style>
+
+
