@@ -55,7 +55,14 @@ interface CustomProviderV2 {
   type: string
   apiKey?: string
   apiHost?: string
-  models?: string[] // Array of model IDs (NOT full Model objects - differs from Cherry Studio)
+  /**
+   * Models can be stored in two formats for backward compatibility:
+   * - Legacy: string[] (model IDs only) - from v8 migration
+   * - V9: Model[] (full objects) - aligned with Cherry Studio
+   *
+   * Both formats are supported. Services will normalize on read.
+   */
+  models?: string[] | Model[]
   isSystem: false
   enabled: boolean
   settings: Record<string, any>

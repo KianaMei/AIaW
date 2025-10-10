@@ -1,4 +1,4 @@
-import { ProviderV2, SystemProvider, CustomProviderV2 } from 'src/utils/types'
+import { ProviderV2, SystemProvider, CustomProviderV2, Model } from 'src/utils/types'
 import { SYSTEM_PROVIDERS, getSystemProviderById, getAllSystemProviders, OfficialBaseURLs } from 'src/config/providers'
 import { db } from 'src/utils/db'
 import { fetch } from 'src/utils/platform-api'
@@ -132,6 +132,57 @@ export class ProviderService {
    */
   static async deleteCustomProvider(id: string): Promise<void> {
     await db.providers.delete(id)
+  }
+
+  /**
+   * Add model to provider (Cherry Studio alignment)
+   * @param providerId Provider ID
+   * @param model Model to add
+   */
+  static async addModelToProvider(providerId: string, model: Model): Promise<void> {
+    const provider = await db.providers.get(providerId)
+    if (!provider) {
+      throw new Error(`Provider ${providerId} not found`)
+    }
+
+    // Normalize models to Model[] format (v9+)
+    let models: Model[] = []
+    if (Array.isArray(provider.models)) {
+      // Handle both string[] and Model[] formats
+      models = provider.models.map(m =>
+        typeof m === 'string'
+          ? { id: m, provider: providerId, name: m, inputTypes: { user: ['text'], assistant: ['text'], tool: ['text'] } }
+          : m
+      )
+    }
+
+    // Add new model (avoid duplicates)
+    const exists = models.some(m => m.id === model.id)
+    if (!exists) {
+      models.push({ ...model, provider: providerId })
+    }
+
+    // Update provider with Model[] format
+    await db.providers.update(providerId, {
+      models,
+      enabled: true  // Auto-enable when adding model
+    })
+  }
+
+  /**
+   * Remove model from provider
+   * @param providerId Provider ID
+   * @param modelId Model ID
+   */
+  static async removeModelFromProvider(providerId: string, modelId: string): Promise<void> {
+    const provider = await db.providers.get(providerId)
+    if (!provider || !Array.isArray(provider.models)) return
+
+    const models = provider.models.filter(m =>
+      typeof m === 'string' ? m !== modelId : m.id !== modelId
+    )
+
+    await db.providers.update(providerId, { models })
   }
 
   /**
@@ -276,6 +327,7 @@ export class ProviderService {
     switch (type) {
       case 'openai':
       case 'openai-compatible':
+      case 'openai-response':
       case 'openrouter':
       case 'groq':
       case 'cohere':

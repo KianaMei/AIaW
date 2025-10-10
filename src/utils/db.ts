@@ -213,8 +213,55 @@ db.version(8).stores(schema).upgrade(async tx => {
   }
 })
 
+// Additional proactive normalization for users who skipped v8 upgrade somehow
+async function normalizeProvidersOnce() {
+  const flagKey = 'providersV2Normalized'
+  try {
+    if (localStorage.getItem(flagKey) === '1') return
+  } catch {}
+
+  try {
+    const all = await db.table('providers').toArray()
+    const needs = all.filter((p: any) => p && (('subproviders' in p) || ('provider' in p) || (Array.isArray(p?.models) && p.models.some((m: any) => typeof m !== 'string'))))
+    for (const p of needs) {
+      const normalized: any = {
+        id: p.id,
+        name: p.name || 'Custom Provider',
+        type: p.type || p?.provider?.type || 'openai-compatible',
+        apiHost: p.apiHost || p?.provider?.settings?.apiHost || '',
+        apiKey: p.apiKey || p?.provider?.settings?.apiKey || '',
+        models: Array.isArray(p.models) ? p.models.map((m: any) => (typeof m === 'string' ? m : m?.id)).filter(Boolean) : [],
+        isSystem: false as const,
+        enabled: p.enabled !== false,
+        settings: p.settings || {},
+        avatar: p.avatar || { type: 'icon', icon: 'sym_o_dashboard_customize', hue: Math.floor(Math.random() * 360) }
+      }
+      await db.table('providers').put(normalized)
+    }
+    try { localStorage.setItem(flagKey, '1') } catch {}
+  } catch (e) {
+    console.warn('[db.providers.normalize] Failed to normalize legacy providers', e)
+  }
+}
+
+// Run normalization after DB is ready
+;(async () => {
+  try { await db.open() } catch {}
+  await normalizeProvidersOnce()
+})()
+
 // Runtime guard: normalize provider records to V2 shape when reading from DB
 // 常规情况下应由 v8 迁移扁平化完毕；此处仅作为安全兜底，避免远端同步等异常写入旧结构导致 UI 崩溃
+let warnedLegacyOnce = false
+// Reduce noise: only show a single, low-severity log in dev; debug otherwise
+const __dev__ = (() => {
+  try {
+    // Vite / Quasar dev flag
+    // @ts-ignore
+    return typeof import.meta !== 'undefined' && !!(import.meta as any).env?.DEV
+  } catch { return false }
+})()
+
 db.providers.hook('reading', (provider: any) => {
   if (!provider || typeof provider !== 'object') return provider
 
@@ -240,10 +287,14 @@ db.providers.hook('reading', (provider: any) => {
   }
 
   // Legacy structure detected – best-effort normalization (non-destructive)
-  console.warn('[db.providers.reading] Legacy provider shape detected, applying best-effort normalization. v8 migration should have handled this earlier.', {
-    id: provider?.id,
-    name: provider?.name
-  })
+  if (!warnedLegacyOnce) {
+    warnedLegacyOnce = true
+    const log = __dev__ ? console.info : console.debug
+    log('[db.providers.normalize] Legacy provider shape detected, applying runtime normalization', {
+      id: provider?.id,
+      name: provider?.name
+    })
+  }
 
   const normalized = ensureDefaults({
     id: provider?.id,

@@ -9,13 +9,25 @@ import { watchEffect } from 'vue'
 interface Perfs {
   darkMode: boolean | 'auto'
   themeHue: number
-  provider: Provider // Legacy field (for backward compatibility)
-  model: Model // Legacy field (for backward compatibility)
-  systemProvider: Provider // Legacy field
-  systemModel: Model // Legacy field
-  // Cherry Studio Architecture fields
-  providerId?: string // New: Provider ID
-  modelId?: string // New: Model unique ID (format: "provider:modelId")
+  /**
+   * @deprecated Legacy field, use providerId instead. Only kept for SetProvider.vue compatibility.
+   */
+  provider: Provider
+  /**
+   * @deprecated Legacy field, use modelId instead. Only kept for migration.
+   */
+  model: Model
+  /**
+   * @deprecated Legacy field, use systemProviderId instead. Only kept for migration.
+   */
+  systemProvider: Provider
+  /**
+   * @deprecated Legacy field, use systemModelId instead. Only kept for migration.
+   */
+  systemModel: Model
+  // Cherry Studio Architecture V2 fields
+  providerId?: string // Provider ID
+  modelId?: string // Model ID (just the ID, not "provider:modelId")
   systemProviderId?: string
   systemModelId?: string
   userAvatar: Avatar
@@ -123,7 +135,11 @@ export const useUserPerfsStore = defineStore('user-perfs', () => {
   }
   const [perfs, ready] = persistentReactive('#user-perfs', { ...defaultPerfs })
 
-  // Migration: Initialize new Cherry Studio fields if missing
+  // ============================================================
+  // Migration: Legacy → V2 (One-time upgrade for existing users)
+  // ============================================================
+  // Convert old provider/model objects to new providerId/modelId strings
+  // This runs once on app startup if new fields are missing
   if (!perfs.providerId && perfs.provider) {
     perfs.providerId = (perfs.provider as any)?.type || 'openai'
   }
