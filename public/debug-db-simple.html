@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head><title>DB Debug Simple</title></head>
+<body>
+<h3>IndexedDB Debug - Simple Query</h3>
+<pre id="output">Loading...</pre>
+<script type="module">
+const output = document.getElementById('output');
+let log = '';
+
+try {
+  // Import Dexie from CDN
+  const { Dexie } = await import('https://unpkg.com/dexie@3/dist/dexie.mjs');
+
+  log += '✓ Dexie loaded\n\n';
+
+  // Open the database
+  const db = new Dexie('aiaw');
+  db.version(1).stores({
+    providers: 'id'
+  });
+
+  log += '✓ Database opened\n\n';
+
+  // Get ALL providers
+  const allProviders = await db.providers.toArray();
+  log += `Total providers in DB: ${allProviders.length}\n\n`;
+
+  // Show each provider
+  allProviders.forEach((p, i) => {
+    log += `--- Provider ${i + 1} ---\n`;
+    log += `Raw object: ${JSON.stringify(p, null, 2)}\n\n`;
+  });
+
+  // Find yunai specifically
+  const yunai = allProviders.find(p => p && (p.id === 'yunai' || p.name === 'yunai' || JSON.stringify(p).includes('yunai')));
+
+  if (yunai) {
+    log += `\n=== Found YUNAI Provider ===\n`;
+    log += JSON.stringify(yunai, null, 2);
+  } else {
+    log += `\n❌ No yunai provider found in DB\n`;
+  }
+
+} catch (e) {
+  log += `\n❌ ERROR: ${e.message}\n${e.stack}`;
+}
+
+output.textContent = log;
+</script>
+</body>
+</html>
