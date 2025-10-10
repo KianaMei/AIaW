@@ -6,7 +6,7 @@
     <div v-if="dialog">
       <assistant-item
         clickable
-        :assistant
+        :assistant="assistant"
         text-base
         item-rd
         py-1
@@ -64,7 +64,7 @@
             :model-value="dialog.msgRoute[index - 1] + 1"
             :message="messageMap[i]"
             :child-num="dialog.msgTree[chain[index - 1]].length"
-            :scroll-container
+            :scroll-container="scrollContainer"
             @update:model-value="switchChain(index - 1, $event - 1)"
             @edit="edit(index)"
             @regenerate="regenerate(index)"
@@ -1106,7 +1106,10 @@ watch(lockingBottom, val => {
 const activePlugins = computed<Plugin[]>(() => pluginsStore.plugins.filter(p => p.available && assistant.value.plugins[p.id]?.enabled))
 const usage = computed(() => messageMap.value[chain.value.at(-2)]?.usage)
 
-const systemSdkModel = computed(() => getSdkModel(perfs.systemProvider, perfs.systemModel))
+const { getSdkModelBy: getSystemSdkModelBy } = useGetModelV2()
+const systemSdkModel = computedAsync(async () => {
+  return await getSystemSdkModelBy(perfs.systemProviderId, perfs.systemModelId)
+}, null)
 function getDialogContents() {
   return chain.value.slice(1, -1).map(id => messageMap.value[id].contents).flat()
 }

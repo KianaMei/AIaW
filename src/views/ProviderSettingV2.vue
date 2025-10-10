@@ -137,30 +137,42 @@
           </q-item-section>
         </q-item>
 
-        <!-- Validate Provider -->
-        <q-item v-if="!isSystemProvider">
+        <!-- Provider Actions -->
+        <q-item
+          v-if="!isSystemProvider"
+          class="provider-actions"
+        >
           <q-item-section>
-            <q-btn
-              :label="$t('providerSetting.validate')"
-              icon="sym_o_verified"
-              flat
-              color="primary"
-              @click="validateProvider"
-              :loading="validating"
-            />
+            <div class="validation-group">
+              <q-btn
+                class="action-btn"
+                :label="$t('providerSetting.validate')"
+                icon="sym_o_verified"
+                color="primary"
+                unelevated
+                @click="validateProvider"
+                :loading="validating"
+              />
+              <q-badge
+                v-if="validationResult"
+                :color="validationResult.valid ? 'positive' : 'negative'"
+                :label="validationResult.valid ? $t('providerSetting.valid') : $t('providerSetting.invalid')"
+              >
+                <q-tooltip v-if="!validationResult.valid">
+                  {{ validationResult.error }}
+                </q-tooltip>
+              </q-badge>
+            </div>
           </q-item-section>
-          <q-item-section
-            side
-            v-if="validationResult"
-          >
-            <q-badge
-              :color="validationResult.valid ? 'positive' : 'negative'"
-              :label="validationResult.valid ? $t('providerSetting.valid') : $t('providerSetting.invalid')"
-            >
-              <q-tooltip v-if="!validationResult.valid">
-                {{ validationResult.error }}
-              </q-tooltip>
-            </q-badge>
+          <q-item-section side>
+            <q-btn
+              class="action-btn"
+              :label="$t('providerSetting.delete')"
+              icon="sym_o_delete"
+              color="negative"
+              unelevated
+              @click="deleteProvider"
+            />
           </q-item-section>
         </q-item>
 
@@ -187,24 +199,11 @@
             <q-item-label caption>
               {{ $t('providerSetting.modelsCaption') }}
             </q-item-label>
-            <models-input
+            <models-list-input
               v-model="localProvider.models"
+              :provider-id="props.id"
+              @update:model-value="debouncedUpdate"
               class="mt-2"
-            />
-          </q-item-section>
-        </q-item>
-
-        <q-separator spaced />
-
-        <!-- Delete Provider (Custom only) -->
-        <q-item v-if="!isSystemProvider">
-          <q-item-section>
-            <q-btn
-              :label="$t('providerSetting.delete')"
-              icon="sym_o_delete"
-              flat
-              color="negative"
-              @click="deleteProvider"
             />
           </q-item-section>
         </q-item>
@@ -216,7 +215,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, toRaw } from 'vue'
 import { useProvidersV2Store } from 'src/stores/providers-v2'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
@@ -225,8 +224,8 @@ import { ProviderV2, CustomProviderV2 } from 'src/utils/types'
 import { ProviderService } from 'src/services/ProviderService'
 import ViewCommonHeader from 'src/components/ViewCommonHeader.vue'
 import AAvatar from 'src/components/AAvatar.vue'
-import AInput from 'src/components/AInput.vue'
-import ModelsInput from 'src/components/ModelsInput.vue'
+import AInput from 'src/components/global/AInput.js'
+import ModelsListInput from 'src/components/ModelsListInput.vue'
 import PickAvatarDialog from 'src/components/PickAvatarDialog.vue'
 import ErrorNotFound from 'src/pages/ErrorNotFound.vue'
 import { pageFhStyle } from 'src/utils/functions'
@@ -307,16 +306,21 @@ const debouncedUpdate = useDebounceFn(async () => {
   if (!provider.value || isSystemProvider.value) return
 
   try {
-    await providersStore.updateCustomProvider(props.id, {
+    // Strip Vue proxies before persisting to IndexedDB to avoid DataCloneError
+    const updates: Partial<CustomProviderV2> = {
       name: localProvider.value.name,
       type: localProvider.value.type,
-      apiHost: localProvider.value.apiHost,
-      apiKey: localProvider.value.apiKey,
-      enabled: localProvider.value.enabled,
-      models: localProvider.value.models,
-      settings: localProvider.value.settings,
-      avatar: localProvider.value.avatar
-    } as Partial<CustomProviderV2>)
+      apiHost: (localProvider.value.apiHost || '').trim(),
+      apiKey: (localProvider.value.apiKey || '').trim(),
+      enabled: !!localProvider.value.enabled,
+      // models may be string[] or Model[] in UI; persist the raw value
+      models: toRaw(localProvider.value.models) as any,
+      // deep-clone settings/avatar to remove any reactive refs
+      settings: JSON.parse(JSON.stringify(toRaw(localProvider.value.settings || {}))) as any,
+      avatar: JSON.parse(JSON.stringify(toRaw(localProvider.value.avatar || {}))) as any
+    }
+
+    await providersStore.updateCustomProvider(props.id, updates)
 
     $q.notify({
       message: t('providerSetting.updateSuccess'),
@@ -335,11 +339,17 @@ const debouncedUpdate = useDebounceFn(async () => {
 // Fetch models from provider
 const fetchingModels = ref(false)
 async function fetchModels() {
-  if (!provider.value) return
+  console.log('[fetchModels] Started')
+  if (!provider.value) {
+    console.log('[fetchModels] No provider, returning')
+    return
+  }
 
   fetchingModels.value = true
+  console.log('[fetchModels] Fetching for provider:', props.id)
   try {
     const result = await providersStore.fetchProviderModels(props.id)
+    console.log('[fetchModels] Result:', result)
     // models is already string[], no need to map
     localProvider.value.models = result.models
     await debouncedUpdate()
@@ -460,3 +470,20 @@ function deleteProvider() {
   })
 }
 </script>
+
+<style scoped>
+.provider-actions .action-btn {
+  min-width: 140px;
+}
+
+.provider-actions .validation-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.provider-actions .q-item__section--side {
+  display: flex;
+  align-items: center;
+}
+</style>

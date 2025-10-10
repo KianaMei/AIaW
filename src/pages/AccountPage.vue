@@ -123,7 +123,7 @@
                 {{ $t('accountPage.statusLabel') }}
               </q-item-label>
               <q-item-label caption>
-                {{ !perfs.provider && user.isLoggedIn ? $t('accountPage.usingDefaultService') : $t('accountPage.customService') }}
+                {{ !perfs.providerId && user.isLoggedIn ? $t('accountPage.usingDefaultService') : $t('accountPage.customService') }}
               </q-item-label>
             </q-item-section>
           </q-item>

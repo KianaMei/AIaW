@@ -19,16 +19,21 @@
         </q-item-label>
         <q-item>
           <q-item-section>
+            <q-item-label>{{ $t('settingsView.defaultProviderHeader') }}</q-item-label>
+          </q-item-section>
+          <q-item-section side>
             <provider-selector-v2
               v-model="perfs.providerId"
-              :label="$t('settingsView.defaultProviderHeader')"
-              filled
+              :filled="false"
+              outlined
               dense
               only-enabled
+              :clearable="false"
+              class="w-250px"
             />
           </q-item-section>
         </q-item>
-        <q-item v-if="perfs.provider && !perfs.provider.type.startsWith('custom:')">
+        <q-item v-if="currentProvider && currentProvider.isSystem">
           <q-item-section>
             <q-item-label>{{ $t('settingsView.shareLinkLabel') }}</q-item-label>
             <q-item-label caption>
@@ -65,7 +70,7 @@
           caption
           p="x-4 y-2"
           text-on-sur-var
-          v-if="!perfs.provider && user?.isLoggedIn && LitellmBaseURL"
+          v-if="!perfs.providerId && user?.isLoggedIn && LitellmBaseURL"
         >
           {{ $t('settingsView.noProviderConfigured') }}
           <router-link
@@ -85,13 +90,18 @@
         </q-item-label>
         <q-item>
           <q-item-section>
+            <q-item-label>{{ $t('settingsView.defaultModelHeader') }}</q-item-label>
+          </q-item-section>
+          <q-item-section side>
             <model-selector-v2
               v-model="perfs.modelId"
-              :label="$t('settingsView.defaultModelHeader')"
               :filter-provider="perfs.providerId"
-              filled
+              :filled="false"
+              outlined
               dense
               show-group
+              :clearable="false"
+              class="w-250px"
             />
           </q-item-section>
         </q-item>
@@ -103,7 +113,6 @@
             <q-item-label caption>
               {{ $t('settingsView.commonModelsCaption') }}<br>
               <get-model-list
-                :provider="provider"
                 :provider-id="perfs.providerId"
                 v-model="perfs.commonModelOptions"
               /> -
@@ -120,7 +129,7 @@
             <models-input
               class="xs:w-250px md:w-400px"
               v-model="perfs.commonModelOptions"
-              filled
+              outlined
               dense
             />
           </q-item-section>
@@ -134,24 +143,34 @@
         </q-item-label>
         <q-item>
           <q-item-section>
+            <q-item-label>{{ $t('settingsView.systemAssistantHeader') }} - Provider</q-item-label>
+          </q-item-section>
+          <q-item-section side>
             <provider-selector-v2
               v-model="perfs.systemProviderId"
-              :label="$t('settingsView.systemAssistantHeader') + ' - Provider'"
-              filled
+              :filled="false"
+              outlined
               dense
               only-enabled
+              :clearable="false"
+              class="w-250px"
             />
           </q-item-section>
         </q-item>
         <q-item>
           <q-item-section>
+            <q-item-label>{{ $t('settingsView.systemAssistantHeader') }} - Model</q-item-label>
+          </q-item-section>
+          <q-item-section side>
             <model-selector-v2
               v-model="perfs.systemModelId"
-              :label="$t('settingsView.systemAssistantHeader') + ' - Model'"
               :filter-provider="perfs.systemProviderId"
-              filled
+              :filled="false"
+              outlined
               dense
               show-group
+              :clearable="false"
+              class="w-250px"
             />
           </q-item-section>
         </q-item>
@@ -605,8 +624,8 @@ import ModelsInput from 'src/components/ModelsInput.vue'
 import GetModelList from 'src/components/GetModelList.vue'
 import ViewCommonHeader from 'src/components/ViewCommonHeader.vue'
 import ModelDragSortDialog from 'src/components/ModelDragSortDialog.vue'
-import { useGetModel } from 'src/composables/get-model'
 import ExportDataDialog from 'src/components/ExportDataDialog.vue'
+import { useProvidersV2Store } from 'src/stores/providers-v2'
 
 defineEmits(['toggle-drawer'])
 
@@ -640,14 +659,22 @@ function restoreSettings() {
     ...dialogOptions
   }).onOk(() => { restore() })
 }
+
+const providersStore = useProvidersV2Store()
+const currentProvider = computed(() => {
+  return perfs.providerId ? providersStore.getProviderById(perfs.providerId) : null
+})
+
 const providerLink = computed(() => {
-  const provider = encodeURIComponent(JSON.stringify(perfs.provider))
+  if (!currentProvider.value || !currentProvider.value.isSystem) return ''
+  const providerData = {
+    type: currentProvider.value.type,
+    settings: currentProvider.value.settings
+  }
+  const provider = encodeURIComponent(JSON.stringify(providerData))
   return `${PublicOrigin}/set-provider?provider=${provider}`
 })
 const user = DexieDBURL ? useObservable(db.cloud.currentUser) : null
-
-const { getProvider } = useGetModel()
-const provider = computed(() => getProvider())
 
 function importData() {
   $q.dialog({
