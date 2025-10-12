@@ -63,8 +63,9 @@
           class="model-item"
         >
           <q-item-section avatar>
-            <q-avatar size="32px" color="primary" text-color="white">
-              <q-icon name="sym_o_neurology" size="20px" />
+            <q-avatar size="32px">
+              <img v-if="iconForSelected(modelId)" :src="iconForSelected(modelId)" />
+              <q-icon v-else name="sym_o_neurology" size="20px" />
             </q-avatar>
           </q-item-section>
 
@@ -171,8 +172,9 @@
               :disable="selectedModels.includes(model.value)"
             >
               <q-item-section avatar>
-                <q-avatar size="32px" color="primary" text-color="white">
-                  <q-icon name="sym_o_neurology" size="20px" />
+                <q-avatar size="32px">
+                  <img v-if="iconForName(model.label) || iconForName(model.value)" :src="iconForName(model.label) || iconForName(model.value)" />
+                  <q-icon v-else name="sym_o_neurology" size="20px" />
                 </q-avatar>
               </q-item-section>
 
@@ -263,6 +265,23 @@ const availableModels = computed(() => {
     }
   })
 })
+
+// ---- Model icon mapping (by name/prefix) ----
+function iconForName(modelName?: string): string | null {
+  if (!modelName) return null
+  const name = modelName.toLowerCase()
+  if (name.includes('gpt') || name.includes('o1') || name.includes('o3') || name.includes('o4')) return '/icons/providers/openai.svg'
+  if (name.includes('claude')) return '/icons/providers/anthropic.svg'
+  if (name.includes('gemini')) return '/icons/providers/google.svg'
+  if (name.includes('deepseek')) return '/icons/providers/deepseek.svg'
+  if (name.includes('grok')) return '/icons/providers/xai.svg'
+  return null
+}
+
+function iconForSelected(modelId: string): string | null {
+  const obj = availableModels.value.find(m => m.value === modelId)
+  return (obj && iconForName(obj.label)) || iconForName(modelId)
+}
 
 // Filtered available models (for add dialog)
 const filteredAvailableModels = computed(() => {
