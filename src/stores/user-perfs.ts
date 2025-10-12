@@ -31,7 +31,6 @@ interface Perfs {
   systemProviderId?: string
   systemModelId?: string
   userAvatar: Avatar
-  commonModelOptions: string[] // Will contain modelIds in new format
   autoGenTitle: boolean
   sendKey: 'ctrl+enter' | 'shift+enter' | 'meta+enter' | 'enter'
   messageSelectionBtn: boolean
@@ -77,27 +76,15 @@ export const useUserPerfsStore = defineStore('user-perfs', () => {
     systemProvider: null,
     systemModel: models.find(m => m.name === 'gpt-5-nano'),
     // Cherry Studio Architecture defaults
-    providerId: 'openai',
-    modelId: 'gpt-5', // Only model ID, not "provider:modelId"
-    systemProviderId: 'openai',
-    systemModelId: 'gpt-5-nano', // Only model ID, not "provider:modelId"
+    providerId: undefined, // Will be set dynamically based on available providers
+    modelId: undefined, // Will be set dynamically based on available models
+    systemProviderId: undefined, // Will be set dynamically based on available providers
+    systemModelId: undefined, // Will be set dynamically based on available models
     userAvatar: {
       type: 'text',
       text: 'U',
       hue: 300
     },
-    commonModelOptions: [
-      // Only model IDs (provider is selected separately in two-level selector)
-      'gpt-5',
-      'gpt-5-mini',
-      'o4-mini',
-      'claude-sonnet-4-20250514',
-      'claude-opus-4-1-20250805',
-      'gemini-2.5-pro',
-      'gemini-2.5-flash',
-      'deepseek-chat',
-      'deepseek-reasoner'
-    ],
     autoGenTitle: true,
     sendKey: 'ctrl+enter',
     messageSelectionBtn: true,
