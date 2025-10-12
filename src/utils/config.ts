@@ -8,5 +8,9 @@ export const StripeFee = process.env.STRIPE_FEE && parseFloat(process.env.STRIPE
 export const DexieDBURL = process.env.DEXIE_DB_URL
 export const LitellmBaseURL = process.env.LITELLM_BASE_URL
 export const BudgetBaseURL = process.env.BUDGET_BASE_URL
-export const SearxngBaseURL = process.env.SEARXNG_BASE_URL
+// Default to aiaw.app proxy to avoid CORS issues in browser
+// In development, use the dev server proxy at /api/searxng
+// Public instances like searx.be have CORS restrictions
+export const SearxngBaseURL = process.env.SEARXNG_BASE_URL || 
+  (process.env.DEV ? '/api/searxng' : 'https://aiaw.app/searxng')
 export const DisableCheckUpdate = process.env.DISABLE_CHECK_UPDATE === 'true'

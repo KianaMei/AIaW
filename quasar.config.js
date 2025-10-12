@@ -118,7 +118,23 @@ export default configure((ctx) => {
     devServer: {
       // https: true
       open: false, // opens browser window automatically
-      port: ctx.mode.pwa ? 9006 : 9005
+      port: 9006,
+      proxy: {
+        // 代理 SearXNG 请求，解决 CORS 问题
+        '/api/searxng': {
+          target: 'https://searx.work',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/searxng/, '/search'),
+          configure: (proxy, options) => {
+            proxy.on('error', (err, req, res) => {
+              console.log('proxy error', err);
+            });
+            proxy.on('proxyReq', (proxyReq, req, res) => {
+              console.log('Sending Request to:', proxyReq.path);
+            });
+          }
+        }
+      }
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
