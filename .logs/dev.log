@@ -46,3 +46,756 @@ Y88b.Y8b88P Y88b 888 888  888      X88 888  888 888
  [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
  [32mApp 鈥?[39m Scheduled to apply quasar.config changes in 550ms
  [32mApp 鈥?[39m Applying quasar.config file changes...
+
+> aiaw@2.1.2 dev D:\D-code\want-merge\AIaW-master
+> quasar dev
+
+
+ .d88888b.
+d88P" "Y88b
+888     888
+888     888 888  888  8888b.  .d8888b   8888b.  888d888
+888     888 888  888     "88b 88K          "88b 888P"
+888 Y8b 888 888  888 .d888888 "Y8888b. .d888888 888
+Y88b.Y8b88P Y88b 888 888  888      X88 888  888 888
+ "Y888888"   "Y88888 "Y888888  88888P' "Y888888 888
+       Y8b
+
+ [32mApp 鈥?[39m Using quasar.config.js in "esm" format
+ [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
+
+ [32m禄[39m Reported at............ [2m2025/10/11[22m [2m23:52:56[22m
+ [32m禄[39m App dir................ [32mD:\D-code\want-merge\AIaW-master[39m
+ [32m禄[39m App URL................ [32mhttp://198.18.0.1:9005/[39m
+                           [32mhttp://192.168.189.147:9005/[39m
+                           [32mhttp://localhost:9005/[39m
+                           [32mhttp://172.23.16.1:9005/[39m
+                           [32mhttp://172.30.240.1:9005/[39m
+ [32m禄[39m Dev mode............... [32mspa[39m
+ [32m禄[39m Pkg quasar............. [32mv2.18.5[39m
+ [32m禄[39m Pkg @quasar/app-vite... [32mv2.4.0[39m
+ [32m禄[39m Browser target......... [32mes2022|firefox115|chrome115|safari15[39m
+
+
+> aiaw@2.1.2 dev D:\D-code\want-merge\AIaW-master
+> quasar dev
+
+
+ .d88888b.
+d88P" "Y88b
+888     888
+888     888 888  888  8888b.  .d8888b   8888b.  888d888
+888     888 888  888     "88b 88K          "88b 888P"
+888 Y8b 888 888  888 .d888888 "Y8888b. .d888888 888
+Y88b.Y8b88P Y88b 888 888  888      X88 888  888 888
+ "Y888888"   "Y88888 "Y888888  88888P' "Y888888 888
+       Y8b
+
+ [32mApp 鈥?[39m Using quasar.config.js in "esm" format
+ [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
+
+ [32m禄[39m Reported at............ [2m2025/10/12[22m [2m00:00:55[22m
+ [32m禄[39m App dir................ [32mD:\D-code\want-merge\AIaW-master[39m
+ [32m禄[39m App URL................ [32mhttp://198.18.0.1:9006/[39m
+                           [32mhttp://192.168.189.147:9006/[39m
+                           [32mhttp://localhost:9006/[39m
+                           [32mhttp://172.23.16.1:9006/[39m
+                           [32mhttp://172.30.240.1:9006/[39m
+ [32m禄[39m Dev mode............... [32mspa[39m
+ [32m禄[39m Pkg quasar............. [32mv2.18.5[39m
+ [32m禄[39m Pkg @quasar/app-vite... [32mv2.4.0[39m
+ [32m禄[39m Browser target......... [32mes2022|firefox115|chrome115|safari15[39m
+
+
+> aiaw@2.1.2 dev D:\D-code\want-merge\AIaW-master
+> quasar dev
+
+
+ .d88888b.
+d88P" "Y88b
+888     888
+888     888 888  888  8888b.  .d8888b   8888b.  888d888
+888     888 888  888     "88b 88K          "88b 888P"
+888 Y8b 888 888  888 .d888888 "Y8888b. .d888888 888
+Y88b.Y8b88P Y88b 888 888  888      X88 888  888 888
+ "Y888888"   "Y88888 "Y888888  88888P' "Y888888 888
+       Y8b
+
+ [32mApp 鈥?[39m Using quasar.config.js in "esm" format
+ [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
+
+ App 鈥?[39m 鈿狅笍  锔忥笍Setting port to closest one available: 9007
+
+
+ [32m禄[39m Reported at............ [2m2025/10/12[22m [2m00:02:31[22m
+ [32m禄[39m App dir................ [32mD:\D-code\want-merge\AIaW-master[39m
+ [32m禄[39m App URL................ [32mhttp://198.18.0.1:9007/[39m
+                           [32mhttp://192.168.189.147:9007/[39m
+                           [32mhttp://localhost:9007/[39m
+                           [32mhttp://172.23.16.1:9007/[39m
+                           [32mhttp://172.30.240.1:9007/[39m
+ [32m禄[39m Dev mode............... [32mspa[39m
+ [32m禄[39m Pkg quasar............. [32mv2.18.5[39m
+ [32m禄[39m Pkg @quasar/app-vite... [32mv2.4.0[39m
+ [32m禄[39m Browser target......... [32mes2022|firefox115|chrome115|safari15[39m
+
+
+> aiaw@2.1.2 dev D:\D-code\want-merge\AIaW-master
+> quasar dev
+
+
+ .d88888b.
+d88P" "Y88b
+888     888
+888     888 888  888  8888b.  .d8888b   8888b.  888d888
+888     888 888  888     "88b 88K          "88b 888P"
+888 Y8b 888 888  888 .d888888 "Y8888b. .d888888 888
+Y88b.Y8b88P Y88b 888 888  888      X88 888  888 888
+ "Y888888"   "Y88888 "Y888888  88888P' "Y888888 888
+       Y8b
+
+ [32mApp 鈥?[39m Using quasar.config.js in "esm" format
+ [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
+
+ [32mApp 鈥?[39m The quasar.config file (or its dependencies) changed. Reading it again...
+
+ [32m禄[39m Reported at............ [2m2025/10/12[22m [2m00:14:37[22m
+ [32m禄[39m App dir................ [32mD:\D-code\want-merge\AIaW-master[39m
+ [32m禄[39m App URL................ [32mhttp://198.18.0.1:9006/[39m
+                           [32mhttp://192.168.189.147:9006/[39m
+                           [32mhttp://localhost:9006/[39m
+                           [32mhttp://172.23.16.1:9006/[39m
+                           [32mhttp://172.30.240.1:9006/[39m
+ [32m禄[39m Dev mode............... [32mspa[39m
+ [32m禄[39m Pkg quasar............. [32mv2.18.5[39m
+ [32m禄[39m Pkg @quasar/app-vite... [32mv2.4.0[39m
+ [32m禄[39m Browser target......... [32mes2022|firefox115|chrome115|safari15[39m
+
+19:34:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/composables/get-model-v2.ts:154:10: ERROR: The symbol "provider" has already been declared
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/composables/get-model-v2.ts:154:10
+  
+  The symbol "provider" has already been declared
+  152 |        return null
+  153 |      }
+  154 |      const provider = getProvider(model.provider)
+      |            ^
+  155 |      if (!provider) {
+  156 |        console.warn('No provider found for model:', model)
+  
+19:34:50 [vite] Internal server error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/composables/get-model-v2.ts:154:10: ERROR: The symbol "provider" has already been declared
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/composables/get-model-v2.ts:154:10
+  
+  The symbol "provider" has already been declared
+  152 |        return null
+  153 |      }
+  154 |      const provider = getProvider(model.provider)
+      |            ^
+  155 |      if (!provider) {
+  156 |        console.warn('No provider found for model:', model)
+  
+      at failureErrorWithLog (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:1477:15)
+      at D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:756:50
+      at responseCallbacks.<computed> (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:623:9)
+      at handleIncomingPacket (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:678:12)
+      at Socket.readFromStdout (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:601:7)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+19:34:51 [vite] Internal server error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/composables/get-model-v2.ts:154:10: ERROR: The symbol "provider" has already been declared
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/composables/get-model-v2.ts:154:10
+  
+  The symbol "provider" has already been declared
+  152 |        return null
+  153 |      }
+  154 |      const provider = getProvider(model.provider)
+      |            ^
+  155 |      if (!provider) {
+  156 |        console.warn('No provider found for model:', model)
+  
+      at failureErrorWithLog (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:1477:15)
+      at D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:756:50
+      at responseCallbacks.<computed> (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:623:9)
+      at handleIncomingPacket (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:678:12)
+      at Socket.readFromStdout (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:601:7)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+21:22:50 [vite] Internal server error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+      at failureErrorWithLog (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:1477:15)
+      at D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:756:50
+      at responseCallbacks.<computed> (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:623:9)
+      at handleIncomingPacket (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:678:12)
+      at Socket.readFromStdout (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:601:7)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+21:22:51 [vite] Internal server error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0: ERROR: Expected identifier but found "<<"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/stores/user-perfs.ts:88:0
+  
+  Expected identifier but found "<<"
+  86 |        hue: 300
+  87 |      },
+  88 |  <<<<<<< HEAD
+     |  ^
+  89 |  =======
+  90 |      commonModelOptions: [
+  
+      at failureErrorWithLog (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:1477:15)
+      at D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:756:50
+      at responseCallbacks.<computed> (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:623:9)
+      at handleIncomingPacket (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:678:12)
+      at Socket.readFromStdout (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.2\node_modules\esbuild\lib\main.js:601:7)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+21:40:18 [vite] (client) Pre-transform error: Failed to resolve import "src/utils/prompts" from "src/utils/dialog-utils.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/utils/dialog-utils.ts:3:31
+  1  |  import { generateText } from "ai";
+  2  |  import { db } from "src/utils/db";
+  3  |  import { GenDialogTitle } from "src/utils/prompts";
+     |                                  ^
+  4  |  import * as engine from "src/utils/template-engine";
+  5  |  import { useQuasar } from "quasar";
+21:40:18 [vite] Internal server error: Failed to resolve import "src/utils/prompts" from "src/utils/dialog-utils.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/utils/dialog-utils.ts:3:31
+  1  |  import { generateText } from "ai";
+  2  |  import { db } from "src/utils/db";
+  3  |  import { GenDialogTitle } from "src/utils/prompts";
+     |                                  ^
+  4  |  import * as engine from "src/utils/template-engine";
+  5  |  import { useQuasar } from "quasar";
+      at TransformPluginContext._formatLog (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31219:43)
+      at TransformPluginContext.error (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31216:14)
+      at normalizeUrl (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29699:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29757:32
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29725:4)
+      at async EnvironmentPluginContainer.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31018:14)
+      at async loadAndTransform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:26143:26)
+      at async viteTransformMiddleware (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:27221:20)
+21:40:42 [vite] (client) Pre-transform error: Failed to resolve import "src/utils/prompts" from "src/utils/dialog-utils.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/utils/dialog-utils.ts:3:46
+  1  |  import { generateText } from "ai";
+  2  |  import { db } from "src/utils/db";
+  3  |  import { GenDialogTitle } from "src/utils/prompts";
+     |                                  ^
+  4  |  import * as engine from "src/utils/template-engine";
+  5  |  export async function generateDialogTitle(dialogId) {
+21:40:42 [vite] Internal server error: Failed to resolve import "src/utils/prompts" from "src/utils/dialog-utils.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/utils/dialog-utils.ts:3:46
+  1  |  import { generateText } from "ai";
+  2  |  import { db } from "src/utils/db";
+  3  |  import { GenDialogTitle } from "src/utils/prompts";
+     |                                  ^
+  4  |  import * as engine from "src/utils/template-engine";
+  5  |  export async function generateDialogTitle(dialogId) {
+      at TransformPluginContext._formatLog (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31219:43)
+      at TransformPluginContext.error (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31216:14)
+      at normalizeUrl (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29699:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29757:32
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29725:4)
+      at async EnvironmentPluginContainer.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31018:14)
+      at async loadAndTransform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:26143:26)
+      at async viteTransformMiddleware (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:27221:20)
+21:40:56 [vite] Internal server error: Failed to resolve import "src/utils/prompts" from "src/utils/dialog-utils.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/utils/dialog-utils.ts:3:46
+  1  |  import { generateText } from "ai";
+  2  |  import { db } from "src/utils/db";
+  3  |  import { GenDialogTitle } from "src/utils/prompts";
+     |                                  ^
+  4  |  import * as engine from "src/utils/template-engine";
+  5  |  export async function generateDialogTitle(dialogId, options) {
+      at TransformPluginContext._formatLog (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31219:43)
+      at TransformPluginContext.error (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31216:14)
+      at normalizeUrl (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29699:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29757:32
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29725:4)
+      at async EnvironmentPluginContainer.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31018:14)
+      at async loadAndTransform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:26143:26)
+21:40:56 [vite] (client) Pre-transform error: Failed to resolve import "src/utils/prompts" from "src/utils/dialog-utils.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/utils/dialog-utils.ts:3:46
+  1  |  import { generateText } from "ai";
+  2  |  import { db } from "src/utils/db";
+  3  |  import { GenDialogTitle } from "src/utils/prompts";
+     |                                  ^
+  4  |  import * as engine from "src/utils/template-engine";
+  5  |  export async function generateDialogTitle(dialogId, options) {
+21:41:08 [vite] (client) Pre-transform error: Failed to resolve import "src/utils/prompts" from "src/utils/dialog-utils.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/utils/dialog-utils.ts:3:46
+  1  |  import { generateText } from "ai";
+  2  |  import { db } from "src/utils/db";
+  3  |  import { GenDialogTitle } from "src/utils/prompts";
+     |                                  ^
+  4  |  import * as engine from "src/utils/template-engine";
+  5  |  export async function generateDialogTitle(dialogId, options) {
+21:41:08 [vite] Internal server error: Failed to resolve import "src/utils/prompts" from "src/utils/dialog-utils.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/utils/dialog-utils.ts:3:46
+  1  |  import { generateText } from "ai";
+  2  |  import { db } from "src/utils/db";
+  3  |  import { GenDialogTitle } from "src/utils/prompts";
+     |                                  ^
+  4  |  import * as engine from "src/utils/template-engine";
+  5  |  export async function generateDialogTitle(dialogId, options) {
+      at TransformPluginContext._formatLog (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31219:43)
+      at TransformPluginContext.error (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31216:14)
+      at normalizeUrl (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29699:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29757:32
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29725:4)
+      at async EnvironmentPluginContainer.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31018:14)
+      at async loadAndTransform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:26143:26)
+      at async viteTransformMiddleware (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:27221:20)
+21:41:17 [vite] (client) Pre-transform error: Failed to resolve import "src/utils/prompts" from "src/utils/dialog-utils.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/utils/dialog-utils.ts:3:46
+  1  |  import { generateText } from "ai";
+  2  |  import { db } from "src/utils/db";
+  3  |  import { GenDialogTitle } from "src/utils/prompts";
+     |                                  ^
+  4  |  import * as engine from "src/utils/template-engine";
+  5  |  export async function generateDialogTitle(dialogId, options) {
+21:41:17 [vite] Internal server error: Failed to resolve import "src/utils/prompts" from "src/utils/dialog-utils.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/utils/dialog-utils.ts:3:46
+  1  |  import { generateText } from "ai";
+  2  |  import { db } from "src/utils/db";
+  3  |  import { GenDialogTitle } from "src/utils/prompts";
+     |                                  ^
+  4  |  import * as engine from "src/utils/template-engine";
+  5  |  export async function generateDialogTitle(dialogId, options) {
+      at TransformPluginContext._formatLog (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31219:43)
+      at TransformPluginContext.error (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31216:14)
+      at normalizeUrl (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29699:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29757:32
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29725:4)
+      at async EnvironmentPluginContainer.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31018:14)
+      at async loadAndTransform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:26143:26)
+      at async viteTransformMiddleware (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:27221:20)
+21:44:14 [vite] (client) Pre-transform error: [vue/compiler-sfc] Identifier 'perfs' has already been declared. (94:8)
+
+D:/D-code/want-merge/AIaW-master/src/components/DialogList.vue
+158|  }
+159|  
+160|  const { perfs } = useUserPerfsStore()
+   |          ^
+161|  
+162|  if (isPlatformEnabled(perfs.enableShortcutKey)) {
+  Plugin: vite:vue
+  File: D:/D-code/want-merge/AIaW-master/src/components/DialogList.vue:94:8
+  83 |  const { t, locale } = useI18n()
+  84 |  const workspace: Ref<Workspace> = inject('workspace')
+  85 |  const dialogs: Ref<Dialog[]> = inject('dialogs')
+     |                   ^
+  86 |  
+  87 |  const $q = useQuasar()
+21:44:15 [vite] Internal server error: [vue/compiler-sfc] Identifier 'perfs' has already been declared. (94:8)
+
+D:/D-code/want-merge/AIaW-master/src/components/DialogList.vue
+158|  }
+159|  
+160|  const { perfs } = useUserPerfsStore()
+   |          ^
+161|  
+162|  if (isPlatformEnabled(perfs.enableShortcutKey)) {
+  Plugin: vite:vue
+  File: D:/D-code/want-merge/AIaW-master/src/components/DialogList.vue:94:8
+  83 |  const { t, locale } = useI18n()
+  84 |  const workspace: Ref<Workspace> = inject('workspace')
+  85 |  const dialogs: Ref<Dialog[]> = inject('dialogs')
+     |                   ^
+  86 |  
+  87 |  const $q = useQuasar()
+      at constructor (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:359:19)
+      at TypeScriptParserMixin.raise (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:3266:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:1502:19)
+      at TypeScriptScopeHandler.declareName (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:1468:12)
+      at TypeScriptScopeHandler.declareName (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:6934:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:7357:16)
+      at TypeScriptParserMixin.checkIdentifier (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:7353:12)
+      at TypeScriptParserMixin.checkLVal (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:7294:12)
+      at TypeScriptParserMixin.checkLVal (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:7334:12)
+      at TypeScriptParserMixin.checkLVal (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:7330:16)
+21:44:19 [vite] Internal server error: [vue/compiler-sfc] Identifier 'perfs' has already been declared. (94:8)
+
+D:/D-code/want-merge/AIaW-master/src/components/DialogList.vue
+158|  }
+159|  
+160|  const { perfs } = useUserPerfsStore()
+   |          ^
+161|  
+162|  if (isPlatformEnabled(perfs.enableShortcutKey)) {
+  Plugin: vite:vue
+  File: D:/D-code/want-merge/AIaW-master/src/components/DialogList.vue:94:8
+  83 |  const { t, locale } = useI18n()
+  84 |  const workspace: Ref<Workspace> = inject('workspace')
+  85 |  const dialogs: Ref<Dialog[]> = inject('dialogs')
+     |                   ^
+  86 |  
+  87 |  const $q = useQuasar()
+      at constructor (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:359:19)
+      at TypeScriptParserMixin.raise (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:3266:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:1502:19)
+      at TypeScriptScopeHandler.declareName (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:1468:12)
+      at TypeScriptScopeHandler.declareName (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:6934:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:7357:16)
+      at TypeScriptParserMixin.checkIdentifier (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:7353:12)
+      at TypeScriptParserMixin.checkLVal (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:7294:12)
+      at TypeScriptParserMixin.checkLVal (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:7334:12)
+      at TypeScriptParserMixin.checkLVal (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@babel+parser@7.26.2\node_modules\@babel\parser\lib\index.js:7330:16)
+21:54:28 [vite] Internal server error: Failed to resolve import "src/utils/prompts" from "src/components/DialogList.vue". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/components/DialogList.vue:81:46
+  12 |  import { useListenKey } from "src/composables/listen-key";
+  13 |  import { generateText } from "ai";
+  14 |  import { GenDialogTitle, DialogContent } from "src/utils/prompts";
+     |                                                 ^
+  15 |  import * as engine from "src/utils/template-engine";
+  16 |  import { useGetModelV2 } from "src/composables/get-model-v2";
+      at TransformPluginContext._formatLog (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31219:43)
+      at TransformPluginContext.error (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31216:14)
+      at normalizeUrl (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29699:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29757:32
+      at async Promise.all (index 13)
+      at async TransformPluginContext.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29725:4)
+      at async EnvironmentPluginContainer.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31018:14)
+      at async loadAndTransform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:26143:26)
+      at async viteTransformMiddleware (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:27221:20)
+21:58:42 [vite] (client) Pre-transform error: Failed to resolve import "src/utils/prompts" from "src/components/DialogList.vue". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/components/DialogList.vue:81:46
+  12 |  import { useListenKey } from "src/composables/listen-key";
+  13 |  import { generateText } from "ai";
+  14 |  import { GenDialogTitle, DialogContent } from "src/utils/prompts";
+     |                                                 ^
+  15 |  import * as engine from "src/utils/template-engine";
+  16 |  import { useGetModelV2 } from "src/composables/get-model-v2";
+21:58:42 [vite] Internal server error: Failed to resolve import "src/utils/prompts" from "src/components/DialogList.vue". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/components/DialogList.vue:81:46
+  12 |  import { useListenKey } from "src/composables/listen-key";
+  13 |  import { generateText } from "ai";
+  14 |  import { GenDialogTitle, DialogContent } from "src/utils/prompts";
+     |                                                 ^
+  15 |  import * as engine from "src/utils/template-engine";
+  16 |  import { useGetModelV2 } from "src/composables/get-model-v2";
+      at TransformPluginContext._formatLog (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31219:43)
+      at TransformPluginContext.error (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31216:14)
+      at normalizeUrl (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29699:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29757:32
+      at async Promise.all (index 13)
+      at async TransformPluginContext.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29725:4)
+      at async EnvironmentPluginContainer.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31018:14)
+      at async loadAndTransform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:26143:26)
+      at async viteTransformMiddleware (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:27221:20)
+21:58:47 [vite] Internal server error: Failed to resolve import "src/utils/prompts" from "src/components/DialogList.vue". Does the file exist?
+  Plugin: vite:import-analysis
+  File: D:/D-code/want-merge/AIaW-master/src/components/DialogList.vue:81:46
+  12 |  import { useListenKey } from "src/composables/listen-key";
+  13 |  import { generateText } from "ai";
+  14 |  import { GenDialogTitle, DialogContent } from "src/utils/prompts";
+     |                                                 ^
+  15 |  import * as engine from "src/utils/template-engine";
+  16 |  import { useGetModelV2 } from "src/composables/get-model-v2";
+      at TransformPluginContext._formatLog (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31219:43)
+      at TransformPluginContext.error (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31216:14)
+      at normalizeUrl (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29699:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29757:32
+      at async Promise.all (index 13)
+      at async TransformPluginContext.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:29725:4)
+      at async EnvironmentPluginContainer.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:31018:14)
+      at async loadAndTransform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:26143:26)
+      at async viteTransformMiddleware (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.9_@types+node@20.1_9376b12fd60e4bf32bdda162257d67c2/node_modules/vite/dist/node/chunks/dep-Chhhsdoe.js:27221:20)
