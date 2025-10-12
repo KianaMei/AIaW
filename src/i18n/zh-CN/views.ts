@@ -143,7 +143,8 @@ export default {
       configModel: '请配置服务商、模型或者登录',
       loadPluginList: '加载插件列表失败',
       genTitle: '总结对话失败，请检查系统助手设置',
-      insufficientQuota: '模型服务额度不足'
+      insufficientQuota: '模型服务额度不足',
+      systemModelNotConfigured: '系统模型未配置。请在设置中配置系统助手模型。'
     },
     enabledPlugins: '已启用插件',
     messageTokens: '上条消息 Token 消耗',
@@ -177,7 +178,11 @@ export default {
     accountPage: '账号',
     pageSuffix: '页面',
     defaultModelHeader: '默认模型',
+    defaultModelCaption: '新对话时使用的默认模型',
     systemAssistantHeader: '系统助手',
+    systemAssistantProvider: '服务商',
+    systemAssistantModel: '系统助手模型',
+    systemModelCaption: '用于生成标题、提取工件等辅助功能',
     systemAssistantCaption: '用于总结对话标题、提取 Artifacts。如果留空，则使用默认服务商设置',
     featureHeader: '功能',
     operationHeader: '操作',
