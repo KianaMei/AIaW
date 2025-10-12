@@ -261,18 +261,33 @@ const localProvider = ref<ProviderV2>({
   models: [],
   isSystem: false as const,
   enabled: true,
-  settings: {}
+  settings: {},
+  avatar: {
+    type: 'icon',
+    icon: 'sym_o_dashboard_customize',
+    hue: 0
+  }
 })
 
-// Watch for provider changes
+// Watch for provider ID changes (switching to different provider)
+// Don't watch deep changes to avoid overwriting user edits
 watch(
-  provider,
-  (newProvider) => {
-    if (newProvider) {
-      localProvider.value = { ...newProvider }
+  () => props.id,
+  () => {
+    const currentProvider = provider.value
+    if (currentProvider) {
+      localProvider.value = {
+        ...currentProvider,
+        // Ensure avatar has a default value
+        avatar: currentProvider.avatar || {
+          type: 'icon',
+          icon: 'sym_o_dashboard_customize',
+          hue: Math.floor(Math.random() * 360)
+        }
+      }
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 )
 
 // Provider type options

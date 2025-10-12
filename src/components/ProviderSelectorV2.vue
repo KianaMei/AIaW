@@ -30,8 +30,9 @@
       </q-item>
     </template>
 
-    <template #prepend>
-      <q-icon name="sym_o_cloud" />
+    <!-- 自定义收起态的已选展示，保证头像+文本垂直居中 -->
+    <template #prepend v-if="selectedProvider">
+      <a-avatar :avatar="selectedProvider.avatar" size="sm" class="q-mr-sm" />
     </template>
 
     <template #hint v-if="hint">
@@ -104,6 +105,12 @@ const providerOptions = computed(() => {
   }))
 })
 
+// Current selected provider with avatar
+const selectedProvider = computed(() => {
+  if (!props.modelValue) return null
+  return providerOptions.value.find(p => p.id === props.modelValue) || null
+})
+
 function getProviderAvatar(provider: any): any {
   if (!provider.isSystem && provider.avatar) {
     return provider.avatar
@@ -132,3 +139,29 @@ function getProviderAvatar(provider: any): any {
 }
 </script>
 
+<style scoped>
+/* 让 q-select 中的文字垂直居中 */
+:deep(.q-field__native) {
+  display: flex;
+  align-items: center;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+:deep(.q-field__native span) {
+  line-height: 1;
+  /* Avoid downward bias; keep zero padding for true centering */
+  padding-top: 1px;
+}
+
+/* 仅针对 ProviderSelector 的收起态，保证文字+头像垂直居中 */
+/* reverted */
+
+/* reverted */
+
+/* 选中值文本微调，使与下拉项一致 */
+/* reverted */
+
+/* 左右附加区保持居中 */
+/* reverted */
+</style>
