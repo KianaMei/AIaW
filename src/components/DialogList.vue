@@ -40,12 +40,12 @@
           <menu-item
             icon="sym_o_auto_fix"
             :label="$t('dialogList.summarizeDialog')"
-            @click="$router.push(`/workspaces/${workspace.id}/dialogs/${dialog.id}#genTitle`)"
+            @click.stop="generateTitle(dialog)"
           />
           <menu-item
             icon="sym_o_content_copy"
             :label="$t('dialogList.copyContent')"
-            @click="$router.push(`/workspaces/${workspace.id}/dialogs/${dialog.id}#copyContent`)"
+            @click.stop="copyDialogContent(dialog)"
           />
           <menu-item
             icon="sym_o_move_item"
@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
+import { useQuasar, copyToClipboard } from 'quasar'
 import { db } from 'src/utils/db'
 import { isPlatformEnabled } from 'src/utils/functions'
 import { Dialog, Workspace } from 'src/utils/types'
@@ -77,16 +77,105 @@ import { useCreateDialog } from 'src/composables/create-dialog'
 import MenuItem from './MenuItem.vue'
 import { useUserPerfsStore } from 'src/stores/user-perfs'
 import { useListenKey } from 'src/composables/listen-key'
+import { generateText } from 'ai'
+import { GenDialogTitle, DialogContent } from 'src/utils/templates'
+import { engine } from 'src/utils/template-engine'
+import { useGetModelV2 } from 'src/composables/get-model-v2'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const workspace: Ref<Workspace> = inject('workspace')
 const dialogs: Ref<Dialog[]> = inject('dialogs')
 
 const $q = useQuasar()
+const { getSdkModelBy } = useGetModelV2()
 
 const { createDialog } = useCreateDialog(workspace)
 async function addItem() {
   await createDialog()
+}
+
+async function generateTitle(dialog: Dialog) {
+  try {
+    // 获取对话的消息
+    const messages = await db.messages
+      .where('dialogId')
+      .equals(dialog.id)
+      .toArray()
+    
+    if (messages.length === 0) {
+      $q.notify({ message: '该对话没有消息', color: 'warning' })
+      return
+    }
+    
+    // 获取所有非输入状态的消息内容（提取文本）
+    const contents = messages
+      .filter(msg => msg.status !== 'inputing')
+      .flatMap(msg => msg.contents || [])
+      .filter(content => content.type === 'user-message' || content.type === 'assistant-message')
+    
+    if (contents.length === 0) {
+      $q.notify({ message: '对话内容为空', color: 'warning' })
+      return
+    }
+    
+    // 获取系统模型
+    const lm = await getSdkModelBy(perfs.systemProviderId, perfs.systemModelId)
+    if (!lm) {
+      $q.notify({ 
+        message: t('dialogView.errors.systemModelNotConfigured', '系统模型未配置'), 
+        color: 'negative' 
+      })
+      return
+    }
+    
+    // 生成标题
+    const { text } = await generateText({
+      model: lm,
+      prompt: await engine.parseAndRender(GenDialogTitle, {
+        contents,
+        lang: locale.value
+      })
+    })
+    
+    // 更新对话标题
+    await db.dialogs.update(dialog.id, { name: text.trim() })
+    $q.notify({ message: '标题已生成', color: 'positive', timeout: 1000 })
+  } catch (e) {
+    console.error('Generate title error:', e)
+    $q.notify({ message: t('dialogView.summarizeFailed'), color: 'negative' })
+  }
+}
+
+async function copyDialogContent(dialog: Dialog) {
+  try {
+    // 获取对话的消息
+    const messages = await db.messages
+      .where('dialogId')
+      .equals(dialog.id)
+      .toArray()
+    
+    if (messages.length === 0) {
+      $q.notify({ message: '该对话没有消息', color: 'warning' })
+      return
+    }
+    
+    // 获取所有非输入状态的消息内容（提取文本）
+    const contents = messages
+      .filter(msg => msg.status !== 'inputing')
+      .flatMap(msg => msg.contents || [])
+      .filter(content => content.type === 'user-message' || content.type === 'assistant-message')
+    
+    // 复制到剪贴板
+    await copyToClipboard(await engine.parseAndRender(DialogContent, {
+      contents,
+      title: dialog.name
+    }))
+    
+    $q.notify({ message: '内容已复制', color: 'positive', timeout: 1000 })
+  } catch (e) {
+    console.error('Copy content error:', e)
+    $q.notify({ message: '复制失败', color: 'negative' })
+  }
 }
 
 function renameItem({ id, name }) {
