@@ -1108,7 +1108,16 @@ const usage = computed(() => messageMap.value[chain.value.at(-2)]?.usage)
 
 const { getSdkModelBy: getSystemSdkModelBy } = useGetModelV2()
 const systemSdkModel = computedAsync(async () => {
-  return await getSystemSdkModelBy(perfs.systemProviderId, perfs.systemModelId)
+  // 尝试获取系统模型
+  let model = await getSystemSdkModelBy(perfs.systemProviderId, perfs.systemModelId)
+
+  // 如果系统模型不可用，使用主模型作为回退
+  if (!model && currentProviderId.value && currentModelId.value) {
+    console.warn('[DialogView] System model not available, falling back to main model')
+    model = await getSystemSdkModelBy(currentProviderId.value, currentModelId.value)
+  }
+
+  return model
 }, null)
 function getDialogContents() {
   return chain.value.slice(1, -1).map(id => messageMap.value[id].contents).flat()
@@ -1116,8 +1125,30 @@ function getDialogContents() {
 async function genTitle() {
   try {
     const dialogId = props.id
+
+    // Resolve system model on-demand to avoid computedAsync race
+    let lm = systemSdkModel.value || await getSystemSdkModelBy(perfs.systemProviderId, perfs.systemModelId)
+
+    // Fallback to current chat model if system model unavailable
+    if (!lm && currentProviderId.value && currentModelId.value) {
+      console.warn('[DialogView] System model not available for title, falling back to main model')
+      lm = await getSystemSdkModelBy(currentProviderId.value, currentModelId.value)
+    }
+
+    if (!lm) {
+      console.warn('System model not configured:', {
+        systemProviderId: perfs.systemProviderId,
+        systemModelId: perfs.systemModelId
+      })
+      $q.notify({
+        message: t('dialogView.errors.systemModelNotConfigured', 'System model not configured. Please set it in Settings.'),
+        color: 'negative'
+      })
+      return
+    }
+
     const { text } = await generateText({
-      model: systemSdkModel.value,
+      model: lm,
       prompt: await engine.parseAndRender(GenDialogTitle, {
         contents: getDialogContents(),
         lang: locale.value
@@ -1125,7 +1156,7 @@ async function genTitle() {
     })
     await db.dialogs.update(dialogId, { name: text })
   } catch (e) {
-    console.error(e)
+    console.error('genTitle error:', e)
     $q.notify({ message: t('dialogView.summarizeFailed'), color: 'negative' })
   }
 }
@@ -1329,6 +1360,10 @@ if (isPlatformEnabled(perfs.enableShortcutKey)) {
 }
 
 async function genArtifactName(content: string, lang?: string) {
+  if (!systemSdkModel.value) {
+    console.warn('System model not configured for artifact naming')
+    return 'Untitled Artifact'
+  }
   const { text } = await generateText({
     model: systemSdkModel.value,
     prompt: engine.parseAndRenderSync(NameArtifactPrompt, { content, lang })
@@ -1356,6 +1391,10 @@ async function extractArtifact(message: Message, text: string, pattern, options:
   })
 }
 async function autoExtractArtifact() {
+  if (!systemSdkModel.value) {
+    console.warn('System model not configured for artifact extraction')
+    return
+  }
   const message = messageMap.value[chain.value.at(-2)]
   const { text } = await generateText({
     model: systemSdkModel.value,

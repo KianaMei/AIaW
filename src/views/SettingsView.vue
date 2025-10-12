@@ -13,23 +13,21 @@
       >
         <q-item-label
           header
-          id="default-provider"
+          id="default-model"
         >
-          {{ $t('settingsView.defaultProviderHeader') }}
+          {{ $t('settingsView.defaultModelHeader') }}
         </q-item-label>
         <q-item>
           <q-item-section>
-            <q-item-label>{{ $t('settingsView.defaultProviderHeader') }}</q-item-label>
+            <q-item-label>{{ $t('settingsView.defaultModelHeader') }}</q-item-label>
+            <q-item-label caption>
+              {{ $t('settingsView.defaultModelCaption') }}
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <provider-selector-v2
-              v-model="perfs.providerId"
-              :filled="false"
-              outlined
-              dense
-              only-enabled
-              :clearable="false"
-              class="w-250px"
+            <select-model-button
+              v-model:providerId="perfs.providerId"
+              v-model:modelId="perfs.modelId"
             />
           </q-item-section>
         </q-item>
@@ -84,93 +82,21 @@
         <q-separator spaced />
         <q-item-label
           header
-          id="default-model"
-        >
-          {{ $t('settingsView.defaultModelHeader') }}
-        </q-item-label>
-        <q-item>
-          <q-item-section>
-            <q-item-label>{{ $t('settingsView.defaultModelHeader') }}</q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <model-selector-v2
-              v-model="perfs.modelId"
-              :filter-provider="perfs.providerId"
-              :filled="false"
-              outlined
-              dense
-              show-group
-              :clearable="false"
-              class="w-250px"
-            />
-          </q-item-section>
-        </q-item>
-        <q-item>
-          <q-item-section>
-            <q-item-label>
-              {{ $t('settingsView.commonModels') }}
-            </q-item-label>
-            <q-item-label caption>
-              {{ $t('settingsView.commonModelsCaption') }}<br>
-              <get-model-list
-                :provider-id="perfs.providerId"
-                v-model="perfs.commonModelOptions"
-              /> -
-              <a
-                href="javascript:void(0)"
-                @click="sortModels"
-                pri-link
-              >
-                {{ $t('settingsView.sort') }}
-              </a>
-            </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <models-input
-              class="xs:w-250px md:w-400px"
-              v-model="perfs.commonModelOptions"
-              outlined
-              dense
-            />
-          </q-item-section>
-        </q-item>
-        <q-separator spaced />
-        <q-item-label
-          header
           id="system-assistant"
         >
           {{ $t('settingsView.systemAssistantHeader') }}
         </q-item-label>
         <q-item>
           <q-item-section>
-            <q-item-label>{{ $t('settingsView.systemAssistantHeader') }} - Provider</q-item-label>
+            <q-item-label>{{ $t('settingsView.systemAssistantModel') }}</q-item-label>
+            <q-item-label caption>
+              {{ $t('settingsView.systemModelCaption') }}
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <provider-selector-v2
-              v-model="perfs.systemProviderId"
-              :filled="false"
-              outlined
-              dense
-              only-enabled
-              :clearable="false"
-              class="w-250px"
-            />
-          </q-item-section>
-        </q-item>
-        <q-item>
-          <q-item-section>
-            <q-item-label>{{ $t('settingsView.systemAssistantHeader') }} - Model</q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <model-selector-v2
-              v-model="perfs.systemModelId"
-              :filter-provider="perfs.systemProviderId"
-              :filled="false"
-              outlined
-              dense
-              show-group
-              :clearable="false"
-              class="w-250px"
+            <select-model-button
+              v-model:providerId="perfs.systemProviderId"
+              v-model:modelId="perfs.systemModelId"
             />
           </q-item-section>
         </q-item>
@@ -608,8 +534,7 @@ import { dialogOptions, mdCodeThemes, mdPreviewThemes } from 'src/utils/values'
 import CopyBtn from 'src/components/CopyBtn.vue'
 import AAvatar from 'src/components/AAvatar.vue'
 import PickAvatarDialog from 'src/components/PickAvatarDialog.vue'
-import ProviderSelectorV2 from 'src/components/ProviderSelectorV2.vue'
-import ModelSelectorV2 from 'src/components/ModelSelectorV2.vue'
+import SelectModelButton from 'src/components/SelectModelButton.vue'
 import { useObservable } from '@vueuse/rxjs'
 import { db } from 'src/utils/db'
 import { useLocateId } from 'src/composables/locate-id'
@@ -620,10 +545,7 @@ import ImportDataDialog from 'src/components/ImportDataDialog.vue'
 import { useI18n } from 'vue-i18n'
 import { localData } from 'src/utils/local-data'
 import { PublicOrigin } from 'src/utils/platform-api'
-import ModelsInput from 'src/components/ModelsInput.vue'
-import GetModelList from 'src/components/GetModelList.vue'
 import ViewCommonHeader from 'src/components/ViewCommonHeader.vue'
-import ModelDragSortDialog from 'src/components/ModelDragSortDialog.vue'
 import ExportDataDialog from 'src/components/ExportDataDialog.vue'
 import { useProvidersV2Store } from 'src/stores/providers-v2'
 
@@ -692,18 +614,6 @@ const langOptions = [
   { label: '简体中文', value: 'zh-CN' },
   { label: '繁體中文', value: 'zh-TW' }
 ]
-
-function sortModels() {
-  const models = perfs.commonModelOptions
-  $q.dialog({
-    component: ModelDragSortDialog,
-    componentProps: { models },
-    persistent: true,
-    ...dialogOptions
-  }).onOk(sortedModels => {
-    perfs.commonModelOptions = sortedModels
-  })
-}
 
 useLocateId(ref(true))
 </script>
