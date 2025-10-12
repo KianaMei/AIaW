@@ -322,3 +322,16 @@ body .md-editor-preview-wrapper {
   --md-theme-color: var(--a-on-sur-var) !important;
   --md-theme-heading-color: var(--a-on-sur-var) !important;
 }
+
+/* Fix vertical alignment for q-select selected value with avatar */
+.q-select.w-250px {
+  .q-field__native {
+    display: flex;
+    align-items: center;  /* 垂直居中选中的文字 */
+
+    .ellipsis {
+      line-height: 1;  /* 重置行高避免偏移 */
+    }
+  }
+}
+
