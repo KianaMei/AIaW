@@ -176,7 +176,14 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
    * @param modelUniqId Format: "provider:modelId"
    */
   function getModelByUniqId(modelUniqId: string): Model | null {
-    return ModelService.getModelByUniqId(modelUniqId)
+    const parsed = ModelService.parseModelId(modelUniqId)
+    if (!parsed) return null
+
+    const { providerId } = parsed
+    const provider = getProviderById(providerId)
+
+    // Pass provider to ModelService so it can look in dynamic models
+    return ModelService.getModelByUniqId(modelUniqId, provider)
   }
 
   /**

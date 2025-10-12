@@ -81,5 +81,11 @@ export function providerToAiSdkConfig(provider: ProviderV2, modelId?: string): {
     baseConfig.apiVersion = provider.settings?.apiVersion
   }
 
+  // Debug: Print current provider and baseURL only (no key)
+  try {
+    console.log('[providerToAiSdkConfig] Debug -> provider:', provider.id, 'sdkProviderId:', providerId, 'mode:', (extraOptions as any).mode || '(default)')
+    console.log('[providerToAiSdkConfig] Debug -> baseURL:', formattedApiHost || '(undefined)')
+  } catch {}
+
   return { providerId, options: { ...baseConfig, ...extraOptions } }
 }
