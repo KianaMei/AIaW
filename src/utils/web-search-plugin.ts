@@ -79,20 +79,123 @@ Current time: {{ _currentTime }}
 `
 
 async function search({ q, engines, timeRange }, settings) {
-  const url = new URL(settings.searxngURL || SearxngBaseURL, location.origin)
+  // Construct SearXNG search endpoint URL
+  let baseURL = settings.searxngURL || SearxngBaseURL
+
+  // Validate baseURL
+  if (!baseURL || typeof baseURL !== 'string') {
+    throw new Error(
+      'SearXNG service is not configured.\n\n' +
+      'Solutions:\n' +
+      '1. Configure in plugin settings: SearXNG URL\n' +
+      '2. Deploy your own: docker run -d -p 8080:8080 searxng/searxng\n' +
+      '3. Use a public instance from: https://searx.space/'
+    )
+  }
+
+  // Add /search path if not present
+  if (!baseURL.endsWith('/search')) {
+    baseURL = baseURL.endsWith('/') ? `${baseURL}search` : `${baseURL}/search`
+  }
+
+  // Construct URL
+  const url = baseURL.startsWith('http')
+    ? new URL(baseURL)
+    : new URL(baseURL, location.origin)
+
   url.searchParams.set('format', 'json')
   url.searchParams.set('q', q)
   settings.defaultEngines && url.searchParams.set('engines', settings.defaultEngines)
   engines && url.searchParams.set('engines', engines)
   timeRange && url.searchParams.set('time_range', timeRange)
-  const response = await fetch(url)
+
+  let response
+  try {
+    response = await fetch(url)
+  } catch (error) {
+    throw new Error(
+      `Failed to connect to SearXNG service: ${error.message}\n\n` +
+      'Possible causes:\n' +
+      '- SearXNG service is not running\n' +
+      '- Network connection issue\n' +
+      '- Invalid URL configuration'
+    )
+  }
+
+  // Handle HTTP errors
   if (response.status === 502) {
-    throw new Error(t('webSearchPlugin.configureSearxngMessage'))
+    throw new Error(
+      'SearXNG service error (502 Bad Gateway)\n\n' +
+      'The SearXNG service is not responding properly.\n' +
+      'Please check if the service is running and configured correctly.'
+    )
   }
+
+  if (response.status === 403) {
+    throw new Error(
+      'Access denied (403 Forbidden)\n\n' +
+      'This usually means CORS restrictions.\n' +
+      'Solutions:\n' +
+      '- Use a CORS-enabled SearXNG instance\n' +
+      '- Deploy your own instance with CORS enabled\n' +
+      '- Check SearXNG CORS settings'
+    )
+  }
+
+  if (response.status === 404) {
+    throw new Error(
+      'SearXNG endpoint not found (404)\n\n' +
+      `Tried URL: ${url.toString()}\n` +
+      'Please verify the SearXNG URL in plugin settings.'
+    )
+  }
+
   if (!response.ok) {
-    throw new Error(`Failed to search: ${response.statusText}`)
+    throw new Error(
+      `SearXNG request failed (${response.status} ${response.statusText})\n\n` +
+      'Please check your SearXNG service configuration.'
+    )
   }
-  const { query, results } = await response.json()
+
+  // Check content type
+  const contentType = response.headers.get('content-type') || ''
+  if (!contentType.includes('application/json')) {
+    const text = await response.text()
+    const preview = text.slice(0, 200).replace(/\s+/g, ' ')
+
+    throw new Error(
+      'SearXNG returned HTML instead of JSON\n\n' +
+      `Content-Type: ${contentType}\n` +
+      `Preview: ${preview}...\n\n` +
+      'This usually means:\n' +
+      '- Wrong URL (should end with /search)\n' +
+      '- SearXNG is showing an error page\n' +
+      '- SearXNG needs format=json parameter'
+    )
+  }
+
+  // Parse JSON
+  let data
+  try {
+    data = await response.json()
+  } catch (error) {
+    throw new Error(
+      `Failed to parse SearXNG response\n\n` +
+      `Error: ${error.message}\n` +
+      'The response may be malformed or incomplete.'
+    )
+  }
+
+  // Validate response structure
+  const { query, results } = data
+  if (!results || !Array.isArray(results)) {
+    throw new Error(
+      'Invalid SearXNG response format\n\n' +
+      'Response is missing the "results" array.\n' +
+      'Please check your SearXNG instance configuration.'
+    )
+  }
+
   return {
     query,
     results: results.map(({ title, url, content, publishedDate, thumbnail, engine }) => ({
@@ -107,15 +210,62 @@ async function search({ q, engines, timeRange }, settings) {
 }
 
 async function crawl(url, settings) {
-  const response = await fetch(new URL(`/${url}`, JinaReaderURL), {
-    headers: settings.jinaApiKey ? {
-      Authorization: `Bearer ${settings.jinaApiKey}`
-    } : undefined
-  })
-  if (!response.ok) {
-    throw new Error(`Failed to crawl: ${response.statusText}`)
+  let response
+  try {
+    response = await fetch(new URL(`/${url}`, JinaReaderURL), {
+      headers: settings.jinaApiKey ? {
+        Authorization: `Bearer ${settings.jinaApiKey}`
+      } : undefined
+    })
+  } catch (error) {
+    throw new Error(
+      `Failed to connect to Jina Reader service\n\n` +
+      `URL: ${url}\n` +
+      `Error: ${error.message}\n\n` +
+      'Please check your network connection.'
+    )
   }
-  return await response.text()
+
+  if (response.status === 401) {
+    throw new Error(
+      'Jina Reader authentication failed (401)\n\n' +
+      'Your Jina API key may be invalid or expired.\n' +
+      'Get a free API key at: https://jina.ai/'
+    )
+  }
+
+  if (response.status === 429) {
+    throw new Error(
+      'Jina Reader rate limit exceeded (429)\n\n' +
+      'You have made too many requests.\n' +
+      'Please wait a moment or upgrade your Jina API plan.'
+    )
+  }
+
+  if (response.status === 404) {
+    throw new Error(
+      `Webpage not found (404)\n\n` +
+      `URL: ${url}\n` +
+      'The webpage may have been removed or the URL is incorrect.'
+    )
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to crawl webpage (${response.status} ${response.statusText})\n\n` +
+      `URL: ${url}\n` +
+      'The Jina Reader service encountered an error.'
+    )
+  }
+
+  try {
+    return await response.text()
+  } catch (error) {
+    throw new Error(
+      `Failed to read webpage content\n\n` +
+      `Error: ${error.message}`
+    )
+  }
 }
 
 const pluginId = 'aiaw-web'
