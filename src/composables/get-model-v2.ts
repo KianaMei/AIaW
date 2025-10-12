@@ -100,69 +100,58 @@ export function useGetModelV2() {
    * @returns Language model instance ready to use
    */
   async function getSdkModelBy(providerId?: string, modelId?: string) {
+    // AIaW 动态架构：首先尝试获取静态模型定义
     const model = getModelBy(providerId, modelId)
-    if (!model) {
-      // 尝试 Cherry 风格兜底：当静态模型表缺失时，直接用 provider+modelId 解析
-      const pid = providerId || perfs.providerId || undefined
-      const mid = modelId || perfs.modelId || undefined
-      if (pid && mid) {
-        const provider = getProvider(pid)
-        if (!provider) {
-          console.warn('No provider found for (fallback):', pid)
-          return null
-        }
-        try {
-          await ensureProviderRegistered(provider, mid)
-          // Pass raw modelId and rely on normalized fallback provider
-          const lm = await globalModelResolver.resolveLanguageModel(
-            mid,
-            getAiSdkProviderId(provider),
-            providerToAiSdkConfig(provider, mid).options,
-            []
-          )
-          return wrapMiddlewares(lm)
-        } catch (e) {
-          console.warn('Fallback resolveLanguageModel failed:', e)
-          return null
-        }
-      }
-      // 仅在调用方已提供任一参数时提示，避免初始化阶段的刷屏告警
-      if (providerId || modelId) {
-        console.warn('No model found for:', providerId, modelId)
-      }
-      return null
-    }
-    const provider = getProvider(model.provider)
-    if (!provider) {
-      console.warn('No provider found for model:', model)
+
+    // 如果没有静态模型，直接使用 provider + modelId 动态创建
+    // 这是 AIaW 的核心理念：完全动态，不依赖静态配置
+    const pid = providerId || perfs.providerId || undefined
+    const mid = modelId || perfs.modelId || undefined
+
+    if (!pid || !mid) {
+      console.warn('[getSdkModelBy] Missing provider or model ID:', { pid, mid })
       return null
     }
 
+    const provider = getProvider(pid)
+    if (!provider) {
+      console.warn('[getSdkModelBy] No provider found for:', pid)
+      return null
+    }
+
+    // 无论是否有静态模型，都使用动态解析
+    // 这确保了即使模型不在静态列表中也能工作
     try {
-      await ensureProviderRegistered(provider, model.id)
-      const middlewares: LanguageModelV2Middleware[] = []
-      // Pass raw modelId and rely on normalized fallback provider
+      // Debug: log resolution intent
+      try {
+        const aiPid = getAiSdkProviderId(provider)
+        console.log('[getSdkModelBy] Debug -> resolving model', { pid, mid, aiSdkProviderId: aiPid })
+      } catch {}
+      await ensureProviderRegistered(provider, mid)
       const lm = await globalModelResolver.resolveLanguageModel(
-        model.id,
+        mid,
         getAiSdkProviderId(provider),
-        providerToAiSdkConfig(provider, model.id).options,
-        middlewares
+        providerToAiSdkConfig(provider, mid).options,
+        []
       )
       return wrapMiddlewares(lm)
-    } catch (error) {
-      console.error('Failed to resolve SDK model via Cherry provider core:', error)
-      if (defaultProvider.value) {
+    } catch (e) {
+      console.warn('[getSdkModelBy] Failed to resolve model:', { pid, mid, error: e })
+
+      // 如果有默认供应商，尝试使用它作为回退
+      if (defaultProvider.value && defaultProvider.value.id !== pid) {
         try {
-          await ensureProviderRegistered(defaultProvider.value, model.id)
+          console.log('[getSdkModelBy] Trying default provider fallback')
+          await ensureProviderRegistered(defaultProvider.value, mid)
           const lm = await globalModelResolver.resolveLanguageModel(
-            model.id,
+            mid,
             getAiSdkProviderId(defaultProvider.value),
-            providerToAiSdkConfig(defaultProvider.value, model.id).options,
+            providerToAiSdkConfig(defaultProvider.value, mid).options,
             []
           )
           return wrapMiddlewares(lm)
         } catch (fallbackError) {
-          console.error('Fallback provider also failed:', fallbackError)
+          console.error('[getSdkModelBy] Default provider fallback also failed:', fallbackError)
         }
       }
       return null

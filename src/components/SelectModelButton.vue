@@ -7,10 +7,10 @@
   >
     <div class="row items-center gap-2 no-wrap">
       <!-- Model Icon -->
-      <q-icon
-        name="sym_o_neurology"
-        size="20px"
-      />
+      <q-avatar size="20px">
+        <img v-if="currentModelIcon" :src="currentModelIcon" />
+        <q-icon v-else name="sym_o_neurology" size="18px" />
+      </q-avatar>
 
       <!-- Model Name | Provider Name -->
       <span class="model-text">
@@ -29,7 +29,7 @@
       :offset="[0, 8]"
       max-height="70vh"
       class="model-menu"
-      style="width: 70vw"
+      style="width: 49vw"
     >
       <q-card flat>
         <q-card-section class="q-pa-sm">
@@ -110,7 +110,8 @@
                 >
                   <q-item-section avatar class="model-icon">
                     <q-avatar size="18px">
-                      <q-icon name="sym_o_neurology" size="16px" />
+                      <img v-if="getModelIcon(model.name)" :src="getModelIcon(model.name)" />
+                      <q-icon v-else name="sym_o_neurology" size="16px" />
                     </q-avatar>
                   </q-item-section>
                   <q-item-section>
@@ -143,7 +144,8 @@
               >
                 <q-item-section avatar class="model-icon">
                   <q-avatar size="18px">
-                    <q-icon name="sym_o_neurology" size="16px" />
+                    <img v-if="getModelIcon(model.name)" :src="getModelIcon(model.name)" />
+                    <q-icon v-else name="sym_o_neurology" size="16px" />
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
@@ -241,6 +243,16 @@ const modelDisplayName = computed(() => {
   return `${model.name} | ${provider.name}`
 })
 
+// Current model icon
+const currentModelIcon = computed(() => {
+  if (!props.modelId) return null
+
+  const model = providersStore.getModelByUniqId(`${props.providerId}:${props.modelId}`)
+  if (!model) return null
+
+  return getModelIcon(model.name)
+})
+
 const currentModelUniqId = computed(() => {
   if (!props.providerId || !props.modelId) return ''
   return `${props.providerId}:${props.modelId}`
@@ -290,6 +302,39 @@ const currentProviderModels = computed(() => {
     uniqId: `${selectedProviderId.value}:${m.id}`
   }))
 })
+
+// Get model icon based on model name
+function getModelIcon(modelName: string): string | null {
+  const name = modelName.toLowerCase()
+
+  // OpenAI models
+  if (name.includes('gpt') || name.includes('o1') || name.includes('o3') || name.includes('o4')) {
+    return '/icons/providers/openai.svg'
+  }
+
+  // Anthropic/Claude models
+  if (name.includes('claude')) {
+    return '/icons/providers/anthropic.svg'
+  }
+
+  // Google/Gemini models
+  if (name.includes('gemini')) {
+    return '/icons/providers/google.svg'
+  }
+
+  // DeepSeek models
+  if (name.includes('deepseek')) {
+    return '/icons/providers/deepseek.svg'
+  }
+
+  // xAI/Grok models
+  if (name.includes('grok')) {
+    return '/icons/providers/xai.svg'
+  }
+
+  // Default: return null to use default icon
+  return null
+}
 
 // Get provider avatar
 function getProviderAvatar(provider: ProviderV2): any {

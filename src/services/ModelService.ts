@@ -42,7 +42,7 @@ export class ModelService {
    * @param modelUniqId Format: "provider:modelId"
    * @returns Model object or null
    */
-  static getModelByUniqId(modelUniqId: string): Model | null {
+  static getModelByUniqId(modelUniqId: string, provider?: ProviderV2): Model | null {
     // Check cache first
     if (this.modelCache.has(modelUniqId)) {
       return this.modelCache.get(modelUniqId)!
@@ -55,7 +55,17 @@ export class ModelService {
 
     const { providerId, modelId } = parsed
 
-    // Search in all models
+    // If provider is provided, look in its models
+    if (provider && provider.id === providerId) {
+      const providerModels = this.getModelsByProvider(providerId, provider)
+      const model = providerModels.find(m => m.id === modelId)
+      if (model) {
+        this.modelCache.set(modelUniqId, model)
+        return model
+      }
+    }
+
+    // Fallback: try static models (will be removed later)
     const allModels = getAllModels()
     const model = allModels.find(m => m.provider === providerId && m.id === modelId)
 
