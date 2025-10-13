@@ -47,9 +47,10 @@ export function useInitDefaultModels() {
 
       // Initialize system provider and model if not set
       if (!perfs.systemProviderId || !perfs.systemModelId) {
-        // Use the same provider as default, or the first available one
-        const systemProvider = perfs.providerId
-          ? providersStore.getProviderById(perfs.providerId)
+        // IMPORTANT: System provider should be independent from current dialog provider
+        // Get system provider by ID if already set, or use first available provider
+        const systemProvider = perfs.systemProviderId
+          ? providersStore.getProviderById(perfs.systemProviderId)
           : providers[0]
 
         if (systemProvider) {
@@ -61,7 +62,7 @@ export function useInitDefaultModels() {
 
           // Set system model if not configured
           if (!perfs.systemModelId) {
-            // Try to get models for this provider
+            // Try to get models for the SYSTEM provider (not current dialog provider!)
             const models = providersStore.getModelsByProvider(systemProvider.id)
 
             // Look for a smaller/cheaper model for system tasks
