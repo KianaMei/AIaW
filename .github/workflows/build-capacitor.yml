@@ -110,20 +110,20 @@ jobs:
               name: 'AIaW_${{ steps.vars.outputs.tag }}.apk',
               owner: context.repo.owner,
               repo: context.repo.repo,
-              release_id: ${{ steps.ensure_release.outputs.release_id }},
+              release_id: '${{ steps.ensure_release.outputs.release_id }}',
               data: await fs.readFile('./android/app/build/outputs/apk/release/app-release.apk')
             });
             await github.rest.repos.uploadReleaseAsset({
               name: 'spa_bundle_${{ steps.vars.outputs.tag }}.zip',
               owner: context.repo.owner,
               repo: context.repo.repo,
-              release_id: ${{ steps.ensure_release.outputs.release_id }},
+              release_id: '${{ steps.ensure_release.outputs.release_id }}',
               data: await fs.readFile('./spa.zip')
             });
             await github.rest.repos.uploadReleaseAsset({
               name: 'version.json',
               owner: context.repo.owner,
               repo: context.repo.repo,
-              release_id: ${{ steps.ensure_release.outputs.release_id }},
+              release_id: '${{ steps.ensure_release.outputs.release_id }}',
               data: await fs.readFile('./src/version.json')
             });
