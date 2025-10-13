@@ -128,9 +128,10 @@ export function useGetModelV2() {
         console.log('[getSdkModelBy] Debug -> resolving model', { pid, mid, aiSdkProviderId: aiPid })
       } catch {}
       await ensureProviderRegistered(provider, mid)
+      // Use provider instance ID for registry lookup to avoid collision
       const lm = await globalModelResolver.resolveLanguageModel(
         mid,
-        getAiSdkProviderId(provider),
+        provider.id,  // ← Use instance ID instead of type-based providerId
         providerToAiSdkConfig(provider, mid).options,
         []
       )
@@ -145,7 +146,7 @@ export function useGetModelV2() {
           await ensureProviderRegistered(defaultProvider.value, mid)
           const lm = await globalModelResolver.resolveLanguageModel(
             mid,
-            getAiSdkProviderId(defaultProvider.value),
+            defaultProvider.value.id,  // ← Use instance ID for fallback too
             providerToAiSdkConfig(defaultProvider.value, mid).options,
             []
           )
