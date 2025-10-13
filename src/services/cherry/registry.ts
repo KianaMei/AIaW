@@ -5,6 +5,14 @@ import type { ProviderV2 } from 'src/utils/types'
 
 let bootstrapped = false
 
+// Cache provider configurations to detect changes
+const providerConfigCache = new Map<string, string>()
+
+function getConfigSignature(provider: ProviderV2, options: any): string {
+  // Create a simple signature from key configuration fields
+  return `${provider.apiHost}|${provider.apiKey}|${JSON.stringify(options.baseURL)}`
+}
+
 export async function ensureProviderRegistered(provider: ProviderV2, modelId?: string): Promise<void> {
   if (!bootstrapped) {
     initializeNewProviders()
@@ -18,11 +26,22 @@ export async function ensureProviderRegistered(provider: ProviderV2, modelId?: s
   // Use provider instance ID as registry key to avoid collision
   const registryKey = provider.id
   const ids = providerRegistry.getRegisteredProviders()
-  if (ids.includes(registryKey)) return
+
+  // Check if configuration has changed
+  const configSignature = getConfigSignature(provider, options)
+  const cachedSignature = providerConfigCache.get(registryKey)
+
+  if (ids.includes(registryKey) && cachedSignature === configSignature) {
+    // Already registered with same configuration, skip
+    return
+  }
 
   // Create provider using providerId (to find config), but register with instance ID
   const createdProvider = await createProvider(providerId, options)
   providerRegistry.registerProvider(registryKey, createdProvider)
+
+  // Update cache
+  providerConfigCache.set(registryKey, configSignature)
 }
 
 // Synchronous best-effort registration for base providers (used to keep APIs sync)
@@ -35,12 +54,23 @@ export function ensureProviderRegisteredSync(provider: ProviderV2, modelId?: str
   // Use provider instance ID as registry key to avoid collision
   const registryKey = provider.id
   const ids = providerRegistry.getRegisteredProviders()
-  if (ids.includes(registryKey)) return
+
+  // Check if configuration has changed
+  const configSignature = getConfigSignature(provider, options)
+  const cachedSignature = providerConfigCache.get(registryKey)
+
+  if (ids.includes(registryKey) && cachedSignature === configSignature) {
+    // Already registered with same configuration, skip
+    return
+  }
+
   const cfg = getProviderConfig(providerId)
   if (cfg && typeof cfg.creator === 'function') {
     try {
       const p = cfg.creator(options)
       providerRegistry.registerProvider(registryKey, p)
+      // Update cache
+      providerConfigCache.set(registryKey, configSignature)
     } catch (e) {
       console.warn('ensureProviderRegisteredSync failed, will defer to async path later:', e)
     }

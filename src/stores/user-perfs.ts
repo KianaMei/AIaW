@@ -128,18 +128,20 @@ export const useUserPerfsStore = defineStore('user-perfs', () => {
   // Convert old provider/model objects to new providerId/modelId strings
   // This runs once on app startup if new fields are missing
   if (!perfs.providerId && perfs.provider) {
-    perfs.providerId = (perfs.provider as any)?.type || 'openai'
+    // IMPORTANT: Use provider instance ID, not type
+    perfs.providerId = (perfs.provider as any)?.id || undefined
   }
   if (!perfs.modelId && perfs.model) {
     // Store only model ID (e.g., "gpt-5"), not "provider:modelId"
-    perfs.modelId = (perfs.model as any)?.id || (perfs.model as any)?.name || 'gpt-5'
+    perfs.modelId = (perfs.model as any)?.id || (perfs.model as any)?.name || undefined
   }
   if (!perfs.systemProviderId && perfs.systemProvider) {
-    perfs.systemProviderId = (perfs.systemProvider as any)?.type || 'openai'
+    // IMPORTANT: Use provider instance ID, not type
+    perfs.systemProviderId = (perfs.systemProvider as any)?.id || undefined
   }
   if (!perfs.systemModelId && perfs.systemModel) {
     // Store only model ID (e.g., "gpt-5-nano"), not "provider:modelId"
-    perfs.systemModelId = (perfs.systemModel as any)?.id || (perfs.systemModel as any)?.name || 'gpt-5-nano'
+    perfs.systemModelId = (perfs.systemModel as any)?.id || (perfs.systemModel as any)?.name || undefined
   }
 
   watchEffect(() => {

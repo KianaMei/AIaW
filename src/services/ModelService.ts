@@ -94,11 +94,6 @@ export class ModelService {
     const allModels = getAllModels()
     const embeddedModels: Model[] = []
 
-    // DEBUG: Log first 10 models to see what's in there
-    if (providerId === '1j70rvuste4bqad8l4') {
-      console.log('[DEBUG] 云 provider models (first 10):', provider.models.slice(0, 10))
-    }
-
     for (const item of provider.models) {
       // Support both string[] (legacy) and Model[] (v9+) formats
       if (typeof item === 'string') {

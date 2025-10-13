@@ -65,16 +65,16 @@ export function useInitDefaultModels() {
             // Try to get models for the SYSTEM provider (not current dialog provider!)
             const models = providersStore.getModelsByProvider(systemProvider.id)
 
-            // Look for a smaller/cheaper model for system tasks
-            const systemModel = models.find(m =>
-              m.id.includes('mini') ||
-              m.id.includes('nano') ||
-              m.id.includes('3.5') ||
-              m.id.includes('flash') ||
-              m.id.includes('haiku')
-            ) || models[0]
+            if (models && models.length > 0) {
+              // Look for a smaller/cheaper model for system tasks
+              const systemModel = models.find(m =>
+                m.id.includes('mini') ||
+                m.id.includes('nano') ||
+                m.id.includes('3.5') ||
+                m.id.includes('flash') ||
+                m.id.includes('haiku')
+              ) || models[0]
 
-            if (systemModel) {
               perfs.systemModelId = systemModel.id
               console.log('[init-default-models] Set system model:', systemModel.id)
             } else if (systemProvider.models && systemProvider.models.length > 0) {
