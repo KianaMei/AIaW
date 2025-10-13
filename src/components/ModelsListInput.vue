@@ -24,6 +24,7 @@
           icon="sym_o_add"
           label="添加模型"
           size="sm"
+          :loading="fetchingModels"
           @click="showAddDialog = true"
         />
         <q-btn
@@ -169,7 +170,7 @@
               clickable
               v-ripple
               @click="addModel(model.value)"
-              :disable="selectedModels.includes(model.value)"
+              :disable="selectedModels.includes(model.value) || addingModelIds.has(model.value)"
             >
               <q-item-section avatar>
                 <q-avatar size="32px">
@@ -184,8 +185,13 @@
               </q-item-section>
 
               <q-item-section side>
+                <q-spinner
+                  v-if="addingModelIds.has(model.value)"
+                  color="primary"
+                  size="20px"
+                />
                 <q-icon
-                  v-if="selectedModels.includes(model.value)"
+                  v-else-if="selectedModels.includes(model.value)"
                   name="sym_o_check"
                   color="positive"
                 />
@@ -229,7 +235,8 @@ const searchText = ref('')
 const showAddDialog = ref(false)
 const addSearchText = ref('')
 const fetchingModels = ref(false)
-const fetchedModels = ref<string[]>([]) // Models fetched from API
+const fetchedModels = ref<string[]>([]) // Models fetched from API - no cache, refreshed every time
+const addingModelIds = ref<Set<string>>(new Set()) // Track models being added to prevent duplicates
 
 // Selected models
 const selectedModels = computed(() => model.value || [])
@@ -245,11 +252,10 @@ const filteredSelectedModels = computed(() => {
   })
 })
 
-// Available models - use fetched models if available, otherwise use static models
+// Available models - ONLY use fetched models, no fallback
 const availableModels = computed(() => {
-  const modelIds = fetchedModels.value.length > 0
-    ? fetchedModels.value
-    : providersStore.modelOptions || []
+  // No fallback - if fetch failed or returned empty, show empty list
+  const modelIds = fetchedModels.value
 
   return modelIds.map(modelId => {
     // Try to get full model info
@@ -293,9 +299,11 @@ const filteredAvailableModels = computed(() => {
   })
 })
 
-// Fetch models when dialog opens
+// Fetch models when dialog opens - ALWAYS fetch, no cache
 watch(showAddDialog, async (isOpen) => {
-  if (isOpen && props.providerId && fetchedModels.value.length === 0) {
+  if (isOpen && props.providerId) {
+    // Clear previous results and fetch fresh data every time
+    fetchedModels.value = []
     await fetchProviderModels()
   }
 })
@@ -304,10 +312,17 @@ watch(showAddDialog, async (isOpen) => {
 async function fetchProviderModels() {
   if (!props.providerId) return
 
+  // Prevent duplicate requests
+  if (fetchingModels.value) {
+    console.log('[fetchProviderModels] Already fetching, skipping duplicate request')
+    return
+  }
+
   fetchingModels.value = true
   try {
     const result = await providersStore.fetchProviderModels(props.providerId)
-    fetchedModels.value = result.models
+    // Ensure we have a valid array, or use empty array
+    fetchedModels.value = Array.isArray(result.models) ? result.models : []
 
     if (result.source === 'static' && result.error) {
       $q.notify({
@@ -319,6 +334,7 @@ async function fetchProviderModels() {
       })
     }
   } catch (error: any) {
+    // On error, keep fetchedModels as empty array (set in watch)
     $q.notify({
       message: `获取模型失败: ${error.message}`,
       type: 'negative',
@@ -385,9 +401,22 @@ function getModelCapabilities(modelId: string): Array<{ icon: string; color: str
 
 // Add model
 function addModel(modelId: string) {
-  if (!selectedModels.value.includes(modelId)) {
-    model.value = [...selectedModels.value, modelId]
+  // Prevent adding if already selected or currently being added
+  if (selectedModels.value.includes(modelId) || addingModelIds.value.has(modelId)) {
+    return
   }
+
+  // Mark as being added to prevent duplicate rapid clicks
+  addingModelIds.value.add(modelId)
+
+  // Use Set to ensure uniqueness, then convert back to array
+  const uniqueModels = new Set([...selectedModels.value, modelId])
+  model.value = Array.from(uniqueModels)
+
+  // Remove from adding state after a short delay (after Vue reactivity updates)
+  setTimeout(() => {
+    addingModelIds.value.delete(modelId)
+  }, 100)
 }
 
 // Remove model
