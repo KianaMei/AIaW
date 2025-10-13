@@ -97,7 +97,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^7.0.1",
-    "@intlify/unplugin-vue-i18n": "^2.0.0",
+    "@intlify/unplugin-vue-i18n": "^11.0.1",
     "@quasar/app-vite": "^2.4.0",
     "@tauri-apps/cli": "^2.2.7",
     "@types/node": "^20.16.1",
