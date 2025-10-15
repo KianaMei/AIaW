@@ -1,4 +1,39 @@
 // app global css in SCSS form
+
+/* 全局强制自定义滚动条 - 覆盖所有元素 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--a-out-var) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--a-out-var);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--a-out-mid);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  &::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+}
 body.body--dark,
 body.body--light {
   background-color: var(--a-sur);
@@ -158,20 +193,23 @@ body.body--light {
   font-feature-settings: 'liga';
 }
 
-body.desktop {
+/* 全局自定义滚动条样式 - 适用于所有平台 */
+body.desktop,
+body {
 
   @-moz-document url-prefix() {
     * {
       scrollbar-width: thin;
+      scrollbar-color: var(--a-out-var) transparent;
     }
   }
 
   /* 滚动条整体部分 */
   &::-webkit-scrollbar,
   *::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
     /* 滚动条宽度 */
-    height: 6px;
+    height: 8px;
     /* 滚动条高度 */
   }
 
@@ -180,8 +218,10 @@ body.desktop {
   *::-webkit-scrollbar-thumb {
     background-color: var(--a-out-var);
     /* 滑块颜色 */
-    border-radius: 2px;
+    border-radius: 10px;
     /* 滑块圆角 */
+    border: 2px solid transparent;
+    background-clip: content-box;
   }
 
   /* 鼠标悬停在滑块上时 */
@@ -194,9 +234,9 @@ body.desktop {
   /* 滚动条轨道 */
   &::-webkit-scrollbar-track,
   *::-webkit-scrollbar-track {
-    background: none;
+    background: transparent;
     /* 轨道颜色 */
-    border-radius: 2px;
+    border-radius: 10px;
     /* 轨道圆角 */
   }
 
@@ -209,6 +249,50 @@ body.desktop {
 
   ::-webkit-scrollbar-corner {
     background-color: transparent;
+  }
+}
+
+/* 特别针对 Quasar 下拉菜单和弹出层的滚动条 */
+.q-menu,
+.q-dialog,
+.q-select__dialog,
+.q-virtual-scroll__content,
+.q-menu .q-virtual-scroll__content,
+.q-select__menu-content,
+.q-menu__content,
+.q-select__dropdown,
+[role="listbox"],
+.q-scrollarea__content {
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--a-out-var) transparent !important;
+
+  &::-webkit-scrollbar {
+    width: 8px !important;
+    height: 8px !important;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--a-out-var) !important;
+    border-radius: 10px !important;
+    border: 2px solid transparent !important;
+    background-clip: content-box !important;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--a-out-mid) !important;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent !important;
+    border-radius: 10px !important;
+  }
+
+  &::-webkit-scrollbar-button {
+    display: none !important;
+  }
+
+  &::-webkit-scrollbar-corner {
+    background-color: transparent !important;
   }
 }
 

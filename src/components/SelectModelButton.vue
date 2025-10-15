@@ -212,6 +212,26 @@ const searchText = ref('')
 const selectedProviderId = ref('')
 const providerTabsContainer = ref<HTMLElement | null>(null)
 
+// Scroll selected provider tab into view
+function scrollToSelectedProvider() {
+  if (!providerTabsContainer.value) return
+
+  const currentIndex = providersWithModels.value.findIndex(p => p.id === selectedProviderId.value)
+  if (currentIndex === -1) return
+
+  // Find the selected tab element
+  const tabs = providerTabsContainer.value.querySelectorAll('.q-tab')
+  const selectedTab = tabs[currentIndex] as HTMLElement
+  if (!selectedTab) return
+
+  // Scroll the selected tab into view (centered if possible)
+  selectedTab.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center'
+  })
+}
+
 // Handle mouse wheel for provider tabs - switch between providers
 function handleProviderWheel(event: WheelEvent) {
   // Switch to next/previous provider based on scroll direction
@@ -224,6 +244,11 @@ function handleProviderWheel(event: WheelEvent) {
   // Check bounds
   if (newIndex >= 0 && newIndex < providersWithModels.value.length) {
     selectedProviderId.value = providersWithModels.value[newIndex].id
+
+    // Auto scroll to keep selected provider in view
+    setTimeout(() => {
+      scrollToSelectedProvider()
+    }, 10)
   }
 }
 
@@ -275,6 +300,10 @@ const providersWithModels = computed(() => {
 watch(() => props.providerId, (newVal) => {
   if (newVal) {
     selectedProviderId.value = newVal
+    // Scroll to selected provider when props change
+    setTimeout(() => {
+      scrollToSelectedProvider()
+    }, 100)
   }
 }, { immediate: true })
 
@@ -448,31 +477,20 @@ function selectModel(providerId: string, modelId: string) {
   padding-right: 6px;
 }
 
-/* Provider tabs container - fixed height with independent scroll */
+/* Provider tabs container - fixed height with independent scroll, 隐藏滚动条 */
 .provider-tabs-container {
   max-height: 80px;
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-width: thin;
-  /* 确保显示滚动条 */
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;  /* IE/旧 Edge */
+  scrollbar-width: none;     /* Firefox */
 }
 
 .provider-tabs-container::-webkit-scrollbar {
-  height: 8px;
-}
-
-.provider-tabs-container::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-}
-
-.provider-tabs-container::-webkit-scrollbar-thumb {
-  background-color: rgba(128, 128, 128, 0.4);
-  border-radius: 4px;
-}
-
-.provider-tabs-container::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(128, 128, 128, 0.6);
+  width: 0;
+  height: 0;
+  background: transparent;
 }
 
 /* Larger provider tabs - 不换行，强制单行 */
