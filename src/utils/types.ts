@@ -63,6 +63,12 @@ interface CustomProviderV2 {
    * Both formats are supported. Services will normalize on read.
    */
   models?: string[] | Model[]
+  /**
+   * Model configurations (v9+)
+   * Stores additional model metadata like custom inputTypes, names, etc.
+   * Key: model ID, Value: Partial Model configuration
+   */
+  modelConfigs?: Record<string, Partial<Model>>
   isSystem: false
   enabled: boolean
   settings: Record<string, any>

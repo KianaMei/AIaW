@@ -322,7 +322,7 @@
 import { computed, inject, onUnmounted, provide, ref, Ref, toRaw, toRef, watch, nextTick } from 'vue'
 import { db } from 'src/utils/db'
 import { useLiveQueryWithDeps } from 'src/composables/live-query'
-import { almostEqual, displayLength, genId, inputValueEmpty, isPlatformEnabled, isTextFile, JSONEqual, mimeTypeMatch, pageFhStyle, textBeginning, wrapCode, wrapQuote } from 'src/utils/functions'
+import { almostEqual, buildToolName, displayLength, genId, inputValueEmpty, isPlatformEnabled, isTextFile, JSONEqual, mimeTypeMatch, pageFhStyle, textBeginning, wrapCode, wrapQuote } from 'src/utils/functions'
 import { useAssistantsStore } from 'src/stores/assistants'
 import { streamText, generateText, tool, jsonSchema, StreamTextResult, GenerateTextResult, ModelMessage, stepCountIs } from 'ai'
 import { copyToClipboard, throttle, useQuasar } from 'quasar'
@@ -744,7 +744,7 @@ function getChainMessages() {
           role: 'assistant',
           content: [{
             type: 'tool-call',
-            toolName: `${pluginId}-${name}`,
+            toolName: buildToolName(pluginId, name),
             toolCallId: id,
             input: args
           }]
@@ -753,7 +753,7 @@ function getChainMessages() {
           role: 'tool',
           content: [{
             type: 'tool-result',
-            toolName: `${pluginId}-${name}`,
+            toolName: buildToolName(pluginId, name),
             toolCallId: id,
             output: toToolResultContent(result.map(id => itemMap.value[id]))
           }]
@@ -960,7 +960,7 @@ async function stream(target, insert = false) {
       if (!api.enabled) return
       const a = p.apis.find(a => a.name === api.name)
       const { name, prompt } = a
-      tools[`${p.id}-${name}`] = tool({
+      tools[buildToolName(p.id, name)] = tool({
         description: engine.parseAndRenderSync(prompt, pluginVars),
         inputSchema: jsonSchema(a.parameters),
         async execute(args) {
@@ -999,7 +999,7 @@ async function stream(target, insert = false) {
       prompt: getPrompt(artifacts.value.filter(a => a.open)),
       actions: []
     })
-    tools[`${plugin.id}-${api.name}`] = tool({
+    tools[buildToolName(plugin.id, api.name)] = tool({
       description: api.prompt,
       inputSchema: jsonSchema(api.parameters),
       async execute(args) {

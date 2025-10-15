@@ -87,23 +87,33 @@ export class ModelService {
   static getModelsByProvider(providerId: string, provider?: ProviderV2): Model[] {
     // Return empty if provider has no models configured
     if (!provider || !('models' in provider) || !Array.isArray(provider.models) || provider.models.length === 0) {
-      console.log(`[ModelService] getModelsByProvider(${providerId}): No models configured, returning empty`)
+      // console.log(`[ModelService] getModelsByProvider(${providerId}): No models configured, returning empty`)
       return []
     }
 
     const allModels = getAllModels()
     const embeddedModels: Model[] = []
 
+    // Get modelConfigs if available (custom providers only)
+    const modelConfigs = ('modelConfigs' in provider && provider.modelConfigs) || {}
+
+    // console.log(`[ModelService] Provider models array:`, provider.models)
+    // console.log(`[ModelService] Provider modelConfigs:`, modelConfigs)
+
     for (const item of provider.models) {
+      // console.log(`[ModelService] Processing item:`, typeof item, item)
       // Support both string[] (legacy) and Model[] (v9+) formats
       if (typeof item === 'string') {
         // Model ID as string - look up in static models
         const found = allModels.find(m => m.id === item)
+        const customConfig = modelConfigs[item] || {}
+
         if (found) {
-          // Override provider to match current provider
+          // Override provider to match current provider, merge with custom config
           embeddedModels.push({
             ...found,
-            provider: providerId
+            provider: providerId,
+            ...customConfig // Apply custom configuration (inputTypes, name, etc.)
           })
         } else {
           // Create dynamic model for custom IDs not in static config
@@ -116,7 +126,8 @@ export class ModelService {
               user: ['text'],
               assistant: ['text'],
               tool: ['text']
-            }
+            },
+            ...customConfig // Apply custom configuration
           })
         }
       } else {
@@ -128,7 +139,7 @@ export class ModelService {
       }
     }
 
-    console.log(`[ModelService] getModelsByProvider(${providerId}): Returning ${embeddedModels.length} user-selected models`)
+    // console.log(`[ModelService] getModelsByProvider(${providerId}): Returning ${embeddedModels.length} user-selected models`)
     return embeddedModels
   }
 

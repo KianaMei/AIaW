@@ -251,6 +251,55 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
     return { models: models.map(m => m.id), source: 'static' }
   }
 
+  /**
+   * Update a model's configuration within a provider
+   * Uses modelConfigs field to store custom model metadata
+   * @param providerId Provider ID
+   * @param updatedModel Updated model object with new inputTypes, name, etc.
+   */
+  async function updateProviderModel(providerId: string, updatedModel: Model): Promise<void> {
+    console.log('[updateProviderModel] START - providerId:', providerId)
+    console.log('[updateProviderModel] Updated model:', updatedModel)
+
+    const provider = getProviderById(providerId)
+    if (!provider) {
+      throw new Error(`Provider ${providerId} not found`)
+    }
+
+    if (provider.isSystem) {
+      throw new Error('Cannot update models for system providers')
+    }
+
+    // Get current modelConfigs or create empty object
+    const currentModelConfigs = (provider as CustomProviderV2).modelConfigs || {}
+
+    // Extract only the customizable fields from updatedModel
+    const modelConfig: Partial<Model> = {
+      id: updatedModel.id,
+      name: updatedModel.name,
+      inputTypes: updatedModel.inputTypes
+    }
+
+    // Update the modelConfigs with the new configuration
+    const newModelConfigs = {
+      ...currentModelConfigs,
+      [updatedModel.id]: JSON.parse(JSON.stringify(modelConfig)) // Deep clone to remove reactivity
+    }
+
+    console.log('[updateProviderModel] Saving modelConfigs:', newModelConfigs)
+
+    // Update the provider with the new modelConfigs
+    await updateCustomProvider(providerId, { modelConfigs: newModelConfigs })
+    console.log('[updateProviderModel] Update complete!')
+
+    // Verify what was actually saved to IndexedDB
+    const verifyProvider = await db.providers.get(providerId)
+    console.log('[updateProviderModel] VERIFY - Database modelConfigs:', verifyProvider?.modelConfigs)
+
+    // Clear ModelService cache to ensure fresh data
+    ModelService.clearCache()
+  }
+
   // ====================
   // Return - Clean V2 API only
   // ====================
@@ -280,6 +329,7 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
     getModelDisplayName,
     getModelsByProvider,
     searchModels,
-    fetchProviderModels
+    fetchProviderModels,
+    updateProviderModel
   }
 })

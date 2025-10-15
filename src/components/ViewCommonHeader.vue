@@ -46,8 +46,11 @@ defineEmits(['toggle-drawer', 'contextmenu'])
 
 const props = defineProps<{
   backTo?: string
+  forceNavigate?: boolean
 }>()
-const back = useBack(props.backTo)
+
+console.log('[ViewCommonHeader] Props received:', props)
+const back = useBack(props.backTo, { forceNavigate: props.forceNavigate })
 </script>
 <style scoped>
 

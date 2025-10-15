@@ -1,7 +1,8 @@
 <template>
   <view-common-header
     @toggle-drawer="$emit('toggle-drawer')"
-    back-to="."
+    back-to="/settings"
+    :force-navigate="true"
   >
     <q-toolbar-title>
       {{ provider ? provider.name : $t('providerSetting.title') }}
@@ -269,13 +270,13 @@ const localProvider = ref<ProviderV2>({
   }
 })
 
-// Watch for provider ID changes (switching to different provider)
-// Don't watch deep changes to avoid overwriting user edits
+// Watch for provider changes (both ID changes and data loading from IndexedDB)
+// This ensures localProvider is updated both when switching providers and when data loads on refresh
 watch(
-  () => props.id,
-  () => {
-    const currentProvider = provider.value
+  [() => props.id, () => provider.value],
+  ([newId, currentProvider]) => {
     if (currentProvider) {
+      console.log('[ProviderSettingV2] Provider loaded/changed:', currentProvider.id, currentProvider.name)
       localProvider.value = {
         ...currentProvider,
         // Ensure avatar has a default value
@@ -285,6 +286,8 @@ watch(
           hue: Math.floor(Math.random() * 360)
         }
       }
+    } else {
+      console.log('[ProviderSettingV2] Provider not found for ID:', newId)
     }
   },
   { immediate: true }

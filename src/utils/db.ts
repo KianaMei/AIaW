@@ -303,6 +303,7 @@ db.providers.hook('reading', (provider: any) => {
     apiHost: provider?.apiHost || provider?.provider?.settings?.apiHost || '',
     apiKey: provider?.apiKey || provider?.provider?.settings?.apiKey || '',
     models: provider?.models,
+    modelConfigs: provider?.modelConfigs, // Preserve modelConfigs for v9+
     enabled: provider?.enabled,
     settings: provider?.settings,
     avatar: provider?.avatar

@@ -66,11 +66,27 @@ export async function getClient(key: string, settings: Settings) {
       cwd: transportConf.cwd
     }))
   } else if (transportConf.type === 'http') {
+    // Clear any existing session from the pool before connecting
+    // This helps avoid "Invalid session ID" errors on localhost
+    if (pool.has(key)) {
+      const oldClient = pool.get(key).client
+      await oldClient.close().catch(() => {})
+      pool.delete(key)
+    }
+
     await client.connect(new StreamableHTTPClientTransport(new URL(transportConf.url), {
       fetch,
-      requestInit: { headers: transportConf.headers }
+      requestInit: {
+        headers: transportConf.headers,
+        // Force no-cache for localhost development
+        cache: 'no-cache'
+      }
     })).catch(err => {
       client.close()
+      // Provide more helpful error message for session issues
+      if (err.message && err.message.includes('session')) {
+        throw new Error(`MCP 连接失败: ${err.message}. 提示：如果使用 localhost，请确保 MCP 服务器正确处理 session 管理。`)
+      }
       throw err
     })
   } else {

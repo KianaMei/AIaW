@@ -60,7 +60,7 @@
       <q-list dense separator>
         <q-item
           v-for="modelId in filteredSelectedModels"
-          :key="modelId"
+          :key="`${modelId}-${capabilitiesRefreshKey}`"
           class="model-item"
         >
           <q-item-section avatar>
@@ -81,9 +81,10 @@
               <div
                 v-for="cap in getModelCapabilities(modelId)"
                 :key="cap.icon"
-                class="capability-icon"
+                class="capability-dot"
+                :class="`cap-${cap.color}`"
               >
-                <q-icon :name="cap.icon" size="20px" :color="cap.color" />
+                <q-icon :name="cap.icon" size="11px" color="white" />
                 <q-tooltip>{{ cap.label }}</q-tooltip>
               </div>
             </div>
@@ -220,6 +221,8 @@ import { computed, ref, watch } from 'vue'
 import { useProvidersV2Store } from 'src/stores/providers-v2'
 import { ModelService } from 'src/services/ModelService'
 import { useQuasar } from 'quasar'
+import ModelSettingsDialog from './ModelSettingsDialog.vue'
+import { Model } from 'src/utils/types'
 
 const providersStore = useProvidersV2Store()
 const $q = useQuasar()
@@ -237,6 +240,7 @@ const addSearchText = ref('')
 const fetchingModels = ref(false)
 const fetchedModels = ref<string[]>([]) // Models fetched from API - no cache, refreshed every time
 const addingModelIds = ref<Set<string>>(new Set()) // Track models being added to prevent duplicates
+const capabilitiesRefreshKey = ref(0) // Force refresh key for capabilities
 
 // Selected models
 const selectedModels = computed(() => model.value || [])
@@ -252,14 +256,25 @@ const filteredSelectedModels = computed(() => {
   })
 })
 
-// Available models - ONLY use fetched models, no fallback
+// Available models - combine fetched models AND selected models to ensure we have data for both
 const availableModels = computed(() => {
-  // No fallback - if fetch failed or returned empty, show empty list
-  const modelIds = fetchedModels.value
+  // Add dependency on customProviders to trigger re-computation when providers update
+  // This ensures the component updates when modelConfigs change
+  const _trigger = providersStore.customProviders.length
+
+  // Combine fetched models and currently selected models to ensure we have full coverage
+  const allModelIds = new Set([...fetchedModels.value, ...selectedModels.value])
+  const modelIds = Array.from(allModelIds)
+
+  // Get provider to pass to ModelService
+  const provider = props.providerId ? providersStore.getProviderById(props.providerId) : null
 
   return modelIds.map(modelId => {
-    // Try to get full model info
-    const modelInfo = ModelService.getModelByUniqId(`${props.providerId}:${modelId}`)
+    // Try to get full model info with provider context
+    const modelInfo = provider
+      ? ModelService.getModelByUniqId(`${props.providerId}:${modelId}`, provider)
+      : ModelService.getModelByUniqId(`${props.providerId}:${modelId}`)
+
     if (!modelInfo) {
       // Fallback: just use the ID
       return { label: modelId, value: modelId, inputTypes: null }
@@ -314,7 +329,7 @@ async function fetchProviderModels() {
 
   // Prevent duplicate requests
   if (fetchingModels.value) {
-    console.log('[fetchProviderModels] Already fetching, skipping duplicate request')
+    // console.log('[fetchProviderModels] Already fetching, skipping duplicate request')
     return
   }
 
@@ -355,47 +370,43 @@ function getModelName(modelId: string): string {
 function getModelCapabilities(modelId: string): Array<{ icon: string; color: string; label: string }> {
   const caps: Array<{ icon: string; color: string; label: string }> = []
 
-  // Find the model object to get inputTypes
-  const modelObj = availableModels.value.find(m => m.value === modelId)
-  if (!modelObj || !modelObj.inputTypes) {
+  // Get provider to pass to ModelService
+  const provider = props.providerId ? providersStore.getProviderById(props.providerId) : null
+
+  // Get model info directly to ensure we have the latest inputTypes
+  const modelInfo = provider
+    ? ModelService.getModelByUniqId(`${props.providerId}:${modelId}`, provider)
+    : null
+
+  // console.log('[getModelCapabilities] Model ID:', modelId)
+  // console.log('[getModelCapabilities] Model info:', modelInfo)
+  // console.log('[getModelCapabilities] InputTypes:', modelInfo?.inputTypes)
+
+  if (!modelInfo || !modelInfo.inputTypes) {
+    // console.log('[getModelCapabilities] No inputTypes found, returning empty caps')
     return caps
   }
 
-  const userInputTypes = modelObj.inputTypes.user || []
+  const userInputTypes = modelInfo.inputTypes.user || []
+  // console.log('[getModelCapabilities] User input types:', userInputTypes)
 
-  // Vision capability - supports image input
-  if (userInputTypes.includes('image')) {
+  // Vision capability - supports image input (check for 'image/*' pattern)
+  if (userInputTypes.some(type => type.startsWith('image/'))) {
+    // console.log('[getModelCapabilities] ✅ Adding vision capability')
     caps.push({ icon: 'sym_o_visibility', color: 'green', label: '视觉能力' })
   }
 
-  // Audio capability - supports audio input
-  if (userInputTypes.includes('audio')) {
+  // Audio capability - supports audio input (check for 'audio/*' pattern)
+  if (userInputTypes.some(type => type.startsWith('audio/'))) {
     caps.push({ icon: 'sym_o_mic', color: 'blue', label: '语音能力' })
   }
 
-  // Video capability - supports video input
-  if (userInputTypes.includes('video')) {
+  // Video capability - supports video input (check for 'video/*' pattern)
+  if (userInputTypes.some(type => type.startsWith('video/'))) {
     caps.push({ icon: 'sym_o_videocam', color: 'purple', label: '视频能力' })
   }
 
-  // Additional capabilities from model ID/name (as fallback)
-  const id = modelId.toLowerCase()
-
-  // Image generation
-  if (id.includes('image-generation')) {
-    caps.push({ icon: 'sym_o_image', color: 'purple', label: '图像生成' })
-  }
-
-  // Thinking/reasoning
-  if (id.includes('thinking')) {
-    caps.push({ icon: 'sym_o_psychology_alt', color: 'blue', label: '思考模式' })
-  }
-
-  // Code capability
-  if (id.includes('code')) {
-    caps.push({ icon: 'sym_o_code', color: 'orange', label: '代码能力' })
-  }
-
+  // console.log('[getModelCapabilities] Final caps:', caps)
   return caps
 }
 
@@ -430,10 +441,85 @@ function clearAllModels() {
   model.value = []
 }
 
-// Show model settings (placeholder)
-function showModelSettings(modelId: string) {
-  console.log('Show settings for model:', modelId)
-  // TODO: Implement model settings dialog
+// Show model settings
+async function showModelSettings(modelId: string) {
+  // console.log('[showModelSettings] ======= DIALOG OPENING =======')
+  // console.log('[showModelSettings] Model ID:', modelId)
+  // console.log('[showModelSettings] Provider ID:', props.providerId)
+
+  if (!props.providerId) {
+    $q.notify({
+      message: '无法获取 Provider 信息',
+      type: 'negative',
+      position: 'top'
+    })
+    return
+  }
+
+  // Get provider first
+  const provider = providersStore.getProviderById(props.providerId)
+  // console.log('[showModelSettings] Provider:', provider)
+  // console.log('[showModelSettings] Provider.models type:', typeof provider?.models, Array.isArray(provider?.models))
+  // console.log('[showModelSettings] Provider.models:', provider?.models)
+
+  if (!provider) {
+    $q.notify({
+      message: `找不到 Provider: ${props.providerId}`,
+      type: 'negative',
+      position: 'top'
+    })
+    return
+  }
+
+  // Get model info
+  const modelUniqId = `${props.providerId}:${modelId}`
+  // console.log('[showModelSettings] Looking for model:', modelUniqId)
+
+  const modelInfo = ModelService.getModelByUniqId(modelUniqId, provider)
+  // console.log('[showModelSettings] Model info:', modelInfo)
+  // console.log('[showModelSettings] Model inputTypes:', modelInfo?.inputTypes)
+
+  if (!modelInfo) {
+    $q.notify({
+      message: `无法获取模型信息: ${modelUniqId}`,
+      type: 'negative',
+      position: 'top'
+    })
+    return
+  }
+
+  const providerName = provider.name || props.providerId
+
+  // Show dialog
+  $q.dialog({
+    component: ModelSettingsDialog,
+    componentProps: {
+      modelInfo,
+      providerId: props.providerId,
+      providerName
+    }
+  }).onOk(async (updatedModel: Model) => {
+    try {
+      await providersStore.updateProviderModel(props.providerId, updatedModel)
+
+      // Force refresh by clearing cache
+      ModelService.clearCache()
+      capabilitiesRefreshKey.value++
+
+      $q.notify({
+        message: '模型设置已保存',
+        color: 'positive',
+        position: 'top',
+        timeout: 2000
+      })
+    } catch (error: any) {
+      $q.notify({
+        message: `保存失败: ${error.message}`,
+        type: 'negative',
+        position: 'top'
+      })
+    }
+  })
 }
 </script>
 
@@ -479,23 +565,39 @@ function showModelSettings(modelId: string) {
 
 .capability-badges {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   align-items: center;
 }
 
-.capability-icon {
+.capability-dot {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.05);
   cursor: help;
-  transition: background-color 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.capability-icon:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+.capability-dot:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.cap-green {
+  background-color: #4caf50;
+}
+
+.cap-blue {
+  background-color: #2196f3;
+}
+
+.cap-purple {
+  background-color: #9c27b0;
+}
+
+.cap-orange {
+  background-color: #ff9800;
 }
 </style>

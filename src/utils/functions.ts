@@ -251,6 +251,49 @@ function inputValueEmpty(val) {
   return val === undefined || val === null || val === ''
 }
 
+/**
+ * 构建符合AI SDK要求的工具名称
+ *
+ * Gemini验证要求：
+ * - 必须以字母或下划线开头
+ * - 只允许：a-z, A-Z, 0-9, _, -, ., :
+ * - 最大长度64字符
+ *
+ * 本函数保持现有合法名称不变（向后兼容），仅在必要时净化
+ */
+function buildToolName(pluginId: string, toolName: string): string {
+  // 用短横线连接（AIaW惯例）
+  let name = `${pluginId}-${toolName}`
+
+  // 检查是否已经合法（快速路径，内置插件直接通过）
+  const isValid = /^[a-zA-Z_][a-zA-Z0-9_\-.:]*$/.test(name) && name.length <= 64
+  if (isValid) {
+    return name
+  }
+
+  // 净化无效字符
+  // 1. 替换无效字符为下划线（保留 a-z, A-Z, 0-9, _, -, ., :）
+  name = name.replace(/[^a-zA-Z0-9_\-.:]/g, '_')
+
+  // 2. 确保以字母或下划线开头
+  if (!/^[a-zA-Z_]/.test(name)) {
+    name = `tool_${name}`
+  }
+
+  // 3. 移除连续的下划线/短横线
+  name = name.replace(/[_-]{2,}/g, '_')
+
+  // 4. 截断到64字符
+  if (name.length > 64) {
+    name = name.slice(0, 64)
+  }
+
+  // 5. 移除末尾的下划线/短横线
+  name = name.replace(/[_-]+$/, '')
+
+  return name
+}
+
 export {
   randomHash,
   escapeRegex,
@@ -286,5 +329,6 @@ export {
   localePrice,
   isObject,
   mergeObjects,
-  inputValueEmpty
+  inputValueEmpty,
+  buildToolName
 }
