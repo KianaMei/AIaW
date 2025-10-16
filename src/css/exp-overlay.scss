@@ -1,25 +1,37 @@
 /* New UI baseline (default, no flags) */
 
 /* Focus visibility (keyboard users) */
-:where(button, [role="button"], .q-btn, .q-item, input, textarea, select):where(:focus-visible) {
-  outline: 2px solid color-mix(in oklab, var(--a-pri), transparent 40%);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--a-pri), transparent 80%);
+button:focus-visible,
+[role="button"]:focus-visible,
+.q-btn:focus-visible,
+.q-item:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+/* also show on focus to aid mouse users */
+.q-btn:focus {
+  outline: 2px solid color-mix(in oklab, var(--a-pri), transparent 40%) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--a-pri), transparent 80%) !important;
 }
 
 /* Icon-only hover affordance */
-:where(.q-btn[round], .q-btn--round):where(:not(.bg-primary)) {
+.q-btn[round]:not(.bg-primary),
+.q-btn--round:not(.bg-primary) {
   transition: background-color .15s ease;
 }
-:where(.q-btn[round], .q-btn--round):hover {
+.q-btn[round]:not(.bg-primary):hover,
+.q-btn--round:not(.bg-primary):hover {
+  /* fallback for older browsers */
+  background-color: rgba(127, 127, 127, 0.12);
   background-color: color-mix(in oklab, var(--a-out), transparent 70%);
 }
 
 /* Compact density on desktop & larger */
 @media (min-width: 600px) {
-  .q-item { min-height: 34px; }
-  .q-item__section--side { padding-right: 6px; }
-  .q-btn { min-height: 30px; padding: 0 10px; }
-  .q-field--filled .q-field__control { min-height: 38px; }
-  .q-toolbar { min-height: 46px; }
+  .q-item { min-height: 36px !important; }
+  .q-item__section--side { padding-right: 6px !important; }
+  .q-btn { min-height: 34px !important; padding: 0 10px !important; }
+  .q-field--filled .q-field__control { min-height: 40px !important; }
+  .q-toolbar { min-height: 48px !important; }
 }

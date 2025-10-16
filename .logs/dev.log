@@ -864,3 +864,21 @@ Y88b.Y8b88P Y88b 888 888  888      X88 888  888 888
  [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
 
  [32mApp 鈥?[39m The quasar.config file (or its dependencies) changed. Reading it again...
+
+ [32m禄[39m Reported at............ [2m2025/10/16[22m [2m21:34:09[22m
+ [32m禄[39m App dir................ [32mD:\D-code\want-merge\AIaW-master[39m
+ [32m禄[39m App URL................ [32mhttp://198.18.0.1:9006/[39m
+                           [32mhttp://192.168.10.133:9006/[39m
+                           [32mhttp://localhost:9006/[39m
+                           [32mhttp://172.23.16.1:9006/[39m
+                           [32mhttp://172.30.240.1:9006/[39m
+ [32m禄[39m Dev mode............... [32mspa[39m
+ [32m禄[39m Pkg quasar............. [32mv2.18.5[39m
+ [32m禄[39m Pkg @quasar/app-vite... [32mv2.4.0[39m
+ [32m禄[39m Browser target......... [32mes2022|firefox115|chrome115|safari15[39m
+
+
+ [32mApp 鈥?[39m The quasar.config file (or its dependencies) changed. Reading it again...
+ [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
+ [32mApp 鈥?[39m Scheduled to apply quasar.config changes in 550ms
+ [32mApp 鈥?[39m Applying quasar.config file changes...
