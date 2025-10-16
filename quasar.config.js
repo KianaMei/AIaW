@@ -18,12 +18,16 @@ export default configure((ctx) => {
     boot: [
       'i18n',
       'unocss',
-      'global-components'
+      'global-components',
+      // Experimental UI overlays & flags (non-destructive)
+      'exp-ui'
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: [
-      'app.scss'
+      'app.scss',
+      // Experimental overlays (non-destructive)
+      'exp-overlay.scss'
     ],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras

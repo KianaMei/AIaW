@@ -1,0 +1,55 @@
+/* Experimental UI overlays (non-destructive)
+ * Controlled via body classes injected by src/boot/exp-ui.ts
+ * Enable by setting localStorage['#ui-exp'] = 'on,compact,high-contrast,limited-animations'
+ */
+
+/* Focus visibility & icon-only buttons */
+body.exp-on {
+  /* Focus ring (non-intrusive) */
+  :where(button, [role="button"], .q-btn, .q-item, input, textarea, select):where(:focus-visible) {
+    outline: 2px solid color-mix(in oklab, var(--a-pri), transparent 40%);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--a-pri), transparent 80%);
+  }
+
+  /* Icon-only hover affordance */
+  :where(.q-btn[round], .q-btn--round):where(:not(.bg-primary)) {
+    transition: background-color .15s ease;
+  }
+  :where(.q-btn[round], .q-btn--round):hover {
+    background-color: color-mix(in oklab, var(--a-out), transparent 70%);
+  }
+}
+
+/* Compact density: reduce paddings/heights carefully */
+body.exp-compact {
+  .q-item { min-height: 34px; }
+  .q-item__section--side { padding-right: 6px; }
+  .q-btn { min-height: 30px; padding: 0 10px; }
+  .q-field--filled .q-field__control { min-height: 38px; }
+  .q-toolbar { min-height: 46px; }
+}
+
+/* High contrast fallback (non-destructive variable overrides) */
+body.exp-high-contrast.body--light {
+  /* slightly darken surfaces and strengthen text */
+  --a-sur: #f2f2f2;
+  --a-sur-c: #ececec;
+  --a-on-sur: #111111;
+  --a-on-sur-var: #2a2a2a;
+}
+body.exp-high-contrast.body--dark {
+  --a-sur: #0f0f11;
+  --a-sur-c: #131316;
+  --a-on-sur: #ffffff;
+  --a-on-sur-var: #eaeaea;
+}
+
+/* Limited animations: disable expensive transitions */
+body.exp-limited-animations *,
+body.exp-limited-animations *::before,
+body.exp-limited-animations *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
