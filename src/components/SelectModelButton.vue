@@ -29,7 +29,6 @@
       :offset="[0, 8]"
       max-height="70vh"
       class="model-menu"
-      style="width: 49vw"
     >
       <q-card flat>
         <q-card-section class="q-pa-sm">
@@ -548,9 +547,71 @@ function selectModel(providerId: string, modelId: string) {
   background-color: rgba(128, 128, 128, 0.5);
 }
 
-/* Fixed dropdown width and slightly smaller model font */
+/* 响应式下拉菜单宽度 */
 .model-menu {
-  /* width is set inline to keep it fixed; this class is for future overrides */
+  width: 49vw;
+  min-width: 320px;
+}
+
+/* 移动端适配 */
+@media (max-width: 600px) {
+  .model-menu {
+    width: 95vw !important;
+    max-width: 100vw;
+  }
+
+  /* 移动端按钮更大，更易点击 */
+  .select-model-btn {
+    padding: 6px 12px;
+  }
+
+  /* 移动端文字稍大 */
+  .model-text {
+    font-size: 14px;
+    max-width: 200px;
+  }
+
+  /* 移动端 Provider Tab 更大 */
+  .provider-tabs :deep(.q-tab) {
+    min-height: 56px;
+    height: 56px;
+    font-size: 15px;
+    padding: 0 20px !important;
+  }
+
+  .provider-tab-custom span {
+    font-size: 15px;
+  }
+
+  .provider-tab-custom .q-avatar {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  /* 移动端模型列表项更大 */
+  .model-item {
+    min-height: 48px !important;
+  }
+
+  .model-name {
+    font-size: 14px;
+  }
+
+  /* 移动端图标稍大 */
+  .model-item :deep(.q-item__section--avatar) {
+    width: 32px;
+    min-width: 32px;
+  }
+
+  .model-item .q-avatar {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  /* 移动端能力图标更大 */
+  .model-item :deep(.q-icon) {
+    font-size: 20px !important;
+  }
 }
 .model-item :deep(.q-item__section--main) {
   min-width: 0;

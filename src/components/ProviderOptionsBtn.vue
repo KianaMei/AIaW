@@ -7,7 +7,6 @@
     <q-menu
       anchor="top left"
       self="bottom left"
-      style="min-width: 60vw; max-width: 800px"
       class="provider-options-menu"
       :offset="[0, 8]"
     >
@@ -28,9 +27,34 @@
 </template>
 
 <style scoped>
-/* 从点击位置向外展开的动画 */
+/* 从点击位置向外展开的动画 + 响应式宽度 */
 .provider-options-menu {
   transform-origin: top left;
+  min-width: 60vw;
+  max-width: 800px;
+}
+
+/* 移动端适配 */
+@media (max-width: 600px) {
+  .provider-options-menu {
+    min-width: 95vw !important;
+    max-width: 100vw !important;
+  }
+
+  /* 移动端按钮更大 */
+  .provider-options-menu :deep(.q-item) {
+    min-height: 56px;
+  }
+
+  /* 移动端滑动条更大更易操作 */
+  .provider-options-menu :deep(.q-slider) {
+    height: 40px;
+  }
+
+  /* 移动端开关更大 */
+  .provider-options-menu :deep(.q-toggle) {
+    transform: scale(1.2);
+  }
 }
 
 :deep(.q-menu) {
