@@ -7,6 +7,9 @@
     <q-menu
       anchor="top left"
       self="bottom left"
+      style="min-width: 60vw; max-width: 800px"
+      class="provider-options-menu"
+      :offset="[0, 8]"
     >
       <json-input
         :schema
@@ -23,6 +26,44 @@
     </q-menu>
   </q-btn>
 </template>
+
+<style scoped>
+/* 从点击位置向外展开的动画 */
+.provider-options-menu {
+  transform-origin: top left;
+}
+
+:deep(.q-menu) {
+  transform-origin: top left;
+}
+
+/* 自定义展开动画 */
+.provider-options-menu.q-menu--enter-active,
+.provider-options-menu.q-menu--leave-active {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top left;
+}
+
+.provider-options-menu.q-menu--enter-from {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.provider-options-menu.q-menu--enter-to {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.provider-options-menu.q-menu--leave-from {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.provider-options-menu.q-menu--leave-to {
+  transform: scale(0);
+  opacity: 0;
+}
+</style>
 
 <script setup lang="ts">
 import { Boolean as TBoolean, Object as TObject, Number as TNumber, Optional, Unsafe } from '@sinclair/typebox'
@@ -121,9 +162,16 @@ const rules: Rule[] = [{
     webSearch: Optional(TBoolean({ title: t('providerOptionsBtn.webSearch') })),
     codeExecution: Optional(TBoolean({ title: t('providerOptionsBtn.codeExecution') })),
     urlContext: Optional(TBoolean({ title: t('providerOptionsBtn.urlContext') })),
-    thinkingBudget: Optional(TNumber({ title: t('providerOptionsBtn.thinkingBudget') }))
+    thinkingBudget: Optional(TNumber({
+      title: t('providerOptionsBtn.thinkingBudget'),
+      minimum: 1,
+      maximum: 32768,
+      default: 26200
+    }))
   },
-  default: {},
+  default: {
+    thinkingBudget: 26200
+  },
   exec: options => {
     const tools: Record<string, any> = {}
     if (options.webSearch) tools.google_search = google.tools.googleSearch({})
@@ -153,9 +201,16 @@ const rules: Rule[] = [{
     webSearch: Optional(TBoolean({ title: t('providerOptionsBtn.webSearch') })),
     codeExecution: Optional(TBoolean({ title: t('providerOptionsBtn.codeExecution') })),
     extendedThinking: Optional(TBoolean({ title: t('providerOptionsBtn.extendedThinking') })),
-    thinkingBudget: Optional(TNumber({ title: t('providerOptionsBtn.thinkingBudget'), default: 32000 }))
+    thinkingBudget: Optional(TNumber({
+      title: t('providerOptionsBtn.thinkingBudget'),
+      minimum: 1,
+      maximum: 32768,
+      default: 26200
+    }))
   },
-  default: {},
+  default: {
+    thinkingBudget: 26200
+  },
   exec: options => {
     const tools: Record<string, any> = {}
     if (options.webSearch) tools.web_search = anthropic.tools.webSearch_20250305()

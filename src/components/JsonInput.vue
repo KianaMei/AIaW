@@ -24,6 +24,9 @@
       :input-props="{
         type: sch.format === 'password' ? 'password' : undefined,
         placeholder: sch.default,
+        minimum: sch.minimum,
+        maximum: sch.maximum,
+        step: sch.step,
         ...inputProps
       }"
       :item-props
