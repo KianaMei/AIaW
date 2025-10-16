@@ -22,7 +22,6 @@
       />
       <slot />
       <q-btn
-        v-if="!rightDrawerAbove"
         flat
         dense
         round
