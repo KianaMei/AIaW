@@ -1,19 +1,6 @@
 /* New UI baseline (default, no flags) */
 
-/* Focus visibility (keyboard users) */
-button:focus-visible,
-[role="button"]:focus-visible,
-.q-btn:focus-visible,
-.q-item:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible,
-/* also show on focus to aid mouse users */
-.q-btn:focus {
-  outline: 2px solid color-mix(in oklab, var(--a-pri), transparent 40%) !important;
-  outline-offset: 2px !important;
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--a-pri), transparent 80%) !important;
-}
+/* intentionally no global focus ring override to avoid visual noise */
 
 /* Icon-only hover affordance */
 .q-btn[round]:not(.bg-primary),
