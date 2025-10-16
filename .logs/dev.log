@@ -845,3 +845,22 @@ D:/D-code/want-merge/AIaW-master/src/components/DialogList.vue
  [32mApp 鈥?[39m Scheduled to apply quasar.config changes in 550ms
  [32mApp 鈥?[39m Applying quasar.config file changes...
 [41m[30m鈥塃LIFECYCLE鈥?[39m[49m [31mCommand failed with exit code 1.[39m
+
+> aiaw@2.2.2 dev D:\D-code\want-merge\AIaW-master
+> quasar dev
+
+
+ .d88888b.
+d88P" "Y88b
+888     888
+888     888 888  888  8888b.  .d8888b   8888b.  888d888
+888     888 888  888     "88b 88K          "88b 888P"
+888 Y8b 888 888  888 .d888888 "Y8888b. .d888888 888
+Y88b.Y8b88P Y88b 888 888  888      X88 888  888 888
+ "Y888888"   "Y88888 "Y888888  88888P' "Y888888 888
+       Y8b
+
+ [32mApp 鈥?[39m Using quasar.config.js in "esm" format
+ [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
+
+ [32mApp 鈥?[39m The quasar.config file (or its dependencies) changed. Reading it again...

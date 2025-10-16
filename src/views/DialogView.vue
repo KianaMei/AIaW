@@ -1484,20 +1484,10 @@ function setModel(name: string) {
 
 const { createDialog } = useCreateDialog(workspace)
 
-// ========= Experimental: optional virtual scroll for long dialogs =========
+// ========= New default: auto virtual scroll for long dialogs =========
 const messageItemSize = 160
 const chainVirtual = computed(() => (Array.isArray(chain) ? chain : []).filter((i: any) => i !== '$root'))
-const useVirtualScroll = ref(false)
-
-// Enable when localStorage '#ui-exp' includes one of: 'virtualize', 'virtualize-long', 'virtualize-long-dialogs'
-// and dialog length is large enough to benefit
-watch(chainVirtual, (list) => {
-  try {
-    const raw = (localStorage.getItem('#ui-exp') || '').toLowerCase()
-    const flag = raw.includes('virtualize') || raw.includes('virtualize-long') || raw.includes('virtualize-long-dialogs')
-    useVirtualScroll.value = !!(flag && list && list.length >= 200)
-  } catch { /* noop */ }
-}, { immediate: true })
+const useVirtualScroll = computed(() => (chainVirtual.value?.length || 0) >= 200)
 
 defineEmits(['toggle-drawer'])
 
