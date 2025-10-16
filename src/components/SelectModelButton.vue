@@ -39,7 +39,7 @@
             outlined
             dense
             clearable
-            autofocus
+            :autofocus="$q.platform.is.desktop"
             class="search-input-small"
           >
             <template v-slot:prepend>

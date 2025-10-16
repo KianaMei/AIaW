@@ -157,10 +157,10 @@
         </div>
         <div
           flex
-          flex-wrap
           justify-end
           text-sec
           items-center
+          class="dialog-bottom-toolbar"
         >
           <q-btn
             v-if="model && mimeTypeMatch('image/webp', model.inputTypes.user)"
@@ -1462,3 +1462,45 @@ defineEmits(['toggle-drawer'])
 useSetTitle(computed(() => dialog.value?.name))
 </script>
 
+<style scoped>
+/* 移动端底部工具栏优化 - 确保单行显示 */
+@media (max-width: 600px) {
+  .dialog-bottom-toolbar {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    gap: 2px !important;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .dialog-bottom-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 按钮紧凑布局 */
+  .dialog-bottom-toolbar :deep(.q-btn) {
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: 4px !important;
+    flex-shrink: 0;
+  }
+
+  /* Token 统计显示优化 */
+  .dialog-bottom-toolbar :deep(code) {
+    font-size: 10px !important;
+    padding: 1px 4px !important;
+    white-space: nowrap;
+  }
+
+  .dialog-bottom-toolbar :deep(.q-icon) {
+    font-size: 20px !important;
+  }
+
+  /* 发送按钮优化 */
+  .dialog-bottom-toolbar :deep(.abortable-btn) {
+    min-height: 40px !important;
+    padding: 0 12px !important;
+    flex-shrink: 0;
+  }
+}
+</style>
