@@ -1,95 +1,74 @@
-import MainLayout from 'layouts/MainLayout.vue'
-import WorkspacePage from 'src/pages/WorkspacePage.vue'
-import SettingsPage from '../pages/SettingsPage.vue'
-import ErrorNotFound from 'pages/ErrorNotFound.vue'
 import { RouteRecordRaw } from 'vue-router'
-import WorkspaceSettings from 'src/views/WorkspaceSettings.vue'
-import DialogView from 'src/views/DialogView.vue'
-import AssistantView from 'src/views/AssistantView.vue'
-import SetProvider from 'src/pages/SetProvider.vue'
-import PluginAdjust from 'src/views/PluginAdjust.vue'
-import PluginsPage from 'src/pages/PluginsPage.vue'
-import AssistantsPage from 'src/pages/AssistantsPage.vue'
-import WorkspaceIndex from 'src/views/WorkspaceIndex.vue'
-import EmptyPage from 'src/pages/EmptyPage.vue'
-import PluginsMarket from 'src/views/PluginsMarket.vue'
-import PluginSettings from 'src/views/PluginSettings.vue'
-import AssistantsMarket from 'src/views/AssistantsMarket.vue'
-import AccountPage from 'src/pages/AccountPage.vue'
-import ModelPricing from 'src/pages/ModelPricing.vue'
 import { DexieDBURL, LitellmBaseURL } from 'src/utils/config'
-import ShortcutKeys from 'src/views/ShortcutKeys.vue'
 import { i18n } from 'src/boot/i18n'
-import SettingsView from 'src/views/SettingsView.vue'
-import ProviderSettingV2 from 'src/views/ProviderSettingV2.vue'
 
 const { t } = i18n.global
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: MainLayout,
+    component: () => import('layouts/MainLayout.vue'),
     children: [
       {
         path: '/workspaces/:workspaceId/',
-        component: WorkspacePage,
+        component: () => import('src/pages/WorkspacePage.vue'),
         props: route => ({ id: route.params.workspaceId }),
         children: [
-          { path: '', component: WorkspaceIndex },
-          { path: 'settings', component: WorkspaceSettings },
-          { path: 'dialogs/:dialogId', component: DialogView, props: route => ({ id: route.params.dialogId }) },
-          { path: 'assistants/:assistantId', component: AssistantView, props: route => ({ id: route.params.assistantId }) },
+          { path: '', component: () => import('src/views/WorkspaceIndex.vue') },
+          { path: 'settings', component: () => import('src/views/WorkspaceSettings.vue') },
+          { path: 'dialogs/:dialogId', component: () => import('src/views/DialogView.vue'), props: route => ({ id: route.params.dialogId }) },
+          { path: 'assistants/:assistantId', component: () => import('src/views/AssistantView.vue'), props: route => ({ id: route.params.assistantId }) },
           {
             path: 'assistants/:assistantId/plugins/:pluginId',
-            component: PluginAdjust,
+            component: () => import('src/views/PluginAdjust.vue'),
             props: route => ({ id: route.params.pluginId, assistantId: route.params.assistantId })
           }
         ]
       },
       {
         path: '/settings/',
-        component: SettingsPage,
+        component: () => import('src/pages/SettingsPage.vue'),
         children: [
-          { path: '', component: SettingsView, meta: { title: t('routes.settings') } },
-          { path: 'shortcut-keys', component: ShortcutKeys, meta: { title: t('routes.shortcutKeys') } },
-          { path: 'providers/:id', component: ProviderSettingV2, props: true }
+          { path: '', component: () => import('src/views/SettingsView.vue'), meta: { title: t('routes.settings') } },
+          { path: 'shortcut-keys', component: () => import('src/views/ShortcutKeys.vue'), meta: { title: t('routes.shortcutKeys') } },
+          { path: 'providers/:id', component: () => import('src/views/ProviderSettingV2.vue'), props: true }
         ]
       },
       {
         path: '/plugins/',
-        component: PluginsPage,
+        component: () => import('src/pages/PluginsPage.vue'),
         children: [
-          { path: '', component: PluginsMarket, meta: { title: t('routes.pluginsMarket') } },
-          { path: ':pluginId', component: PluginSettings, props: route => ({ id: route.params.pluginId }) }
+          { path: '', component: () => import('src/views/PluginsMarket.vue'), meta: { title: t('routes.pluginsMarket') } },
+          { path: ':pluginId', component: () => import('src/views/PluginSettings.vue'), props: route => ({ id: route.params.pluginId }) }
         ]
       },
       {
         path: '/assistants/',
-        component: AssistantsPage,
+        component: () => import('src/pages/AssistantsPage.vue'),
         children: [
-          { path: '', component: AssistantsMarket, meta: { title: t('routes.assistantsMarket') } },
-          { path: ':assistantId', component: AssistantView, props: route => ({ id: route.params.assistantId }) },
+          { path: '', component: () => import('src/views/AssistantsMarket.vue'), meta: { title: t('routes.assistantsMarket') } },
+          { path: ':assistantId', component: () => import('src/views/AssistantView.vue'), props: route => ({ id: route.params.assistantId }) },
           {
             path: ':assistantId/plugins/:pluginId',
-            component: PluginAdjust,
+            component: () => import('src/views/PluginAdjust.vue'),
             props: route => ({ id: route.params.pluginId, assistantId: route.params.assistantId })
           }
         ]
       },
-      { path: '/set-provider', component: SetProvider },
+      { path: '/set-provider', component: () => import('src/pages/SetProvider.vue') },
       ...(DexieDBURL ? [
-        { path: '/account', component: AccountPage, meta: { title: t('routes.account') } }
+        { path: '/account', component: () => import('src/pages/AccountPage.vue'), meta: { title: t('routes.account') } }
       ] : []),
       ...(DexieDBURL && LitellmBaseURL ? [
-        { path: '/model-pricing', component: ModelPricing, meta: { title: t('routes.modelPricing') } }
+        { path: '/model-pricing', component: () => import('src/pages/ModelPricing.vue'), meta: { title: t('routes.modelPricing') } }
       ] : []),
-      { path: '/', component: EmptyPage },
+      { path: '/', component: () => import('src/pages/EmptyPage.vue') },
 
       // Always leave this as last one,
       // but you can also remove it
       {
         path: '/:catchAll(.*)*',
-        component: ErrorNotFound,
+        component: () => import('pages/ErrorNotFound.vue'),
         props: {
           drawerToggle: true,
           timeout: 0
@@ -100,3 +79,4 @@ const routes: RouteRecordRaw[] = [
 ]
 
 export default routes
+
