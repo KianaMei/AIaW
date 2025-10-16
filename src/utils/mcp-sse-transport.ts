@@ -4,6 +4,9 @@ import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
 import { JSONRPCMessage, JSONRPCMessageSchema } from '@modelcontextprotocol/sdk/types.js'
 import { auth, AuthResult, OAuthClientProvider, UnauthorizedError } from '@modelcontextprotocol/sdk/client/auth.js'
 
+const HeartbeatInterval = 30000 // 30 seconds
+const HeartbeatTimeout = 60000 // 60 seconds
+
 export class SseError extends Error {
   constructor(
     public readonly code: number | undefined,
@@ -72,6 +75,8 @@ export class SSEClientTransport implements Transport {
   private _requestInit?: RequestInit
   private _authProvider?: OAuthClientProvider
   private _fetch: FetchLike
+  private _heartbeatTimer?: ReturnType<typeof setTimeout>
+  private _lastMessageTime: number = Date.now()
 
   onclose?: () => void
   onerror?: (error: Error) => void
@@ -182,9 +187,36 @@ export class SSEClientTransport implements Transport {
           return
         }
 
+        // 更新最后消息时间
+        this._lastMessageTime = Date.now()
         this.onmessage?.(message)
       }
     })
+  }
+
+  // 启动心跳检测
+  private _startHeartbeat() {
+    this._stopHeartbeat()
+
+    this._heartbeatTimer = setInterval(() => {
+      const now = Date.now()
+      const timeSinceLastMessage = now - this._lastMessageTime
+
+      if (timeSinceLastMessage > HeartbeatTimeout) {
+        console.warn('[SSE] 心跳检测超时，连接可能已断开')
+        const error = new Error('SSE connection heartbeat timeout')
+        this.onerror?.(error)
+        void this.close()
+      }
+    }, HeartbeatInterval)
+  }
+
+  // 停止心跳检测
+  private _stopHeartbeat() {
+    if (this._heartbeatTimer) {
+      clearInterval(this._heartbeatTimer)
+      this._heartbeatTimer = undefined
+    }
   }
 
   async start() {
@@ -194,7 +226,10 @@ export class SSEClientTransport implements Transport {
       )
     }
 
-    return await this._startOrAuth()
+    await this._startOrAuth()
+
+    // 启动心跳检测
+    this._startHeartbeat()
   }
 
   /**
@@ -212,6 +247,7 @@ export class SSEClientTransport implements Transport {
   }
 
   async close(): Promise<void> {
+    this._stopHeartbeat()
     this._abortController?.abort()
     this._eventSource?.close()
     this.onclose?.()

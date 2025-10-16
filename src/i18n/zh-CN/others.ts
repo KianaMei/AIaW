@@ -41,7 +41,10 @@ GitHub: <a href="https://github.com/NitroRCr/aiaw" target="_blank">NitroRCr/AIaW
 `
   },
   mcpClient: {
-    connectingMcpServer: '正在连接 MCP 服务器...'
+    connectingMcpServer: '正在连接 MCP 服务器...',
+    reconnected: 'MCP 服务器重连成功',
+    reconnectFailed: 'MCP 服务器重连失败',
+    connectionError: 'MCP 连接错误: {error}'
   },
   plugins: {
     time: {
