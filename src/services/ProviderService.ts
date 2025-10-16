@@ -285,12 +285,23 @@ export class ProviderService {
     }
 
     const headers: Record<string, string> = {}
+    // Normalize and sanitize API key: if user pasted multiple keys separated by comma/space, pick the first
+    const apiKeyRaw = (provider.apiKey || '').trim()
+    const apiKey = apiKeyRaw.split(/[\s,]+/).filter(Boolean)[0] || ''
+    // Consistent default for JSON APIs
+    headers['accept'] = headers['accept'] || 'application/json'
     // Ensure base includes scheme
     const normalizedBase = base && /^https?:\/\//i.test(base) ? base : (base ? `https://${base}` : base)
     const url = new URL(normalizedBase || 'http://localhost')
 
-    // helper: build URL by appending relative path (keeps base pathname)
-    const join = (p: string) => new URL(p.replace(/^\/+/, ''), url).toString()
+    // helper: build URL by appending relative path (treat base as a directory)
+    // Without forcing a trailing slash on the base pathname, `new URL('x', base)`
+    // will replace the last path segment. We want to append instead.
+    const join = (p: string) => {
+      const baseUrl = new URL(url.toString())
+      if (!baseUrl.pathname.endsWith('/')) baseUrl.pathname += '/'
+      return new URL(p.replace(/^\/+/, ''), baseUrl).toString()
+    }
     const fetchJson = async (u: string, init?: any) => {
       const res = await fetch(u, init)
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
@@ -322,7 +333,12 @@ export class ProviderService {
       timer = setTimeout(() => controller.abort('request-timeout'), timeoutMs)
     }
 
-    const setBearer = () => { if (provider.apiKey) headers.Authorization = `Bearer ${provider.apiKey}` }
+    const setBearer = () => {
+      if (apiKey) {
+        headers.Authorization = `Bearer ${apiKey}`
+        // 与 Cherry 行为保持一致：OpenAI 兼容类只使用 Authorization，不额外添加 x-api-key
+      }
+    }
 
     switch (type) {
       case 'openai':
@@ -337,39 +353,21 @@ export class ProviderService {
       case 'togetherai': {
         setBearer()
         try {
-          const defaultCandidates = [
-            // Prefer common gateway prefixes first to avoid HTML from root '/models'
-            'api/user/models',
-            'api/v1/models',
-            'api/models',
-            'v1/models',
-            'models'
-          ]
-          const host = url.hostname.toLowerCase()
-          const preferred = (host.includes('yunai'))
-            ? ['api/user/models']
-            : []
-          const candidates = [...new Set([...preferred, ...defaultCandidates])].map(join)
-          let data: any
-          let lastErr: any
-          for (const u of candidates) {
-            try {
-              data = await fetchJson(u, { headers, signal: controller?.signal as any })
-              const list: string[] = extractModelIds(data)
-              if (list.length || 'data' in (data || {}) || 'models' in (data || {})) return list
-            } catch (err) {
-              lastErr = err
-              continue
-            }
-          }
-          if (lastErr) throw lastErr
-          return []
+          // 与 Cherry 对齐：统一请求 /v1/models
+          // 如果 base 已包含版本段（如 /v1 或 /api/v1），则只拼接 models；否则拼接 v1/models
+          const pathname = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`
+          const hasV = /\/v\d+(?:alpha|beta)?\/?$/.test(pathname)
+          const pathToAppend = hasV ? 'models' : 'v1/models'
+          const u = join(pathToAppend)
+          const data = await fetchJson(u, { headers, signal: controller?.signal as any })
+          const list: string[] = extractModelIds(data)
+          return list
         } catch (e: any) {
           throw new Error(`[${provider.id}] listModels failed: ${e?.message || String(e)}`)
         } finally { if (timer) clearTimeout(timer) }
       }
       case 'anthropic': {
-        if (provider.apiKey) headers['x-api-key'] = provider.apiKey
+        if (apiKey) headers['x-api-key'] = apiKey
         // Some Anthropic endpoints require version header; provide a default
         headers['anthropic-version'] = headers['anthropic-version'] || '2023-06-01'
         try {
@@ -381,13 +379,27 @@ export class ProviderService {
       }
       case 'google': {
         // Gemini API lists models via ?key=xxx
-        // Use official base when apiHost was not specified
+        // Use explicit apiHost when provided; otherwise fall back to official base
         const gBase = normalizedBase || OfficialBaseURLs.google
-        const baseUrl = new URL(gBase)
-        const listUrl = new URL('models', baseUrl)
-        if (provider.apiKey) listUrl.searchParams.set('key', provider.apiKey)
+
+        // Ensure we append path segments without dropping the last one
+        // e.g. base `http://host/proxy/gemini-pool` + `v1beta/models` => `http://host/proxy/gemini-pool/v1beta/models`
+        const ensureTrailingSlash = (u: string) => (u.endsWith('/') ? u : `${u}/`)
+        const baseWithSlash = ensureTrailingSlash(gBase)
+
+        // If base already ends with a version segment like `/v1beta/`, just append `models`
+        // Otherwise, append `v1beta/models` (Cherry Studio behavior)
+        const pathname = new URL(baseWithSlash).pathname
+        const hasVersion = /\/v\d+(alpha|beta)?\/$/.test(pathname)
+        const pathToAppend = `${hasVersion ? '' : 'v1beta/'}models`
+
+        // Build final list URL against gBase directly, preserving its pathname
+        const finalBase = new URL(baseWithSlash)
+        const listUrlObj = new URL(pathToAppend, finalBase)
+        if (apiKey) listUrlObj.searchParams.set('key', apiKey)
+
         try {
-          const res = await fetch(listUrl.toString(), { signal: controller?.signal as any })
+          const res = await fetch(listUrlObj.toString(), { signal: controller?.signal as any })
           if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
           const data = await res.json()
           const names = Array.isArray(data?.models) ? data.models.map((m: any) => m.name).filter(Boolean) : []
@@ -404,7 +416,7 @@ export class ProviderService {
         const baseUrl = `https://${resourceName}.openai.azure.com`
         const listUrl = `${baseUrl}/openai/deployments?api-version=${encodeURIComponent(apiVersion)}`
         try {
-          const res = await fetch(listUrl, { headers: { 'api-key': provider.apiKey }, signal: controller?.signal as any })
+          const res = await fetch(listUrl, { headers: { 'api-key': apiKey }, signal: controller?.signal as any })
           if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
           const data = await res.json()
           const ids: string[] = Array.isArray(data?.data) ? data.data.map((d: any) => d.model?.name || d.id).filter(Boolean) : []
