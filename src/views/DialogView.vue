@@ -54,6 +54,32 @@
         :class="{ 'rd-r-lg': rightDrawerAbove }"
         @scroll="onScroll"
       >
+        <template v-if="useVirtualScroll">
+          <q-virtual-scroll
+            :items="chainVirtual"
+            :virtual-scroll-item-size="messageItemSize"
+            v-slot="{ item, index }"
+          >
+            <message-item
+              class="message-item"
+              v-if="messageMap[item]"
+              :model-value="dialog.msgRoute[index] + 1"
+              :message="messageMap[item]"
+              :child-num="dialog.msgTree[chain[index]]?.length"
+              :scroll-container="scrollContainer"
+              @update:model-value="switchChain(index, $event - 1)"
+              @edit="edit(index + 1)"
+              @regenerate="regenerate(index + 1)"
+              @delete="deleteBranch(index + 1)"
+              @quote="quote"
+              @extract-artifact="extractArtifact(messageMap[item], ...$event)"
+              @rendered="messageMap[item].generatingSession && lockBottom()"
+              pt-2
+              pb-4
+            />
+          </q-virtual-scroll>
+        </template>
+        <template v-else>
         <template
           v-for="(i, index) in chain"
           :key="i"
@@ -75,6 +101,7 @@
             pt-2
             pb-4
           />
+        </template>
         </template>
       </div>
       <div
@@ -1456,6 +1483,21 @@ function setModel(name: string) {
 }
 
 const { createDialog } = useCreateDialog(workspace)
+
+// ========= Experimental: optional virtual scroll for long dialogs =========
+const messageItemSize = 160
+const chainVirtual = computed(() => (Array.isArray(chain) ? chain : []).filter((i: any) => i !== '$root'))
+const useVirtualScroll = ref(false)
+
+// Enable when localStorage '#ui-exp' includes one of: 'virtualize', 'virtualize-long', 'virtualize-long-dialogs'
+// and dialog length is large enough to benefit
+watch(chainVirtual, (list) => {
+  try {
+    const raw = (localStorage.getItem('#ui-exp') || '').toLowerCase()
+    const flag = raw.includes('virtualize') || raw.includes('virtualize-long') || raw.includes('virtualize-long-dialogs')
+    useVirtualScroll.value = !!(flag && list && list.length >= 200)
+  } catch { /* noop */ }
+}, { immediate: true })
 
 defineEmits(['toggle-drawer'])
 
