@@ -493,7 +493,13 @@ async function deleteBranch(index) {
   const parent = chain.value[index - 1]
   const anchor = chain.value[index]
   const branch = dialog.value.msgRoute[index - 1]
-  branch === dialog.value.msgTree[parent].length - 1 && switchChain(index - 1, branch - 1)
+  const branchCount = dialog.value.msgTree[parent].length
+
+  // 如果不是最后一个分支，切换到前一个分支
+  if (branch === branchCount - 1) {
+    branch > 0 && switchChain(index - 1, branch - 1)
+  }
+
   const ids = expandMessageTree(anchor)
   const itemIds = ids.flatMap(id => messageMap.value[id].contents).flatMap(c => {
     if (c.type === 'user-message') return c.items

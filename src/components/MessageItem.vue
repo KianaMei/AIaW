@@ -216,18 +216,18 @@
             input
             :boundary-links="false"
           />
-          <q-btn
-            icon="sym_o_delete"
-            v-if="!['pending', 'streaming'].includes(message.status)"
-            flat
-            dense
-            round
-            text="sec xs hover:err"
-            un-size="32px"
-            :title="$t('messageItem.deleteBranch')"
-            @click="deleteBranch"
-          />
         </template>
+        <q-btn
+          v-if="childNum >= 1 && !['pending', 'streaming'].includes(message.status)"
+          icon="sym_o_delete"
+          flat
+          dense
+          round
+          text="sec xs hover:err"
+          un-size="32px"
+          :title="$t('messageItem.deleteBranch')"
+          @click="deleteBranch"
+        />
         <template
           v-if="['default', 'failed'].includes(message.status)"
         >
