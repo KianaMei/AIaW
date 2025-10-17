@@ -114,7 +114,7 @@
     "mark.js": "^8.11.1",
     "typescript": "~5.5.4",
     "unocss": "^66.5.4",
-    "vite": "^5.4.20",
+    "vite": "^7.1.10",
     "vite-plugin-checker": "^0.11.0",
     "vitepress": "^1.6.4",
     "vue-tsc": "^3.1.1",
@@ -134,7 +134,10 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "sharp"
-    ]
+    ],
+    "overrides": {
+      "esbuild": ">=0.25.0"
+    }
   },
   "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
 }
