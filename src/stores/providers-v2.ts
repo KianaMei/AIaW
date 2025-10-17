@@ -41,6 +41,19 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
     { initialValue: [] }
   )
 
+  /**
+   * Sorted custom providers by order field (v10+)
+   */
+  const sortedCustomProviders = computed<CustomProviderV2[]>(() => {
+    return [...customProviders.value].sort((a, b) => {
+      const orderA = (a.order ?? Number.MAX_SAFE_INTEGER)
+      const orderB = (b.order ?? Number.MAX_SAFE_INTEGER)
+      if (orderA !== orderB) return orderA - orderB
+      // Stable, deterministic fallback by display name/id
+      return (a.name || a.id).localeCompare(b.name || b.id)
+    })
+  })
+
   // ====================
   // Computed Properties
   // ====================
@@ -49,7 +62,7 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
    * All providers (system + custom)
    */
   const allProviders = computed<ProviderV2[]>(() => {
-    return [...systemProviders.value, ...customProviders.value]
+    return [...systemProviders.value, ...sortedCustomProviders.value]
   })
 
   /**
@@ -135,7 +148,9 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
         type: 'icon',
         icon: 'sym_o_dashboard_customize',
         hue: Math.floor(Math.random() * 360)
-      }
+      },
+      // Set order to be after all existing providers
+      order: props.order ?? (Math.max(...sortedCustomProviders.value.map(p => p.order ?? 0), 0) + 100)
     }
 
     return await ProviderService.createCustomProvider(newProvider)
@@ -153,6 +168,22 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
    */
   async function deleteCustomProvider(id: string): Promise<void> {
     await ProviderService.deleteCustomProvider(id)
+  }
+
+  /**
+   * Reorder custom providers
+   * @param providers Reordered list of providers with updated order
+   */
+  async function reorderCustomProviders(providers: CustomProviderV2[]): Promise<void> {
+    // Update order field for each provider
+    for (let i = 0; i < providers.length; i++) {
+      const provider = providers[i]
+      const newOrder = i * 100 // Use multiples of 100 for easier insertion between items
+
+      if (provider.order !== newOrder) {
+        await updateCustomProvider(provider.id, { order: newOrder })
+      }
+    }
   }
 
   function updateSystemProvider(id: string, updates: Partial<SystemProvider>): void {
@@ -311,6 +342,7 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
     // State
     systemProviders,
     customProviders,
+    sortedCustomProviders,
     allProviders,
     enabledProviders,
     allModels,
@@ -324,6 +356,7 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
     addCustomProvider,
     updateCustomProvider,
     deleteCustomProvider,
+    reorderCustomProviders,
     updateSystemProvider,
     toggleProvider,
 

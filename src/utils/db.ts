@@ -213,6 +213,39 @@ db.version(8).stores(schema).upgrade(async tx => {
   }
 })
 
+// Provider order initialization - Version 9
+// One-time migration to assign a stable 'order' to custom providers
+// so UI sorting does not fluctuate across renders.
+db.version(9).stores(schema).upgrade(async tx => {
+  try {
+    console.log('[Migration v9] Initializing provider.order for custom providers without it...')
+    const table: any = tx.table('providers')
+    const providers: any[] = await table.toArray()
+    const defined = providers.filter(p => typeof p?.order === 'number')
+    const undefinedOnes = providers.filter(p => p?.order == null)
+    if (undefinedOnes.length === 0) {
+      console.log('[Migration v9] No providers need order initialization')
+      return
+    }
+
+    // Start after current maximum (or 0), step by 100 for easy future insertions
+    const maxOrder = defined.length ? Math.max(...defined.map(p => p.order as number)) : -100
+    let nextOrder = maxOrder + 100
+
+    // Deterministic assignment for legacy items: sort by display name then id
+    undefinedOnes.sort((a, b) => ((a?.name || a?.id || '').localeCompare(b?.name || b?.id || '')))
+
+    for (const p of undefinedOnes) {
+      await table.update(p.id, { order: nextOrder })
+      nextOrder += 100
+    }
+    console.log(`[Migration v9] Initialized order for ${undefinedOnes.length} providers`)
+  } catch (e) {
+    console.error('[Migration v9] Failed to initialize provider order:', e)
+    throw e
+  }
+})
+
 // Additional proactive normalization for users who skipped v8 upgrade somehow
 async function normalizeProvidersOnce() {
   const flagKey = 'providersV2Normalized'
@@ -278,6 +311,8 @@ db.providers.hook('reading', (provider: any) => {
     }
     p.type ||= 'openai-compatible'
     p.avatar ||= { type: 'icon', icon: 'sym_o_dashboard_customize', hue: Math.floor(Math.random() * 360) }
+    // Ensure order field exists (for v10+ sorting)
+    p.order ??= Date.now()
     return p
   }
 
@@ -306,7 +341,8 @@ db.providers.hook('reading', (provider: any) => {
     modelConfigs: provider?.modelConfigs, // Preserve modelConfigs for v9+
     enabled: provider?.enabled,
     settings: provider?.settings,
-    avatar: provider?.avatar
+    avatar: provider?.avatar,
+    order: provider?.order // Preserve order if exists
   })
 
   return normalized

@@ -73,6 +73,12 @@ interface CustomProviderV2 {
   enabled: boolean
   settings: Record<string, any>
   avatar?: any // Avatar from legacy CustomProvider
+  /**
+   * Display order for custom providers (v10+)
+   * Lower number = higher priority in list
+   * Default: timestamp of creation for backward compatibility
+   */
+  order?: number
 }
 
 type ProviderV2 = SystemProvider | CustomProviderV2

@@ -274,6 +274,25 @@ export default {
     deleteSuccess: 'Provider deleted successfully',
     deleteError: 'Failed to delete provider: {error}'
   },
+  providersList: {
+    title: 'Providers',
+    systemProviders: 'System Providers',
+    customProviders: 'Custom Providers',
+    addProvider: 'Add Provider',
+    searchPlaceholder: 'Search providers...',
+    dragMode: 'Drag to reorder',
+    reorderSuccess: 'Provider order updated',
+    toggleSuccess: 'Provider status updated',
+    toggleError: 'Failed to update provider: {error}',
+    delete: 'Delete',
+    deleteConfirmTitle: 'Delete Provider',
+    deleteConfirmMessage: 'Are you sure you want to delete provider "{name}"?',
+    deleteSuccess: 'Provider deleted successfully',
+    deleteError: 'Failed to delete provider: {error}',
+    addSuccess: 'Provider added successfully',
+    addError: 'Failed to add provider: {error}',
+    noResults: 'No providers found'
+  },
   shortcutKeysView: {
     keyboardShortcuts: 'Keyboard Shortcuts',
     enableKeyboardShortcuts: 'Enable Keyboard Shortcuts',

@@ -84,7 +84,8 @@ export default {
     deleteProvider: '删除服务商',
     deleteConfirm: '确定要删除服务商「{name}」吗？',
     createProvider: '新建服务商',
-    setAsDefault: '设为默认'
+    setAsDefault: '设为默认',
+    reorderSuccess: '服务商顺序已更新'
   },
   assistantItem: {
     unselected: '未选择',

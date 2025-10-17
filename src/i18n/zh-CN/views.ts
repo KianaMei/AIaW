@@ -278,6 +278,25 @@ export default {
     deleteSuccess: '服务商删除成功',
     deleteError: '删除服务商失败：{error}'
   },
+  providersList: {
+    title: '服务商',
+    systemProviders: '系统服务商',
+    customProviders: '自定义服务商',
+    addProvider: '添加服务商',
+    searchPlaceholder: '搜索服务商...',
+    dragMode: '拖拽重新排序',
+    reorderSuccess: '服务商顺序已更新',
+    toggleSuccess: '服务商状态已更新',
+    toggleError: '更新服务商失败：{error}',
+    delete: '删除',
+    deleteConfirmTitle: '删除服务商',
+    deleteConfirmMessage: '确定要删除服务商"{name}"吗？',
+    deleteSuccess: '服务商删除成功',
+    deleteError: '删除服务商失败：{error}',
+    addSuccess: '服务商添加成功',
+    addError: '添加服务商失败：{error}',
+    noResults: '未找到服务商'
+  },
   shortcutKeysView: {
     keyboardShortcuts: '键盘快捷键',
     enableKeyboardShortcuts: '启用键盘快捷键',

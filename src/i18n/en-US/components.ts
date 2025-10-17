@@ -84,7 +84,8 @@ export default {
     deleteProvider: 'Delete Provider',
     deleteConfirm: 'Are you sure you want to delete the provider "{name}"?',
     createProvider: 'Create Provider',
-    setAsDefault: 'Set as Default'
+    setAsDefault: 'Set as Default',
+    reorderSuccess: 'Provider order updated'
   },
   assistantItem: {
     unselected: 'Unselected',

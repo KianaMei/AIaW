@@ -67,19 +67,51 @@
           </h6>
           <q-list bordered separator>
             <q-item
-              v-for="provider in filteredCustomProviders"
+              v-for="(provider, index) in displayCustomProviders"
               :key="provider.id"
-              clickable
-              :to="`/settings/providers/${provider.id}`"
-              active-class="bg-primary-container"
+              :class="{ 'opacity-50 scale-95': draggedIndex === index }"
+              class="transition-all duration-200"
             >
-              <q-item-section avatar>
-                <a-avatar :avatar="provider.avatar" size="md" />
+              <!-- Drag Handle -->
+              <q-item-section avatar class="min-w-0">
+                <div
+                  draggable="true"
+                  @dragstart="handleDragStart($event, index, provider)"
+                  @dragover="handleDragOver"
+                  @drop="handleDrop($event, index)"
+                  @dragend="handleDragEnd"
+                  class="drag-handle flex items-center justify-center cursor-grab active:cursor-grabbing"
+                  :class="{ 'opacity-100': draggedIndex === index }"
+                >
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" class="text-grey-6">
+                    <!-- 六点拖拽图标 -->
+                    <circle cx="8" cy="6" r="2" />
+                    <circle cx="8" cy="10" r="2" />
+                    <circle cx="8" cy="14" r="2" />
+                    <circle cx="12" cy="6" r="2" />
+                    <circle cx="12" cy="10" r="2" />
+                    <circle cx="12" cy="14" r="2" />
+                  </svg>
+                </div>
               </q-item-section>
-              <q-item-section>
-                <q-item-label>{{ provider.name }}</q-item-label>
-                <q-item-label caption>{{ provider.type }}</q-item-label>
+
+              <!-- Provider Info -->
+              <q-item-section
+                clickable
+                :to="`/settings/providers/${provider.id}`"
+                active-class="bg-primary-container"
+                class="cursor-pointer"
+              >
+                <div class="flex items-center gap-2">
+                  <a-avatar :avatar="provider.avatar" size="md" />
+                  <div>
+                    <q-item-label>{{ provider.name }}</q-item-label>
+                    <q-item-label caption>{{ provider.type }}</q-item-label>
+                  </div>
+                </div>
               </q-item-section>
+
+              <!-- Actions -->
               <q-item-section side>
                 <div flex items-center gap-2>
                   <q-toggle
@@ -135,25 +167,20 @@ const { t } = useI18n()
 const router = useRouter()
 
 const searchText = ref('')
+const draggedIndex = ref<number | null>(null)
 
+// Local copy of custom providers for drag-and-drop
+const displayCustomProviders = ref<CustomProviderV2[]>([])
 
-// Filtered providers
-const filteredSystemProviders = computed(() => {
-  const search = searchText.value.toLowerCase()
-  if (!search) return providersStore.systemProviders
-
-  return providersStore.systemProviders.filter(p =>
-    p.name.toLowerCase().includes(search) ||
-    p.id.toLowerCase().includes(search) ||
-    p.type.toLowerCase().includes(search)
-  )
-})
-
+// Update display list when custom providers change
 const filteredCustomProviders = computed(() => {
-  const search = searchText.value.toLowerCase()
-  if (!search) return providersStore.customProviders
+  // Update display list
+  displayCustomProviders.value = providersStore.sortedCustomProviders
 
-  return providersStore.customProviders.filter(p =>
+  const search = searchText.value.toLowerCase()
+  if (!search) return providersStore.sortedCustomProviders
+
+  return providersStore.sortedCustomProviders.filter(p =>
     p.name.toLowerCase().includes(search) ||
     p.id.toLowerCase().includes(search) ||
     p.type.toLowerCase().includes(search)
@@ -279,4 +306,76 @@ function addProvider() {
     }
   })
 }
+
+// Drag and drop handlers
+function handleDragStart(event: DragEvent, index: number, provider: CustomProviderV2) {
+  draggedIndex.value = index
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/html', provider.id)
+  }
+}
+
+function handleDragOver(event: DragEvent) {
+  event.preventDefault()
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move'
+  }
+}
+
+function handleDrop(event: DragEvent, targetIndex: number) {
+  event.preventDefault()
+
+  if (draggedIndex.value === null || draggedIndex.value === targetIndex) return
+
+  // Reorder the list
+  const newList = [...displayCustomProviders.value]
+  const [draggedItem] = newList.splice(draggedIndex.value, 1)
+  newList.splice(targetIndex, 0, draggedItem)
+
+  // Save the new order
+  providersStore.reorderCustomProviders(newList)
+
+  draggedIndex.value = null
+
+  $q.notify({
+    message: t('providersList.reorderSuccess') || 'Order updated',
+    type: 'positive',
+    position: 'top',
+    timeout: 1500
+  })
+}
+
+function handleDragEnd() {
+  draggedIndex.value = null
+}
 </script>
+
+<style scoped>
+.drag-handle {
+  opacity: 0.5;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  padding: 0 8px;
+}
+
+.drag-handle:hover {
+  opacity: 1;
+  color: var(--q-primary);
+}
+
+.transition-all {
+  transition: all 0.2s ease;
+}
+
+.duration-200 {
+  transition-duration: 200ms;
+}
+
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.scale-95 {
+  transform: scale(0.95);
+}
+</style>
