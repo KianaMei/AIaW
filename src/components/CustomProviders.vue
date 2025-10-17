@@ -1,16 +1,16 @@
 <template>
   <q-list>
     <VueDraggable
-      v-model="orderIds"
+      v-model="dragList"
+      item-key="id"
       :animation="150"
       handle=".drag-handle"
     >
-      <template #item="{ element: id }">
+      <template #item="{ element: provider }">
         <q-item
-          v-if="byId.get(id)"
-          :key="id"
+          :key="provider.id"
           clickable
-          :to="`/settings/providers/${id}`"
+          :to="`/settings/providers/${provider.id}`"
           active-class="route-active"
           item-rd
         >
@@ -18,11 +18,11 @@
             <q-icon name="sym_o_drag_indicator" />
           </q-item-section>
           <q-item-section avatar>
-            <a-avatar size="md" :avatar="byId.get(id)?.avatar" />
+            <a-avatar size="md" :avatar="provider.avatar" />
           </q-item-section>
           <q-item-section>
             <q-item-label>
-              {{ byId.get(id)?.name }}
+              {{ provider.name }}
             </q-item-label>
           </q-item-section>
           <q-menu context-menu>
@@ -30,13 +30,13 @@
               <menu-item
                 icon="sym_o_check_box"
                 :label="$t('customProviders.setAsDefault')"
-                @click="setAsDefault(byId.get(id))"
-                :class="{ 'route-active': perfs.providerId === id }"
+                @click="setAsDefault(provider)"
+                :class="{ 'route-active': perfs.providerId === provider.id }"
               />
               <menu-item
                 icon="sym_o_delete"
                 :label="$t('customProviders.delete')"
-                @click="deleteItem(byId.get(id))"
+                @click="deleteItem(provider)"
                 hover:text-err
               />
             </q-list>
@@ -71,7 +71,7 @@ import { useRouter } from 'vue-router'
 import { CustomProviderV2 } from 'src/utils/types'
 import { useUserPerfsStore } from 'src/stores/user-perfs'
 import { VueDraggable } from 'vue-draggable-plus'
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { persistentReactive } from 'src/composables/persistent-reactive'
 
 const { t } = useI18n()
@@ -110,21 +110,23 @@ function deleteItem({ id, name }: { id: string, name: string }) {
 // Persisted orders used by model selector as well
 const [orders] = persistentReactive('#providers-order', { system: [] as string[], custom: [] as string[] })
 
-// Local list order (ids)
-const orderIds = ref<string[]>([])
-const byId = computed(() => new Map(providersStore.customProviders.map(p => [p.id, p])))
-
-function rebuild(list: { id: string }[], saved: string[]) {
-  const ids = list.map(i => i.id)
-  const keep = saved.filter(id => ids.includes(id))
-  const rest = ids.filter(id => !keep.includes(id))
-  return [...keep, ...rest]
-}
-
-watch([() => providersStore.customProviders, () => orders.custom], () => {
-  orderIds.value = rebuild(providersStore.customProviders, orders.custom)
-}, { immediate: true, deep: true })
-
-// Persist after drag
-watch(orderIds, (val) => { orders.custom = [...val] })
+// Virtual list for drag: get -> apply persisted order; set -> persist order
+const dragList = computed<CustomProviderV2[]>({
+  get() {
+    const list = providersStore.customProviders
+    const order = orders.custom || []
+    if (!list?.length) return []
+    if (!order.length) return [...list]
+    const pos = new Map(order.map((id, i) => [id, i]))
+    return [...list].sort((a, b) => {
+      const ai = pos.has(a.id) ? (pos.get(a.id) as number) : Number.MAX_SAFE_INTEGER
+      const bi = pos.has(b.id) ? (pos.get(b.id) as number) : Number.MAX_SAFE_INTEGER
+      if (ai !== bi) return ai - bi
+      return (a.name || a.id).localeCompare(b.name || b.id)
+    })
+  },
+  set(newList) {
+    orders.custom = newList.map(p => p.id)
+  }
+})
 </script>
