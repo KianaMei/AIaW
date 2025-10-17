@@ -882,3 +882,69 @@ Y88b.Y8b88P Y88b 888 888  888      X88 888  888 888
  [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
  [32mApp 鈥?[39m Scheduled to apply quasar.config changes in 550ms
  [32mApp 鈥?[39m Applying quasar.config file changes...
+
+ [32mApp 鈥?[39m The quasar.config file (or its dependencies) changed. Reading it again...
+ [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
+ [32mApp 鈥?[39m Scheduled to apply quasar.config changes in 550ms
+ [32mApp 鈥?[39m Applying quasar.config file changes...
+23:19:46 [vite] (client) Pre-transform error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/utils/mcp-client.ts:315:0: ERROR: Unexpected "}"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/utils/mcp-client.ts:315:0
+  
+  Unexpected "}"
+  313 |    }
+  314 |    return client
+  315 |  }
+      |  ^
+  316 |  
+  
+23:19:46 [vite] Internal server error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/utils/mcp-client.ts:315:0: ERROR: Unexpected "}"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/utils/mcp-client.ts:315:0
+  
+  Unexpected "}"
+  313 |    }
+  314 |    return client
+  315 |  }
+      |  ^
+  316 |  
+  
+      at failureErrorWithLog (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.11\node_modules\esbuild\lib\main.js:1467:15)
+      at D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.11\node_modules\esbuild\lib\main.js:736:50
+      at responseCallbacks.<computed> (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.11\node_modules\esbuild\lib\main.js:603:9)
+      at handleIncomingPacket (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.11\node_modules\esbuild\lib\main.js:658:12)
+      at Socket.readFromStdout (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.11\node_modules\esbuild\lib\main.js:581:7)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+23:19:48 [vite] Internal server error: Transform failed with 1 error:
+D:/D-code/want-merge/AIaW-master/src/utils/mcp-client.ts:315:0: ERROR: Unexpected "}"
+  Plugin: vite:esbuild
+  File: D:/D-code/want-merge/AIaW-master/src/utils/mcp-client.ts:315:0
+  
+  Unexpected "}"
+  313 |    }
+  314 |    return client
+  315 |  }
+      |  ^
+  316 |  
+  
+      at failureErrorWithLog (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.11\node_modules\esbuild\lib\main.js:1467:15)
+      at D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.11\node_modules\esbuild\lib\main.js:736:50
+      at responseCallbacks.<computed> (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.11\node_modules\esbuild\lib\main.js:603:9)
+      at handleIncomingPacket (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.11\node_modules\esbuild\lib\main.js:658:12)
+      at Socket.readFromStdout (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\esbuild@0.25.11\node_modules\esbuild\lib\main.js:581:7)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+
+ [32mApp 鈥?[39m The quasar.config file (or its dependencies) changed. Reading it again...
+ [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
+ [32mApp 鈥?[39m Scheduled to apply quasar.config changes in 550ms
+ [32mApp 鈥?[39m Applying quasar.config file changes...
