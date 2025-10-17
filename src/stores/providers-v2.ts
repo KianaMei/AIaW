@@ -13,6 +13,7 @@ import { getAllSystemProviders } from 'src/config/providers'
 import { getAllModels } from 'src/config/models'
 import { genId, removeDuplicates } from 'src/utils/functions'
 import { useI18n } from 'vue-i18n'
+import { persistentReactive } from 'src/composables/persistent-reactive'
 
 export const useProvidersV2Store = defineStore('providers-v2', () => {
   const { t } = useI18n()
@@ -56,6 +57,24 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
    */
   const enabledProviders = computed<ProviderV2[]>(() => {
     return allProviders.value.filter(p => p.enabled !== false)
+  })
+
+  // Persisted display order: providers list UI writes #providers-order { system: string[], custom: string[] }
+  const [providerOrders] = persistentReactive('#providers-order', { system: [] as string[], custom: [] as string[] })
+
+  // Enabled providers ordered by persisted order, fallback by name for stability
+  const enabledProvidersOrdered = computed<ProviderV2[]>(() => {
+    const list = enabledProviders.value
+    const orderArr = [...(providerOrders.system || []), ...(providerOrders.custom || [])]
+    if (orderArr.length === 0) return list
+    const pos = new Map<string, number>(orderArr.map((id, i) => [id, i]))
+    return [...list].sort((a, b) => {
+      const ai = pos.has(a.id) ? (pos.get(a.id) as number) : Number.MAX_SAFE_INTEGER
+      const bi = pos.has(b.id) ? (pos.get(b.id) as number) : Number.MAX_SAFE_INTEGER
+      if (ai !== bi) return ai - bi
+      // stable fallback to name
+      return (a.name || a.id).localeCompare(b.name || b.id)
+    })
   })
 
   /**
@@ -310,6 +329,7 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
     customProviders,
     allProviders,
     enabledProviders,
+    enabledProvidersOrdered,
     allModels,
     availableModels,
     modelOptions,

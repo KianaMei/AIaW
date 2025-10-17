@@ -282,10 +282,8 @@ const currentModelUniqId = computed(() => {
   return `${props.providerId}:${props.modelId}`
 })
 
-// Enabled providers list
-const enabledProviders = computed(() => {
-  return providersStore.enabledProviders || []
-})
+// Enabled providers list (ordered by persisted UI order)
+const enabledProviders = computed(() => providersStore.enabledProvidersOrdered || [])
 
 // Providers with models (filter out empty providers)
 const providersWithModels = computed(() => {
