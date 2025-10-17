@@ -902,6 +902,8 @@ async function send() {
   }
   showVars.value = false
   const target = chain.value.at(-1)
+  // 立即清空输入框，不要等待防抖
+  inputText.value = ''
   await db.messages.update(target, { status: 'default' })
   until(chain).changed().then(() => {
     nextTick().then(() => {
