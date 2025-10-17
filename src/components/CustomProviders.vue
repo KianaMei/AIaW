@@ -4,7 +4,7 @@
       v-for="provider in providersStore.customProviders"
       :key="provider.id"
       clickable
-      :to="`/settings/providers/${provider.id}``
+      :to="'/settings/providers/' + provider.id"
       active-class="route-active"
       item-rd
     >
@@ -99,4 +99,3 @@ function deleteItem({ id, name }: { id: string, name: string }) {
   })
 }
 </script>
-

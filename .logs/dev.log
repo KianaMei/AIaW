@@ -958,3 +958,87 @@ D:/D-code/want-merge/AIaW-master/src/utils/mcp-client.ts:315:0: ERROR: Unexpecte
  [32mApp[39m 鈥?[42m[30m TIP [39m[49m 鈥?馃殌  You (or an AE) specified an explicit quasar.config file > devServer > port. It is recommended to use a different devServer > port for each Quasar mode to avoid browser cache issues. Example: ctx.mode.ssr ? 9100 : ...
  [32mApp 鈥?[39m Scheduled to apply quasar.config changes in 550ms
  [32mApp 鈥?[39m Applying quasar.config file changes...
+11:32:20 [vite] Internal server error: Error parsing JavaScript expression: Unterminated template. (1:38)
+  Plugin: vite:vue
+  File: D:/D-code/want-merge/AIaW-master/src/components/CustomProviders.vue:7:12
+  5  |        :key="provider.id"
+  6  |        clickable
+  7  |        :to="`/settings/providers/${provider.id}``
+     |              ^
+  8  |        active-class="route-active"
+  9  |        item-rd
+      at createCompilerError (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1364:17)
+      at emitError (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2991:5)
+      at createExp (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2984:7)
+      at Object.onattribend (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2501:29)
+      at Tokenizer.handleInAttrValue (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:945:16)
+      at Tokenizer.stateInAttrValueDoubleQuotes (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:955:10)
+      at Tokenizer.parse (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1099:16)
+      at Object.baseParse (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:3030:13)
+      at Object.parse (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-dom@3.5.22\node_modules\@vue\compiler-dom\dist\compiler-dom.cjs.js:910:23)
+      at Object.parse$1 [as parse] (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-sfc@3.5.22\node_modules\@vue\compiler-sfc\dist\compiler-sfc.cjs.js:1801:24)
+      at createDescriptor (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/@vitejs+plugin-vue@6.0.1_vi_1e8066652d55e0b67b2c2148f635c60f/node_modules/@vitejs/plugin-vue/dist/index.js:79:42)
+      at transformMain (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/@vitejs+plugin-vue@6.0.1_vi_1e8066652d55e0b67b2c2148f635c60f/node_modules/@vitejs/plugin-vue/dist/index.js:1633:33)
+      at TransformPluginContext.handler (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/@vitejs+plugin-vue@6.0.1_vi_1e8066652d55e0b67b2c2148f635c60f/node_modules/@vitejs/plugin-vue/dist/index.js:2045:27)
+      at EnvironmentPluginContainer.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.10_@types+node@22._fbc35a8ac7166db538b891d22a47d952/node_modules/vite/dist/node/chunks/dep-B0GuR2De.js:30904:51)
+      at async loadAndTransform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.10_@types+node@22._fbc35a8ac7166db538b891d22a47d952/node_modules/vite/dist/node/chunks/dep-B0GuR2De.js:26042:26)
+      at async viteTransformMiddleware (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.10_@types+node@22._fbc35a8ac7166db538b891d22a47d952/node_modules/vite/dist/node/chunks/dep-B0GuR2De.js:27117:20)
+11:32:39 [vite] (client) Pre-transform error: Error parsing JavaScript expression: Unterminated template. (1:38)
+  Plugin: vite:vue
+  File: D:/D-code/want-merge/AIaW-master/src/components/CustomProviders.vue:7:12
+  5  |        :key="provider.id"
+  6  |        clickable
+  7  |        :to="`/settings/providers/${provider.id}``
+     |              ^
+  8  |        active-class="route-active"
+  9  |        item-rd
+11:32:39 [vite] Internal server error: Error parsing JavaScript expression: Unterminated template. (1:38)
+  Plugin: vite:vue
+  File: D:/D-code/want-merge/AIaW-master/src/components/CustomProviders.vue:7:12
+  5  |        :key="provider.id"
+  6  |        clickable
+  7  |        :to="`/settings/providers/${provider.id}``
+     |              ^
+  8  |        active-class="route-active"
+  9  |        item-rd
+      at createCompilerError (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1364:17)
+      at emitError (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2991:5)
+      at createExp (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2984:7)
+      at Object.onattribend (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2501:29)
+      at Tokenizer.handleInAttrValue (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:945:16)
+      at Tokenizer.stateInAttrValueDoubleQuotes (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:955:10)
+      at Tokenizer.parse (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1099:16)
+      at Object.baseParse (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:3030:13)
+      at Object.parse (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-dom@3.5.22\node_modules\@vue\compiler-dom\dist\compiler-dom.cjs.js:910:23)
+      at Object.parse$1 [as parse] (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-sfc@3.5.22\node_modules\@vue\compiler-sfc\dist\compiler-sfc.cjs.js:1801:24)
+      at createDescriptor (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/@vitejs+plugin-vue@6.0.1_vi_1e8066652d55e0b67b2c2148f635c60f/node_modules/@vitejs/plugin-vue/dist/index.js:79:42)
+      at transformMain (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/@vitejs+plugin-vue@6.0.1_vi_1e8066652d55e0b67b2c2148f635c60f/node_modules/@vitejs/plugin-vue/dist/index.js:1633:33)
+      at TransformPluginContext.handler (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/@vitejs+plugin-vue@6.0.1_vi_1e8066652d55e0b67b2c2148f635c60f/node_modules/@vitejs/plugin-vue/dist/index.js:2045:27)
+      at EnvironmentPluginContainer.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.10_@types+node@22._fbc35a8ac7166db538b891d22a47d952/node_modules/vite/dist/node/chunks/dep-B0GuR2De.js:30904:51)
+      at async loadAndTransform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.10_@types+node@22._fbc35a8ac7166db538b891d22a47d952/node_modules/vite/dist/node/chunks/dep-B0GuR2De.js:26042:26)
+      at async viteTransformMiddleware (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.10_@types+node@22._fbc35a8ac7166db538b891d22a47d952/node_modules/vite/dist/node/chunks/dep-B0GuR2De.js:27117:20)
+12:04:21 [vite] Internal server error: Error parsing JavaScript expression: Unterminated template. (1:38)
+  Plugin: vite:vue
+  File: D:/D-code/want-merge/AIaW-master/src/components/CustomProviders.vue:7:12
+  5  |        :key="provider.id"
+  6  |        clickable
+  7  |        :to="`/settings/providers/${provider.id}``
+     |              ^
+  8  |        active-class="route-active"
+  9  |        item-rd
+      at createCompilerError (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1364:17)
+      at emitError (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2991:5)
+      at createExp (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2984:7)
+      at Object.onattribend (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2501:29)
+      at Tokenizer.handleInAttrValue (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:945:16)
+      at Tokenizer.stateInAttrValueDoubleQuotes (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:955:10)
+      at Tokenizer.parse (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1099:16)
+      at Object.baseParse (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-core@3.5.22\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:3030:13)
+      at Object.parse (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-dom@3.5.22\node_modules\@vue\compiler-dom\dist\compiler-dom.cjs.js:910:23)
+      at Object.parse$1 [as parse] (D:\D-code\want-merge\AIaW-master\node_modules\.pnpm\@vue+compiler-sfc@3.5.22\node_modules\@vue\compiler-sfc\dist\compiler-sfc.cjs.js:1801:24)
+      at createDescriptor (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/@vitejs+plugin-vue@6.0.1_vi_1e8066652d55e0b67b2c2148f635c60f/node_modules/@vitejs/plugin-vue/dist/index.js:79:42)
+      at transformMain (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/@vitejs+plugin-vue@6.0.1_vi_1e8066652d55e0b67b2c2148f635c60f/node_modules/@vitejs/plugin-vue/dist/index.js:1633:33)
+      at TransformPluginContext.handler (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/@vitejs+plugin-vue@6.0.1_vi_1e8066652d55e0b67b2c2148f635c60f/node_modules/@vitejs/plugin-vue/dist/index.js:2045:27)
+      at EnvironmentPluginContainer.transform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.10_@types+node@22._fbc35a8ac7166db538b891d22a47d952/node_modules/vite/dist/node/chunks/dep-B0GuR2De.js:30904:51)
+      at async loadAndTransform (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.10_@types+node@22._fbc35a8ac7166db538b891d22a47d952/node_modules/vite/dist/node/chunks/dep-B0GuR2De.js:26042:26)
+      at async viteTransformMiddleware (file:///D:/D-code/want-merge/AIaW-master/node_modules/.pnpm/vite@7.1.10_@types+node@22._fbc35a8ac7166db538b891d22a47d952/node_modules/vite/dist/node/chunks/dep-B0GuR2De.js:27117:20)
