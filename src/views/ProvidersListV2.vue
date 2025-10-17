@@ -35,37 +35,40 @@
           <h6 class="text-h6 mb-3">
             {{ $t('providersList.systemProviders') }}
           </h6>
-          <q-list
-            bordered
-            separator
-          >
-            <q-item
-              v-for="provider in filteredSystemProviders"
-              :key="provider.id"
-              clickable
-              :to="`/settings/providers/${provider.id}`"
-              active-class="bg-primary-container"
+          <q-list bordered separator>
+            <VueDraggable
+              v-model="systemOrderIds"
+              :animation="150"
+              handle=".drag-handle"
             >
-              <q-item-section avatar>
-                <a-avatar
-                  :avatar="getProviderAvatar(provider)"
-                  size="md"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>{{ provider.name }}</q-item-label>
-                <q-item-label caption>
-                  {{ provider.type }}
-                </q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-toggle
-                  :model-value="provider.enabled"
-                  @update:model-value="toggleProvider(provider)"
-                  @click.stop
-                />
-              </q-item-section>
-            </q-item>
+              <template #item="{ element: id }">
+                <q-item
+                  v-if="systemById.get(id)"
+                  :key="id"
+                  clickable
+                  :to="`/settings/providers/${id}`"
+                  active-class="bg-primary-container"
+                >
+                  <q-item-section side class="drag-handle" style="cursor:grab">
+                    <q-icon name="sym_o_drag_indicator" />
+                  </q-item-section>
+                  <q-item-section avatar>
+                    <a-avatar :avatar="getProviderAvatar(systemById.get(id))" size="md" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ systemById.get(id)?.name }}</q-item-label>
+                    <q-item-label caption>{{ systemById.get(id)?.type }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <q-toggle
+                      :model-value="systemById.get(id)?.enabled"
+                      @update:model-value="toggleProvider(systemById.get(id))"
+                      @click.stop
+                    />
+                  </q-item-section>
+                </q-item>
+              </template>
+            </VueDraggable>
           </q-list>
         </div>
 
@@ -74,53 +77,52 @@
           <h6 class="text-h6 mb-3">
             {{ $t('providersList.customProviders') }}
           </h6>
-          <q-list
-            bordered
-            separator
-          >
-            <q-item
-              v-for="provider in filteredCustomProviders"
-              :key="provider.id"
-              clickable
-              :to="`/settings/providers/${provider.id}`"
-              active-class="bg-primary-container"
+          <q-list bordered separator>
+            <VueDraggable
+              v-model="customOrderIds"
+              :animation="150"
+              handle=".drag-handle"
             >
-              <q-item-section avatar>
-                <a-avatar
-                  :avatar="provider.avatar"
-                  size="md"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>{{ provider.name }}</q-item-label>
-                <q-item-label caption>
-                  {{ provider.type }}
-                </q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <div
-                  flex
-                  items-center
-                  gap-2
+              <template #item="{ element: id }">
+                <q-item
+                  v-if="customById.get(id)"
+                  :key="id"
+                  clickable
+                  :to="`/settings/providers/${id}`"
+                  active-class="bg-primary-container"
                 >
-                  <q-toggle
-                    :model-value="provider.enabled"
-                    @update:model-value="toggleCustomProvider(provider)"
-                    @click.stop
-                  />
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    icon="sym_o_delete"
-                    size="sm"
-                    @click.stop="deleteProvider(provider)"
-                  >
-                    <q-tooltip>{{ $t('providersList.delete') }}</q-tooltip>
-                  </q-btn>
-                </div>
-              </q-item-section>
-            </q-item>
+                  <q-item-section side class="drag-handle" style="cursor:grab">
+                    <q-icon name="sym_o_drag_indicator" />
+                  </q-item-section>
+                  <q-item-section avatar>
+                    <a-avatar :avatar="customById.get(id)?.avatar" size="md" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ customById.get(id)?.name }}</q-item-label>
+                    <q-item-label caption>{{ customById.get(id)?.type }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <div flex items-center gap-2>
+                      <q-toggle
+                        :model-value="customById.get(id)?.enabled"
+                        @update:model-value="toggleCustomProvider(customById.get(id))"
+                        @click.stop
+                      />
+                      <q-btn
+                        flat
+                        round
+                        dense
+                        icon="sym_o_delete"
+                        size="sm"
+                        @click.stop="deleteProvider(customById.get(id))"
+                      >
+                        <q-tooltip>{{ $t('providersList.delete') }}</q-tooltip>
+                      </q-btn>
+                    </div>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </VueDraggable>
           </q-list>
         </div>
 
@@ -137,7 +139,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useProvidersV2Store } from 'src/stores/providers-v2'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
@@ -147,6 +149,8 @@ import AAvatar from 'src/components/AAvatar.vue'
 import AddProviderDialogV2 from 'src/components/AddProviderDialogV2.vue'
 import { pageFhStyle } from 'src/utils/functions'
 import type { SystemProvider, CustomProviderV2, Avatar } from 'src/utils/types'
+import { VueDraggable } from 'vue-draggable-plus'
+import { persistentReactive } from 'src/composables/persistent-reactive'
 
 defineEmits(['toggle-drawer'])
 
@@ -156,6 +160,12 @@ const { t } = useI18n()
 const router = useRouter()
 
 const searchText = ref('')
+
+// Persisted order (by provider id)
+const [orders] = persistentReactive('#providers-order', {
+  system: [] as string[],
+  custom: [] as string[]
+})
 
 // Filtered providers
 const filteredSystemProviders = computed(() => {
@@ -179,6 +189,36 @@ const filteredCustomProviders = computed(() => {
     p.type.toLowerCase().includes(search)
   )
 })
+
+// Efficient lookup maps
+const systemById = computed(() => new Map(filteredSystemProviders.value.map(p => [p.id, p])))
+const customById = computed(() => new Map(filteredCustomProviders.value.map(p => [p.id, p])))
+
+// Local order ids (bound to draggable)
+const systemOrderIds = ref<string[]>([])
+const customOrderIds = ref<string[]>([])
+
+function rebuildOrder(list: { id: string }[], saved: string[]) {
+  const idSet = new Set(list.map(i => i.id))
+  // Keep only ids that still exist
+  const kept = saved.filter(id => idSet.has(id))
+  // Append new ids not in saved order
+  const rest = list.map(i => i.id).filter(id => !kept.includes(id))
+  return [...kept, ...rest]
+}
+
+// Initialize and sync when list changes or search changes
+watch([filteredSystemProviders, () => orders.system], () => {
+  systemOrderIds.value = rebuildOrder(filteredSystemProviders.value, orders.system)
+}, { immediate: true })
+
+watch([filteredCustomProviders, () => orders.custom], () => {
+  customOrderIds.value = rebuildOrder(filteredCustomProviders.value, orders.custom)
+}, { immediate: true })
+
+// Persist on drag end (or whenever order arrays change)
+watch(systemOrderIds, (val) => { orders.system = [...val] })
+watch(customOrderIds, (val) => { orders.custom = [...val] })
 
 // Get provider avatar
 function getProviderAvatar(provider: SystemProvider | CustomProviderV2): Avatar {
