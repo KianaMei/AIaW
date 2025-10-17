@@ -1134,10 +1134,10 @@ ${errorDetails.stack}
               cancel: {
                 label: 'Copy to Clipboard',
                 handler() {
-                  const fullError = \`Error Type: \${errorDetails.type}
-Time: \${errorDetails.timestamp}
-Message: \${errorMsg}
-Stack: \${errorDetails.stack}\`
+                  const fullError = `Error Type: ${errorDetails.type}
+Time: ${errorDetails.timestamp}
+Message: ${errorMsg}
+Stack: ${errorDetails.stack}`
                   copyToClipboard(fullError)
                   $q.notify({ message: 'Copied to clipboard', color: 'positive', timeout: 1500 })
                 }
