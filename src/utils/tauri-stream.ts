@@ -102,11 +102,8 @@ export function fetch(url: string, options?: RequestInit): Promise<Response> {
   ).then((u: Function) => (unlisten = u))
 
   const headers = new Headers({
-    // Prefer SSE for streaming endpoints, but keep JSON compatibility
-    Accept: 'text/event-stream, application/json, text/plain, */*',
+    Accept: 'application/json, text/plain, */*',
     'Accept-Language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7',
-    'Cache-Control': 'no-cache',
-    Pragma: 'no-cache',
     'User-Agent': navigator.userAgent
   })
   for (const [key, value] of new Headers(_headers || {})) {
