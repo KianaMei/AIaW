@@ -63,6 +63,7 @@ interface Perfs {
   streamingLockBottom: boolean
   messageCatalog: boolean
   showWarnings: boolean
+  showErrorLog: boolean
   userInputDebounce: number
   expandReasoningContent: boolean
 }
@@ -117,6 +118,7 @@ export const useUserPerfsStore = defineStore('user-perfs', () => {
     streamingLockBottom: true,
     messageCatalog: true,
     showWarnings: false,
+    showErrorLog: true,
     userInputDebounce: 30,
     expandReasoningContent: true
   }

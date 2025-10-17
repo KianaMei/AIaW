@@ -144,7 +144,8 @@ export default {
       loadPluginList: 'Failed to load plugin list',
       genTitle: 'Failed to summarize conversation, please check system assistant settings',
       insufficientQuota: 'Insufficient model service quota',
-      systemModelNotConfigured: 'System model not configured. Please set it in Settings.'
+      systemModelNotConfigured: 'System model not configured. Please set it in Settings.',
+      generationFailed: 'Generation failed'
     },
     enabledPlugins: 'Enabled Plugins',
     messageTokens: 'Last Message Token Consumption',
@@ -211,6 +212,8 @@ export default {
     sort: 'Sort',
     showWarnings: 'Show Warnings',
     showWarningsCaption: 'Show warning messages in the response',
+    showErrorLog: 'Show Error Log',
+    showErrorLogCaption: 'Display complete error messages in chat for debugging',
     markdownRendering: 'Markdown Rendering',
     theme: 'Theme',
     codeTheme: 'Code Theme',

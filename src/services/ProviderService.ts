@@ -327,7 +327,7 @@ export class ProviderService {
 
     // timeout controller
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
-    const timeoutMs = 12000
+    const timeoutMs = 45000 // 45 seconds - increased from 12s for slow/overloaded APIs
     let timer: any
     if (controller) {
       timer = setTimeout(() => controller.abort('request-timeout'), timeoutMs)

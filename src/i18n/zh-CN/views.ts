@@ -144,7 +144,8 @@ export default {
       loadPluginList: '加载插件列表失败',
       genTitle: '总结对话失败，请检查系统助手设置',
       insufficientQuota: '模型服务额度不足',
-      systemModelNotConfigured: '系统模型未配置。请在设置中配置系统助手模型。'
+      systemModelNotConfigured: '系统模型未配置。请在设置中配置系统助手模型。',
+      generationFailed: '生成失败'
     },
     enabledPlugins: '已启用插件',
     messageTokens: '上条消息 Token 消耗',
@@ -215,6 +216,8 @@ export default {
     sort: '排序',
     showWarnings: '显示警告',
     showWarningsCaption: '显示响应中的警告信息',
+    showErrorLog: '显示错误日志',
+    showErrorLogCaption: '在对话中显示完整的错误信息以便调试',
     markdownRendering: 'Markdown 渲染',
     theme: '主题',
     codeTheme: '代码主题',

@@ -1090,6 +1090,8 @@ async function stream(target, insert = false) {
     await db.messages.update(id, { contents, status: 'default', generatingSession: null, warnings, usage })
   } catch (e) {
     console.error(e)
+    const errorMsg = e.message || e.toString()
+
     if (e.data?.error?.type === 'budget_exceeded') {
       $q.notify({
         message: t('dialogView.errors.insufficientQuota'),
@@ -1097,8 +1099,56 @@ async function stream(target, insert = false) {
         textColor: 'on-err-c',
         actions: [{ label: t('dialogView.recharge'), color: 'on-sur', handler() { router.push('/account') } }]
       })
+    } else if (perfs.showErrorLog) {
+      // Display detailed error log when enabled
+      const errorDetails = {
+        message: errorMsg,
+        stack: e.stack || 'No stack trace available',
+        type: e.name || 'Unknown Error',
+        timestamp: new Date().toLocaleString()
+      }
+
+      $q.notify({
+        message: t('dialogView.errors.generationFailed') || 'Generation failed',
+        caption: errorMsg.substring(0, 100),
+        color: 'negative',
+        position: 'top',
+        timeout: 0,
+        closeBtn: 'x',
+        actions: [{
+          label: 'Details',
+          color: 'white',
+          handler() {
+            $q.dialog({
+              title: 'Error Details',
+              message: `<div style="font-family: monospace; white-space: pre-wrap; word-break: break-word; max-height: 400px; overflow-y: auto;">
+                <strong>Type:</strong> ${errorDetails.type}
+                <strong>Time:</strong> ${errorDetails.timestamp}
+                <strong>Message:</strong>
+${errorMsg}
+                <strong>Stack:</strong>
+${errorDetails.stack}
+              </div>`,
+              html: true,
+              ok: true,
+              cancel: {
+                label: 'Copy to Clipboard',
+                handler() {
+                  const fullError = \`Error Type: \${errorDetails.type}
+Time: \${errorDetails.timestamp}
+Message: \${errorMsg}
+Stack: \${errorDetails.stack}\`
+                  copyToClipboard(fullError)
+                  $q.notify({ message: 'Copied to clipboard', color: 'positive', timeout: 1500 })
+                }
+              }
+            })
+          }
+        }]
+      })
     }
-    await db.messages.update(id, { contents, error: e.message || e.toString(), status: 'failed', generatingSession: null })
+
+    await db.messages.update(id, { contents, error: errorMsg, status: 'failed', generatingSession: null })
   }
   perfs.artifactsAutoExtract && autoExtractArtifact()
   lockingBottom.value = false

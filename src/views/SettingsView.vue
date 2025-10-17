@@ -393,6 +393,22 @@
         </q-item>
         <q-item>
           <q-item-section avatar>
+            <q-icon name="sym_o_bug_report" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>
+              {{ $t('settingsView.showErrorLog') }}
+            </q-item-label>
+            <q-item-label caption>
+              {{ $t('settingsView.showErrorLogCaption') }}
+            </q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <q-toggle v-model="perfs.showErrorLog" />
+          </q-item-section>
+        </q-item>
+        <q-item>
+          <q-item-section avatar>
             <q-icon name="sym_o_language" />
           </q-item-section>
           <q-item-section>{{ $t('settingsView.language') }}</q-item-section>
