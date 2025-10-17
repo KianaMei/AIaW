@@ -5,6 +5,7 @@ on:
     branches: [ master, main ]
   pull_request:
     branches: [ master, main ]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -36,4 +37,3 @@ jobs:
 
       - name: Build (SPA)
         run: pnpm build
-
