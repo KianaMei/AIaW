@@ -149,12 +149,15 @@
           />
         </div>
         <div
+          v-if="message.error"
           text-err
           break-word
           px-5
           mt-2
           pb-2
-          v-if="message.error"
+          cursor-pointer
+          @click="showErrorInfo"
+          :title="$t('messageItem.errorMessage')"
         >
           {{ message.error }}
         </div>
@@ -289,6 +292,12 @@
                   @click="quote(textContent.text)"
                 />
                 <menu-item
+                  v-if="message.error"
+                  icon="sym_o_report"
+                  :label="$t('messageItem.errorMessage')"
+                  @click="showErrorInfo"
+                />
+                <menu-item
                   icon="sym_o_info"
                   :label="$t('messageItem.moreInfo')"
                   @click="moreInfo"
@@ -356,6 +365,12 @@ function moreInfo() {
   $q.dialog({
     component: MessageInfoDialog,
     componentProps: { message: props.message }
+  })
+}
+function showErrorInfo() {
+  $q.dialog({
+    component: MessageInfoDialog,
+    componentProps: { message: props.message, onlyError: true }
   })
 }
 const sourceCodeMode = ref(false)

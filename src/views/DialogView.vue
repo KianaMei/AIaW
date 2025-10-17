@@ -943,7 +943,7 @@ async function stream(target, insert = false) {
       contents,
       status: 'pending',
       generatingSession: sessions.id,
-      modelName: (model.value?.name || `${currentProviderId.value}:${currentModelId.value}`)
+      modelName: `${(getProvider(currentProviderId.value)?.name || currentProviderId.value)} · ${(model.value?.name || currentModelId.value)}`
     }, insert)
     !insert && await appendMessage(id, {
       type: 'user',
@@ -1099,7 +1099,7 @@ async function stream(target, insert = false) {
         textColor: 'on-err-c',
         actions: [{ label: t('dialogView.recharge'), color: 'on-sur', handler() { router.push('/account') } }]
       })
-    } else if (perfs.showErrorLog) {
+    } else if (false && perfs.showErrorLog) {
       // Display detailed error log when enabled
       const errorDetails = {
         message: errorMsg,
@@ -1107,6 +1107,8 @@ async function stream(target, insert = false) {
         type: e.name || 'Unknown Error',
         timestamp: new Date().toLocaleString()
       }
+      // Escape HTML to avoid injection when using html dialog
+      const esc = (s: any) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
       $q.notify({
         message: t('dialogView.errors.generationFailed') || 'Generation failed',
@@ -1122,12 +1124,12 @@ async function stream(target, insert = false) {
             $q.dialog({
               title: 'Error Details',
               message: `<div style="font-family: monospace; white-space: pre-wrap; word-break: break-word; max-height: 400px; overflow-y: auto;">
-                <strong>Type:</strong> ${errorDetails.type}
-                <strong>Time:</strong> ${errorDetails.timestamp}
+                <strong>Type:</strong> ${esc(errorDetails.type)}
+                <strong>Time:</strong> ${esc(errorDetails.timestamp)}
                 <strong>Message:</strong>
-${errorMsg}
+${esc(errorMsg)}
                 <strong>Stack:</strong>
-${errorDetails.stack}
+${esc(errorDetails.stack)}
               </div>`,
               html: true,
               ok: true,
@@ -1148,7 +1150,41 @@ Stack: ${errorDetails.stack}`
       })
     }
 
-    await db.messages.update(id, { contents, error: errorMsg, status: 'failed', generatingSession: null })
+    // Build rich error details for diagnostics
+    const resp = e?.response || e?.res
+    let headers: any
+    try {
+      if (resp?.headers) {
+        headers = typeof resp.headers?.entries === 'function'
+          ? Object.fromEntries(resp.headers.entries())
+          : resp.headers
+      }
+    } catch {}
+    const providerId = currentProviderId.value
+    const modelId = currentModelId.value
+    const providerName = getProvider(providerId)?.name || providerId || ''
+    const requestId = (headers?.['x-request-id'] || headers?.['request-id'] || (typeof resp?.headers?.get === 'function' ? (resp.headers.get('x-request-id') || resp.headers.get('request-id')) : '')) || ''
+    const errorDetail = {
+      type: e?.name || 'Error',
+      timestamp: new Date().toISOString(),
+      message: errorMsg,
+      stack: e?.stack,
+      status: e?.status || resp?.status,
+      statusText: resp?.statusText,
+      url: resp?.url || e?.url || e?.config?.url,
+      requestId,
+      providerId,
+      providerName,
+      modelId,
+      responseBody: e?.data || e?.body || e?.responseBody,
+      headers
+    }
+    const statusLabel = errorDetail.status ? `[${errorDetail.status}${errorDetail.statusText ? ' ' + errorDetail.statusText : ''}] ` : ''
+    const reqIdLabel = requestId ? ` (req: ${requestId})` : ''
+    const modelLabel = providerName && modelId ? ` — ${providerName} · ${modelId}` : ''
+    const summary = `${statusLabel}${errorMsg}${reqIdLabel}${modelLabel}`
+
+    await db.messages.update(id, { contents, error: summary, errorDetail, status: 'failed', generatingSession: null })
   }
   perfs.artifactsAutoExtract && autoExtractArtifact()
   lockingBottom.value = false

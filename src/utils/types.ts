@@ -498,6 +498,25 @@ interface Message {
   status: 'pending' | 'streaming' | 'failed' | 'default' | 'inputing'
   generatingSession?: string
   error?: string
+  /**
+   * Rich error details for diagnostics (optional)
+   */
+  errorDetail?: {
+    type?: string
+    timestamp?: string
+    message?: string
+    stack?: string
+    status?: number
+    statusText?: string
+    url?: string
+    requestId?: string
+    providerId?: string
+    providerName?: string
+    modelId?: string
+    responseBody?: any
+    headers?: Record<string, any>
+    raw?: any
+  }
   warnings?: string[]
   usage?: LanguageModelUsage
   modelName?: string

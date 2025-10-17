@@ -151,6 +151,21 @@ export default {
     completion: '补全：',
     ok: '确定'
   },
+  errorInfoDialog: {
+    title: '错误信息',
+    copy: '复制详情',
+    ok: '确定',
+    provider: '服务商',
+    model: '模型',
+    status: 'HTTP 状态',
+    url: '请求 URL',
+    requestId: '请求 ID',
+    type: '错误类型',
+    message: '错误消息',
+    stack: '堆栈',
+    response: '响应体'
+    ,headers: '响应头'
+  },
   installPluginBtn: {
     installed: '已安装',
     install: '安装',
@@ -169,6 +184,7 @@ export default {
     regenerate: '重新生成',
     edit: '修改',
     more: '更多',
+    errorMessage: '错误信息',
     showSourceCode: '显示源代码',
     directEdit: '直接编辑',
     moreInfo: '更多信息',

@@ -150,6 +150,21 @@ export default {
     completion: '補全：',
     ok: '確定'
   },
+  errorInfoDialog: {
+    title: '錯誤訊息',
+    copy: '複製詳情',
+    ok: '確定',
+    provider: '服務商',
+    model: '模型',
+    status: 'HTTP 狀態',
+    url: '請求 URL',
+    requestId: '請求 ID',
+    type: '錯誤類型',
+    message: '錯誤訊息',
+    stack: '堆疊',
+    response: '回應內容',
+    headers: '回應標頭'
+  },
   installPluginBtn: {
     installed: '已安裝',
     install: '安裝',
@@ -168,6 +183,7 @@ export default {
     regenerate: '重新生成',
     edit: '修改',
     more: '更多',
+    errorMessage: '錯誤訊息',
     showSourceCode: '顯示原始碼',
     directEdit: '直接編輯',
     moreInfo: '更多資訊',

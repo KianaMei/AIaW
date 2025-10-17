@@ -151,6 +151,21 @@ export default {
     completion: 'Completion:',
     ok: 'OK'
   },
+  errorInfoDialog: {
+    title: 'Error Message',
+    copy: 'Copy Details',
+    ok: 'OK',
+    provider: 'Provider',
+    model: 'Model',
+    status: 'HTTP Status',
+    url: 'Request URL',
+    requestId: 'Request ID',
+    type: 'Error Type',
+    message: 'Message',
+    stack: 'Stack',
+    response: 'Response Body',
+    headers: 'Response Headers'
+  },
   installPluginBtn: {
     installed: 'Installed',
     install: 'Install',
@@ -169,6 +184,7 @@ export default {
     regenerate: 'Regenerate',
     edit: 'Edit',
     more: 'More',
+    errorMessage: 'Error Message',
     showSourceCode: 'Source Code',
     directEdit: 'Direct Edit',
     moreInfo: 'More Info',
