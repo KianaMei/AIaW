@@ -38,7 +38,7 @@
         <div
           v-for="(content, index) in contents"
           :key="index"
-          :class="message.type === 'user' ? 'bg-sur-c-low' : 'bg-sur'"
+          class="bg-sur-c-low"
           rd-lg
         >
           <q-expansion-item
@@ -72,7 +72,7 @@
             v-if="(content.type === 'assistant-message' || content.type === 'user-message') && content.text"
           >
             <md-preview
-              :class="message.type === 'user' ? 'bg-sur-c-low' : 'bg-sur'"
+              class="bg-sur-c-low"
               :id="mdId"
               rd-lg
               :model-value="content.text"

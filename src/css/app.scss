@@ -402,6 +402,17 @@ body .md-editor-preview-wrapper {
   --at-apply: 'px-5';
 }
 
+.md-editor,
+.md-editor-preview-wrapper,
+.md-editor .md-editor-preview,
+.md-editor-preview {
+  /* Remove library default solid white/black backgrounds so the
+     preview inherits the container (chat bubble) color */
+  background-color: transparent !important;
+  /* Align md-editor theme vars to be transparent as well */
+  --md-theme-bg-color: transparent !important;
+}
+
 .md-editor-dark .md-editor-preview {
   --md-theme-color: var(--a-on-sur-var) !important;
   --md-theme-heading-color: var(--a-on-sur-var) !important;
