@@ -252,8 +252,8 @@ function getMainPageRect(): DOMRect {
 function updateMenuStyle() {
   nextTick(() => {
     const mainRect = getMainPageRect()
-    const menuWidth = mainRect.width * 0.60
-    const menuLeft = mainRect.left + (mainRect.width * 0.20)
+    const menuWidth = mainRect.width * 0.85  // 修改为 85% 宽度
+    const menuLeft = mainRect.left + (mainRect.width * 0.075)  // 左边距 7.5% 使其居中
 
     const btnEl = btnRef.value?.$el || btnRef.value
     if (!btnEl) return
