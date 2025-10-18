@@ -35,10 +35,14 @@
 
 <script setup lang="ts">
 import { useBack } from 'src/composables/back'
+import { useDoubleBack } from 'src/composables/double-back'
 import { useUiStateStore } from 'src/stores/ui-state'
-import { inject } from 'vue'
+import { useRouter } from 'vue-router'
+import { inject, computed } from 'vue'
 
 const uiStore = useUiStateStore()
+const router = useRouter()
+const { handleBackPress } = useDoubleBack()
 const rightDrawerAbove = inject('rightDrawerAbove')
 
 defineEmits(['toggle-drawer', 'contextmenu'])
@@ -49,7 +53,20 @@ const props = defineProps<{
 }>()
 
 console.log('[ViewCommonHeader] Props received:', props)
-const back = useBack(props.backTo, { forceNavigate: props.forceNavigate })
+
+// Use double-back detection in chat view, normal back in other views
+const isChatView = computed(() => router.currentRoute.value.name === 'DialogView')
+const normalBack = useBack(props.backTo, { forceNavigate: props.forceNavigate })
+
+const back = () => {
+  if (isChatView.value) {
+    // In chat view, use double-back detection
+    handleBackPress()
+  } else {
+    // In other views, use normal back navigation
+    normalBack()
+  }
+}
 </script>
 <style scoped>
 

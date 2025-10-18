@@ -53,13 +53,13 @@
             mx-4
             header-class="min-h-40px reasoning-content-header"
           >
-            <q-card important:bg-sur-c-low>
+            <q-card important:bg-sur-c-low ref="reasoningDiv">
               <!-- Render reasoning with Markdown so **bold**, lists, code, etc. work -->
               <md-preview
                 :model-value="sanitizeReasoning(content.reasoning)"
                 v-bind="mdPreviewProps"
                 class="px-3 py-2 reasoning-md"
-                @on-html-changed="onHtmlChanged()"
+                @on-html-changed="onHtmlChanged(true)"
               />
             </q-card>
           </q-expansion-item>
@@ -457,6 +457,7 @@ const floatBtnStyle = reactive({
   left: undefined
 })
 const textDiv = ref()
+const reasoningDiv = ref()
 const selected = reactive({
   text: null,
   original: false
@@ -566,31 +567,75 @@ function selectedConvertArtifact() {
 
 function onHtmlChanged(inject = false) {
   nextTick(() => {
-    inject && injectConvertArtifact()
+    if (inject) {
+      injectCodeHeaderButtons(textDiv.value?.[0])
+      injectCodeHeaderButtons(reasoningDiv.value?.[0])
+    }
     emit('rendered')
   })
 }
-function injectConvertArtifact() {
-  if (!isPlatformEnabled(perfs.artifactsEnabled)) return
-  const el: HTMLElement = textDiv.value[0]
-  el.querySelectorAll('.md-editor-code').forEach(code => {
-    if (code.querySelector('.md-editor-convert-artifact')) return
+
+function injectCodeHeaderButtons(root?: HTMLElement) {
+  if (!root) return
+  // Always set titles for built-ins
+  root.querySelectorAll('.md-editor-code').forEach(code => {
+    code.querySelector<HTMLElement>('.md-editor-copy-button')?.setAttribute('title', t('messageItem.copyCode'))
+    code.querySelector<HTMLElement>('.md-editor-collapse-tips')?.setAttribute('title', t('messageItem.fold'))
+  })
+  // Inject Convert to Artifact (existing feature)
+  if (isPlatformEnabled(perfs.artifactsEnabled)) {
+    root.querySelectorAll('.md-editor-code').forEach(code => {
+      if (!code.querySelector('.md-editor-convert-artifact')) {
+        const anchor = code.querySelector('.md-editor-collapse-tips')
+        const btn = document.createElement('span')
+        btn.innerHTML = 'convert_to_text'
+        btn.classList.add('md-editor-convert-artifact')
+        btn.addEventListener('click', (ev) => {
+          ev.preventDefault()
+          ev.stopPropagation()
+          const text = code.querySelector('pre code')?.textContent || ''
+          const lang = code.querySelector('pre code')?.getAttribute('language')
+          const pattern = new RegExp(`\`{3,}.*\\n${escapeRegex(text)}\\s*\`{3,}`, 'g')
+          convertArtifact(text, pattern, lang as string)
+        })
+        btn.title = t('messageItem.convertToArtifactBtn')
+        code.querySelector('.md-editor-code-action')?.insertBefore(btn, anchor)
+      }
+    })
+  }
+  // Inject HTML preview button in code header
+  root.querySelectorAll('.md-editor-code').forEach(code => {
+    const lang = code.querySelector('pre code')?.getAttribute('language')
+    if (lang !== 'html') return
+    if (code.querySelector('.md-editor-open-html')) return
     const anchor = code.querySelector('.md-editor-collapse-tips')
     const btn = document.createElement('span')
-    btn.innerHTML = 'convert_to_text'
-    btn.classList.add('md-editor-convert-artifact')
+    btn.innerHTML = 'open_in_new'
+    btn.classList.add('md-editor-open-html')
+    btn.title = t('messageItem.openHtmlPreview')
     btn.addEventListener('click', (ev) => {
       ev.preventDefault()
       ev.stopPropagation()
-      const text = code.querySelector('pre code').textContent
-      const lang = code.querySelector('pre code').getAttribute('language')
-      const pattern = new RegExp(`\`{3,}.*\\n${escapeRegex(text)}\\s*\`{3,}`, 'g')
-      convertArtifact(text, pattern, lang)
+      const html = code.querySelector('pre code')?.textContent || ''
+      openHtmlPreview({ html, lang: 'html' })
     })
-    btn.title = t('messageItem.convertToArtifactBtn')
-    code.querySelector('.md-editor-code-action').insertBefore(btn, anchor)
-    code.querySelector<HTMLElement>('.md-editor-copy-button').title = t('messageItem.copyCode')
-    code.querySelector<HTMLElement>('.md-editor-collapse-tips').title = t('messageItem.fold')
+    code.querySelector('.md-editor-code-action')?.insertBefore(btn, anchor)
+  })
+}
+
+import HtmlPreviewDialog from './HtmlPreviewDialog.vue'
+
+function openHtmlPreview({ html, lang }: { html: string, lang?: string }) {
+  $q.dialog({
+    component: HtmlPreviewDialog,
+    componentProps: {
+      html,
+      lang: lang || 'html',
+      messageId: props.message.id,
+      textIndex: textIndex.value,
+      originalMd: textContent.value.text,
+      title: 'HTML'
+    }
   })
 }
 const mdPreviewProps = useMdPreviewProps()

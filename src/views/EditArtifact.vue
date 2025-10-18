@@ -20,6 +20,13 @@
       v-if="artifact.language === 'svg'"
       :src="`data:image/svg+xml,${encodeURIComponent(artifact.tmp)}`"
     >
+    <iframe
+      v-else-if="artifact.language === 'html'"
+      :srcdoc="artifact.tmp"
+      sandbox="allow-scripts allow-same-origin allow-forms"
+      style="width: 100%; height: 100%; border: none; background: white;"
+      title="HTML Preview"
+    />
     <md-preview
       v-else
       :model-value="artifact.tmp"
@@ -71,6 +78,24 @@
       icon="sym_o_preview"
       :title="$t('editArtifact.preview')"
       @click="mode = 'view'"
+      flat
+      dense
+      round
+    />
+    <q-btn
+      v-if="artifact.language === 'html' && IsTauri"
+      icon="sym_o_open_in_browser"
+      :title="$t('editArtifact.openExternal')"
+      @click="openInBrowser"
+      flat
+      dense
+      round
+    />
+    <q-btn
+      v-if="artifact.language === 'html'"
+      icon="sym_o_download"
+      :title="$t('editArtifact.download')"
+      @click="downloadHtml"
       flat
       dense
       round
@@ -130,10 +155,28 @@ const { perfs } = useUserPerfsStore()
 useListenKey(toRef(perfs, 'saveArtifactKey'), save)
 
 const mode = ref<'edit' | 'view'>('edit')
-const viewable = computed(() => ['markdown', 'md', 'svg', 'txt'].includes(props.artifact.language))
+const viewable = computed(() => ['markdown', 'md', 'svg', 'txt', 'html'].includes(props.artifact.language))
 watchEffect(() => {
   mode.value = viewable.value ? 'view' : 'edit'
 })
 
 const mdPreviewProps = useMdPreviewProps()
+
+import { IsTauri, exportFile } from 'src/utils/platform-api'
+import { openPath } from '@tauri-apps/plugin-opener'
+import { invoke } from '@tauri-apps/api/core'
+
+async function openInBrowser() {
+  try {
+    const filePath = await invoke<string>('create_temp_html', { htmlContent: props.artifact.tmp })
+    await openPath(filePath)
+  } catch (error) {
+    console.error('Failed to open HTML in browser:', error)
+  }
+}
+
+function downloadHtml() {
+  const fileName = `${props.artifact.id || 'html-artifact'}.html`
+  exportFile(fileName, props.artifact.tmp)
+}
 </script>

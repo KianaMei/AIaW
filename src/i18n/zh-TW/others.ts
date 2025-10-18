@@ -173,5 +173,16 @@ GitHub: <a href="https://github.com/NitroRCr/aiaw" target="_blank">NitroRCr/AIaW
       title: '空頁過多',
       message: '超過一半的頁面解析結果為空，這可能是因為該 PDF 文檔由掃描圖片構成，而此解析器只能提取文檔中的文字。建議使用「@:{docParsePlugin.pdfScreenshotLabel}」解析器重新解析。'
     }
+  },
+  dialog: {
+    exit: {
+      title: '退出程式',
+      message: '確定要退出程式嗎？',
+      webWarning: '網頁版無法退出，請關閉標籤頁'
+    }
+  },
+  common: {
+    confirm: '確認',
+    cancel: '取消'
   }
 }

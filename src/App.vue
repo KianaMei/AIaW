@@ -9,6 +9,7 @@ import { useLoginDialogs } from './composables/login-dialogs'
 import { useSetTheme } from './composables/set-theme'
 import { useSubscriptionNotify } from './composables/subscription-notify'
 import { useInitDefaultModels } from './composables/init-default-models'
+import { useDoubleBack } from './composables/double-back'
 import { onMounted } from 'vue'
 import { checkUpdate, ready } from './utils/update'
 import { useProvidersV2Store } from './stores/providers-v2'
@@ -21,6 +22,7 @@ useSetTheme()
 useLoginDialogs()
 useFirstVisit()
 useSubscriptionNotify()
+useDoubleBack()
 
 // Initialize Cherry Studio Architecture - this loads system providers
 useProvidersV2Store()

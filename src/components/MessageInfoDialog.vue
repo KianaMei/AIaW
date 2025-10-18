@@ -1,6 +1,6 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card :style="{ minWidth: onlyError ? '680px' : '300px', maxWidth: '90vw' }">
+  <q-dialog ref="dialogRef" @hide="onDialogHide" :maximized="$q.screen.lt.sm">
+    <q-card class="dialog-card" :style="cardStyle">
       <q-card-section>
         <div class="text-h6">
           {{ onlyError
@@ -10,8 +10,8 @@
         </div>
       </q-card-section>
 
-      <q-card-section v-if="onlyError" p-0>
-        <q-list>
+      <q-card-section v-if="onlyError" p-0 class="content-section">
+        <q-list class="info-list" :dense="$q.screen.lt.sm">
           <q-item v-if="message.errorDetail?.providerName || message.errorDetail?.providerId">
             <q-item-section class="label-col">{{ $t('errorInfoDialog.provider') }}</q-item-section>
             <q-item-section>
@@ -69,8 +69,8 @@
         </q-expansion-item>
       </q-card-section>
 
-      <q-card-section v-else p-0>
-        <q-list>
+      <q-card-section v-else p-0 class="content-section">
+        <q-list class="info-list" :dense="$q.screen.lt.sm">
           <q-item>
             <q-item-section>{{ $t('messageInfoDialog.id') }}</q-item-section>
             <q-item-section side>{{ message.id }}</q-item-section>
@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { useDialogPluginComponent, copyToClipboard } from 'quasar'
+import { useDialogPluginComponent, copyToClipboard, useQuasar } from 'quasar'
 import { idDateString } from 'src/utils/functions'
 import { Message } from 'src/utils/types'
 import { computed } from 'vue'
@@ -127,6 +127,15 @@ const props = defineProps<{
 }>()
 
 const onlyError = computed(() => !!props.onlyError)
+const $q = useQuasar()
+const cardStyle = computed(() => {
+  const mobile = $q.screen.lt.sm
+  return {
+    width: mobile ? '100vw' : 'clamp(320px, 92vw, 860px)',
+    maxWidth: '100vw',
+    maxHeight: mobile ? '100vh' : '85vh'
+  }
+})
 
 const length = computed(() => props.message.contents
   .filter(c => c.type === 'assistant-message' || c.type === 'user-message')
@@ -159,6 +168,8 @@ function formatResponse(body: any) {
 </script>
 
 <style scoped>
+.dialog-card { display: flex; flex-direction: column; }
+.content-section { flex: 1 1 auto; overflow-y: auto; }
 .err-box {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   white-space: pre-wrap;
@@ -168,4 +179,9 @@ function formatResponse(body: any) {
 }
 .pre-wrap { white-space: pre-wrap; word-break: break-word }
 .label-col { min-width: 96px; max-width: 160px }
+@media (max-width: 600px) {
+  .info-list .q-item { display: block; }
+  .label-col { display: block; margin-bottom: 4px; }
+  .info-list .q-item__section--side { width: auto; }
+}
 </style>

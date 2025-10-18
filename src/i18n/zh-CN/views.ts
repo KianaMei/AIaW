@@ -87,7 +87,9 @@ export default {
     edit: '编辑',
     preview: '预览',
     readable: '可读',
-    writable: '可写'
+    writable: '可写',
+    openExternal: '在浏览器中打开',
+    download: '下载 HTML 文件'
   },
   pluginAdjust: {
     infoProvider: '信息提供',

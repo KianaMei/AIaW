@@ -779,6 +779,9 @@ const emotionsPrompt =
 | /emotions/nachoneko/32.webp | 吓哭 |
 | /emotions/nachoneko/33.webp | 装傻 |
 | /emotions/nachoneko/34.webp | 惊叹（！） |
+| /emotions/nachoneko/35.webp | 冷汗（汗） |
+| /emotions/nachoneko/36.webp | 夸张惊讶（哦！） |
+| /emotions/nachoneko/37.webp | 卖萌呆呆（？） |
 `
 const emotionsPlugin: Plugin = {
   id: 'aiaw-emotions',

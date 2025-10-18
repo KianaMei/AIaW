@@ -173,5 +173,16 @@ GitHub: <a href="https://github.com/NitroRCr/aiaw" target="_blank">NitroRCr/AIaW
       title: 'Too Many Empty Pages',
       message: 'More than half of the page parsing results are empty. This may be because the PDF document consists of scanned images, and this parser can only extract text from the document. It is recommended to re-parse using the "@:{docParsePlugin.pdfScreenshotLabel}" parser.'
     }
+  },
+  dialog: {
+    exit: {
+      title: 'Exit App',
+      message: 'Are you sure you want to exit the app?',
+      webWarning: 'Web version cannot exit. Please close the tab.'
+    }
+  },
+  common: {
+    confirm: 'Confirm',
+    cancel: 'Cancel'
   }
 }

@@ -87,7 +87,9 @@ export default {
     edit: 'Edit',
     preview: 'Preview',
     readable: 'Readable',
-    writable: 'Writable'
+    writable: 'Writable',
+    openExternal: 'Open in Browser',
+    download: 'Download HTML File'
   },
   pluginAdjust: {
     infoProvider: 'Info Provider',
