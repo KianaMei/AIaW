@@ -52,6 +52,7 @@ interface Props {
   filterProvider?: string // Only show models from this provider
   showGroup?: boolean // Show model group badges
   hint?: string
+  emitUniqId?: boolean // If true, emit 'provider:modelId' as value
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -63,7 +64,8 @@ const props = withDefaults(defineProps<Props>(), {
   clearable: true,
   filterProvider: '',
   showGroup: false,
-  hint: ''
+  hint: '',
+  emitUniqId: false
 })
 
 defineEmits<{
@@ -73,44 +75,48 @@ defineEmits<{
 const providersStore = useProvidersV2Store()
 
 const filteredModels = computed(() => {
-  const models = providersStore.availableModels
-  if (props.filterProvider) {
-    return models.filter(model => model.provider === props.filterProvider)
-  }
-  return models
+  // Only show user-selected models. If no provider is specified, return empty
+  // and rely on the UI hint to ask the user to pick a provider first.
+  if (!props.filterProvider) return []
+  return providersStore.getModelsByProvider(props.filterProvider)
 })
 
 const modelOptions = computed(() => {
-  return filteredModels.value.map(model => model.id)
+  return filteredModels.value.map(model => props.emitUniqId ? `${model.provider}:${model.id}` : model.id)
 })
 
-function resolveModel(modelId: string) {
-  return filteredModels.value.find(model => model.id === modelId)
+function resolveModel(modelIdOrUniq: string) {
+  if (props.emitUniqId && modelIdOrUniq?.includes(':')) {
+    const parts = modelIdOrUniq.split(':')
+    const id = parts.slice(1).join(':')
+    return filteredModels.value.find(model => model.id === id)
+  }
+  return filteredModels.value.find(model => model.id === modelIdOrUniq)
 }
 
-function resolveProviderId(modelId: string): string | undefined {
+function resolveProviderId(modelIdOrUniq: string): string | undefined {
   if (props.filterProvider) return props.filterProvider
-  const model = resolveModel(modelId)
+  const model = resolveModel(modelIdOrUniq)
   return model?.provider
 }
 
-function getModelName(modelId: string): string {
-  const model = resolveModel(modelId)
+function getModelName(modelIdOrUniq: string): string {
+  const model = resolveModel(modelIdOrUniq)
   return model?.name || modelId
 }
 
-function getProviderName(modelId: string): string {
-  const providerId = resolveProviderId(modelId)
+function getProviderName(modelIdOrUniq: string): string {
+  const providerId = resolveProviderId(modelIdOrUniq)
   if (!providerId) return ''
   return providersStore.getProviderName(providerId)
 }
 
-function getModelGroup(modelId: string): string | undefined {
-  return resolveModel(modelId)?.group
+function getModelGroup(modelIdOrUniq: string): string | undefined {
+  return resolveModel(modelIdOrUniq)?.group
 }
 
-function getProviderAvatar(modelId: string): any {
-  const providerId = resolveProviderId(modelId)
+function getProviderAvatar(modelIdOrUniq: string): any {
+  const providerId = resolveProviderId(modelIdOrUniq)
   if (!providerId) {
     return { type: 'icon', icon: 'sym_o_neurology' }
   }
@@ -148,4 +154,3 @@ function getSystemProviderAvatar(providerId: string): any {
   return avatarMap[providerId] || { type: 'icon', icon: 'sym_o_neurology' }
 }
 </script>
-

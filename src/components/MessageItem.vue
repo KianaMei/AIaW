@@ -568,23 +568,30 @@ function selectedConvertArtifact() {
 function onHtmlChanged(inject = false) {
   nextTick(() => {
     if (inject) {
-      injectCodeHeaderButtons(textDiv.value?.[0])
-      injectCodeHeaderButtons(reasoningDiv.value?.[0])
+      injectCodeHeaderButtons(textDiv.value?.[0] ?? textDiv.value)
+      injectCodeHeaderButtons(reasoningDiv.value?.[0] ?? reasoningDiv.value)
     }
     emit('rendered')
   })
 }
 
-function injectCodeHeaderButtons(root?: HTMLElement) {
+function injectCodeHeaderButtons(root?: any) {
   if (!root) return
+  // Support both native elements and Vue component refs (e.g., QCard) and arrays from v-for
+  const candidate = Array.isArray(root) ? root[0] : root
+  const el: HTMLElement | null =
+    candidate instanceof HTMLElement
+      ? candidate
+      : (candidate?.$el instanceof HTMLElement ? candidate.$el : null)
+  if (!el) return
   // Always set titles for built-ins
-  root.querySelectorAll('.md-editor-code').forEach(code => {
+  el.querySelectorAll('.md-editor-code').forEach(code => {
     code.querySelector<HTMLElement>('.md-editor-copy-button')?.setAttribute('title', t('messageItem.copyCode'))
     code.querySelector<HTMLElement>('.md-editor-collapse-tips')?.setAttribute('title', t('messageItem.fold'))
   })
   // Inject Convert to Artifact (existing feature)
   if (isPlatformEnabled(perfs.artifactsEnabled)) {
-    root.querySelectorAll('.md-editor-code').forEach(code => {
+    el.querySelectorAll('.md-editor-code').forEach(code => {
       if (!code.querySelector('.md-editor-convert-artifact')) {
         const anchor = code.querySelector('.md-editor-collapse-tips')
         const btn = document.createElement('span')
@@ -604,7 +611,7 @@ function injectCodeHeaderButtons(root?: HTMLElement) {
     })
   }
   // Inject HTML preview button in code header
-  root.querySelectorAll('.md-editor-code').forEach(code => {
+  el.querySelectorAll('.md-editor-code').forEach(code => {
     const lang = code.querySelector('pre code')?.getAttribute('language')
     if (lang !== 'html') return
     if (code.querySelector('.md-editor-open-html')) return

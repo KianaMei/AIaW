@@ -28,7 +28,9 @@
     <q-menu
       :offset="[0, 8]"
       max-height="70vh"
-      class="model-menu"
+      content-class="model-menu"
+      anchor="bottom right"
+      self="top right"
     >
       <q-card flat>
         <q-card-section class="q-pa-sm">
@@ -549,15 +551,17 @@ function selectModel(providerId: string, modelId: string) {
 
 /* 响应式下拉菜单宽度 */
 .model-menu {
-  width: 49vw;
+  /* Balanced width with viewport cap; avoid forcing reposition */
+  width: min(720px, 56vw);
   min-width: 320px;
+  max-width: calc(100vw - 24px);
 }
 
 /* 移动端适配 */
 @media (max-width: 600px) {
   .model-menu {
-    width: 95vw !important;
-    max-width: 100vw;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px);
   }
 
   /* 移动端按钮更大，更易点击 */

@@ -7,6 +7,8 @@
     :placeholder="placeholder"
     :dense="dense"
     :filled="filled"
+    :emit-value="true"
+    :map-options="true"
     clearable
   >
     <template #option="{ opt, selected, itemProps }">
@@ -99,13 +101,19 @@ const availableModels = computed(() => {
   if (props.providerId) {
     return providersStore.getModelsByProvider(props.providerId)
   }
-  return providersStore.availableModels
+  // Aggregate only user-selected models from all enabled providers
+  const providers = providersStore.enabledProviders || []
+  const agg = [] as ReturnType<typeof providersStore.getModelsByProvider>
+  for (const p of providers) {
+    agg.push(...providersStore.getModelsByProvider(p.id))
+  }
+  return agg
 })
 
 // Format options for autocomplete
 const modelOptionsFormatted = computed(() => {
   if (props.grouped) {
-    // Group by provider
+    // Group by provider (provider name)
     const grouped: Record<string, any[]> = {}
 
     for (const model of availableModels.value) {
@@ -123,10 +131,10 @@ const modelOptionsFormatted = computed(() => {
       })
     }
 
-    // Convert to grouped format
+    // Convert to grouped format (Quasar expects `options` as children key)
     return Object.entries(grouped).map(([providerName, models]) => ({
       label: providerName,
-      children: models
+      options: models
     }))
   } else {
     // Flat list
