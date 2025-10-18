@@ -253,32 +253,39 @@ function buildGradioSettings(endpoint: GradioManifestEndpoint) {
 function buildGradioPlugin(manifest: GradioPluginManifest, available: boolean): Plugin {
   const { id, title, description, prompt, promptVars, noRoundtrip } = manifest
   const settings = {
-    _hfToken: TOptional(TString({ title: 'HF Token', description: 'Hugging Face API Token', format: 'password' }))
+    _hfToken: TOptional(TString({ title: 'HF Token', description: 'Hugging Face API Token (if the Space is private or gated)', format: 'password' })),
+    _baseUrl: TOptional(TString({ title: 'Base URL Override', description: 'Override Space base URL (defaults to manifest.baseUrl)' }))
   }
   for (const endpoint of manifest.endpoints) {
     settings[endpoint.name] = buildGradioSettings(endpoint)
   }
   async function predict(endpoint: GradioManifestEndpoint, args, settings) {
     const options = settings._hfToken ? { hf_token: settings._hfToken } : undefined
-    const app = await GradioClient.connect(manifest.baseUrl, options)
-    const { data } = await app.predict(endpoint.path, { ...settings[endpoint.name], ...args })
-    return await Promise.all(endpoint.outputIdxs.map(async i => {
-      const d = data[i]
-      if (typeof d === 'object' && d.url) {
-        const resp = await fetch(d.url)
-        const blob = await resp.blob()
-        return {
-          type: 'file' as const,
-          mimeType: blob.type,
-          contentBuffer: await blob.arrayBuffer(),
-          name: d.orig_name
+    const baseUrl = settings._baseUrl || manifest.baseUrl
+    try {
+      const app = await GradioClient.connect(baseUrl, options)
+      const { data } = await app.predict(endpoint.path, { ...settings[endpoint.name], ...args })
+      return await Promise.all(endpoint.outputIdxs.map(async i => {
+        const d = data[i]
+        if (typeof d === 'object' && d.url) {
+          const resp = await fetch(d.url)
+          const blob = await resp.blob()
+          return {
+            type: 'file' as const,
+            mimeType: blob.type,
+            contentBuffer: await blob.arrayBuffer(),
+            name: d.orig_name
+          }
         }
-      }
-      return {
-        type: 'text' as const,
-        contentText: d
-      }
-    }))
+        return {
+          type: 'text' as const,
+          contentText: d
+        }
+      }))
+    } catch (e: any) {
+      const reason = e?.message || String(e)
+      throw new Error(`[Gradio] 调用失败，请检查 Space 是否可用、是否需要 HF Token，或在设置中覆盖 Base URL。错误：${reason}`)
+    }
   }
   const infos: PluginApi[] = manifest.endpoints.filter(e => e.type === 'info').map(e => {
     const { name, description, infoType } = e
@@ -534,9 +541,13 @@ function gradioDefaultData(manifest: GradioPluginManifest): PluginData {
   }
   const fileparsers = {}
   manifest.endpoints.filter(e => e.type === 'fileparser').forEach(e => {
+    const fileInput = e.inputs.find(i => i.paramType === 'file') as any
+    let mts = fileInput?.mimeTypes
+    if (typeof mts === 'string') mts = mts.split(',')
+    if (!Array.isArray(mts)) mts = ['*']
     fileparsers[e.name] = {
       enabled: true,
-      mimeTypes: e.inputs.find(i => i.paramType === 'file').mimeTypes
+      mimeTypes: mts
     }
   })
   return { settings, avatar: manifest.avatar, fileparsers }
@@ -580,10 +591,10 @@ const huggingColorsMap = {
   red: 30
 }
 const gradioTypeMap = {
-  str: String,
-  float: Number,
-  int: Number,
-  bool: (val) => val === 'true'
+  str: (val) => String(val),
+  float: (val) => Number(val),
+  int: (val) => Number(val),
+  bool: (val) => (val === true || val === 'true')
 }
 
 function huggingToGradio(manifest: HuggingPluginManifest): GradioPluginManifest {
