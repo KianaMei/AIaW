@@ -4,6 +4,7 @@
     no-caps
     dense
     class="select-model-btn"
+    ref="btnRef"
   >
     <div class="row items-center gap-2 no-wrap">
       <!-- Model Icon -->
@@ -29,9 +30,10 @@
       :offset="[0, 8]"
       max-height="70vh"
       content-class="model-menu"
-      :content-style="menuContentStyle"
-      anchor="bottom middle"
-      self="top middle"
+      :content-style="menuStyle"
+      anchor="bottom left"
+      self="top left"
+      @show="updateMenuStyle"
     >
       <q-card flat>
         <q-card-section class="q-pa-sm">
@@ -188,7 +190,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useProvidersV2Store } from 'src/stores/providers-v2'
@@ -214,13 +216,42 @@ const searchText = ref('')
 const selectedProviderId = ref('')
 const providerTabsContainer = ref<HTMLElement | null>(null)
 
-// Dynamic menu width: aim for ~80% of main page width (approx via viewport)
-// Mobile uses near-full width with safe margins
-const menuContentStyle = computed(() => {
-  const isMobile = $q.screen.lt.sm
-  const width = isMobile ? 'calc(92vw)' : 'min(80vw, 1200px)'
-  const maxWidth = isMobile ? 'calc(100vw - 16px)' : 'calc(100vw - 24px)'
-  return { width: `min(${width}, ${maxWidth})` }
+// Button root element ref
+const btnRef = ref<any>(null)
+const menuStyle = ref<Record<string, string>>({})
+
+function getMainPageRect(): DOMRect {
+  // Try to locate nearest .q-page (main content area)
+  const el = btnRef.value?.$el || btnRef.value
+  const page = (el && el.closest) ? el.closest('.q-page') : document.querySelector('.q-page')
+  const rect = page?.getBoundingClientRect?.()
+  if (rect && rect.width > 0) return rect as DOMRect
+  // Fallback to viewport if not found
+  return new DOMRect(0, 0, window.innerWidth, window.innerHeight)
+}
+
+function updateMenuStyle() {
+  nextTick(() => {
+    const rect = getMainPageRect()
+    const left = rect.left + rect.width * 0.075
+    const width = rect.width * 0.85
+    menuStyle.value = {
+      left: `${left}px`,
+      width: `${Math.max(320, Math.floor(width))}px`,
+      maxWidth: 'calc(100vw - 16px)'
+    }
+  })
+}
+
+function onResize() {
+  updateMenuStyle()
+}
+
+onMounted(() => {
+  window.addEventListener('resize', onResize)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onResize)
 })
 
 // Scroll selected provider tab into view
