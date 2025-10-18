@@ -221,13 +221,34 @@ const btnRef = ref<any>(null)
 const menuStyle = ref<Record<string, string>>({})
 
 function getMainPageRect(): DOMRect {
-  // Try to locate nearest .q-page (main content area)
-  const el = btnRef.value?.$el || btnRef.value
-  const page = (el && el.closest) ? el.closest('.q-page') : document.querySelector('.q-page')
-  const rect = page?.getBoundingClientRect?.()
-  if (rect && rect.width > 0) return rect as DOMRect
-  // Fallback to viewport if not found
-  return new DOMRect(0, 0, window.innerWidth, window.innerHeight)
+  // Compute remaining area after subtracting visible drawers
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+
+  let leftEdge = 0
+  let rightEdge = vw
+
+  const drawers = Array.from(document.querySelectorAll('.q-drawer')) as HTMLElement[]
+  for (const d of drawers) {
+    const r = d.getBoundingClientRect()
+    if (r.width <= 1 || r.height <= 1 || r.right <= 0 || r.left >= vw) continue
+    const center = (r.left + r.right) / 2
+    if (center < vw / 2) {
+      leftEdge = Math.max(leftEdge, Math.floor(r.right))
+    } else {
+      rightEdge = Math.min(rightEdge, Math.floor(r.left))
+    }
+  }
+
+  if (rightEdge - leftEdge < 100) {
+    const el = btnRef.value?.$el || btnRef.value
+    const page = (el && el.closest) ? el.closest('.q-page-container, .q-page') : (document.querySelector('.q-page-container') || document.querySelector('.q-page'))
+    const rect = page?.getBoundingClientRect?.()
+    if (rect && rect.width > 0) return rect as DOMRect
+    return new DOMRect(0, 0, vw, vh)
+  }
+
+  return new DOMRect(leftEdge, 0, rightEdge - leftEdge, vh)
 }
 
 function updateMenuStyle() {
@@ -238,7 +259,7 @@ function updateMenuStyle() {
     menuStyle.value = {
       left: `${left}px`,
       width: `${Math.max(320, Math.floor(width))}px`,
-      maxWidth: 'calc(100vw - 16px)'
+      maxWidth: `${Math.floor(rect.width)}px`
     }
   })
 }
