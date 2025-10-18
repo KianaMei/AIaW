@@ -395,7 +395,6 @@ import { useProvidersV2Store } from 'src/stores/providers-v2'
 import { computedAsync } from '@vueuse/core'
 import { getAiSdkProviderId } from 'src/services/cherry/providerConfig'
 import { useUiStateStore } from 'src/stores/ui-state'
-import ProviderModelSelector from 'src/components/ProviderModelSelector.vue'
 import SelectModelButton from 'src/components/SelectModelButton.vue'
 
 const { t, locale } = useI18n()
