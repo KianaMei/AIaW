@@ -29,8 +29,9 @@
       :offset="[0, 8]"
       max-height="70vh"
       content-class="model-menu"
-      anchor="bottom right"
-      self="top right"
+      :content-style="menuContentStyle"
+      anchor="bottom middle"
+      self="top middle"
     >
       <q-card flat>
         <q-card-section class="q-pa-sm">
@@ -212,6 +213,15 @@ const providersStore = useProvidersV2Store()
 const searchText = ref('')
 const selectedProviderId = ref('')
 const providerTabsContainer = ref<HTMLElement | null>(null)
+
+// Dynamic menu width: aim for ~80% of main page width (approx via viewport)
+// Mobile uses near-full width with safe margins
+const menuContentStyle = computed(() => {
+  const isMobile = $q.screen.lt.sm
+  const width = isMobile ? 'calc(92vw)' : 'min(80vw, 1200px)'
+  const maxWidth = isMobile ? 'calc(100vw - 16px)' : 'calc(100vw - 24px)'
+  return { width: `min(${width}, ${maxWidth})` }
+})
 
 // Scroll selected provider tab into view
 function scrollToSelectedProvider() {
@@ -551,16 +561,14 @@ function selectModel(providerId: string, modelId: string) {
 
 /* 响应式下拉菜单宽度 */
 .model-menu {
-  /* Balanced width with viewport cap; avoid forcing reposition */
-  width: min(720px, 56vw);
-  min-width: 320px;
-  max-width: calc(100vw - 24px);
+  /* width is now controlled via :content-style (menuContentStyle) */
+  min-width: 300px;
+  max-width: var(--menu-max, calc(100vw - 24px));
 }
 
 /* 移动端适配 */
 @media (max-width: 600px) {
   .model-menu {
-    width: calc(100vw - 16px) !important;
     max-width: calc(100vw - 16px);
   }
 
@@ -577,14 +585,14 @@ function selectModel(providerId: string, modelId: string) {
 
   /* 移动端 Provider Tab 更大 */
   .provider-tabs :deep(.q-tab) {
-    min-height: 56px;
-    height: 56px;
-    font-size: 15px;
+    min-height: 52px;
+    height: 52px;
+    font-size: 14px;
     padding: 0 20px !important;
   }
 
   .provider-tab-custom span {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .provider-tab-custom .q-avatar {
@@ -594,11 +602,11 @@ function selectModel(providerId: string, modelId: string) {
 
   /* 移动端模型列表项更大 */
   .model-item {
-    min-height: 48px !important;
+    min-height: 44px !important;
   }
 
   .model-name {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   /* 移动端图标稍大 */
@@ -608,13 +616,13 @@ function selectModel(providerId: string, modelId: string) {
   }
 
   .model-item .q-avatar {
-    width: 24px !important;
-    height: 24px !important;
+    width: 22px !important;
+    height: 22px !important;
   }
 
   /* 移动端能力图标更大 */
   .model-item :deep(.q-icon) {
-    font-size: 20px !important;
+    font-size: 18px !important;
   }
 }
 .model-item :deep(.q-item__section--main) {
