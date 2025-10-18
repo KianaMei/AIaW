@@ -5,6 +5,7 @@
     dense
     class="select-model-btn"
     ref="btnRef"
+    @click="toggleMenu"
   >
     <div class="row items-center gap-2 no-wrap">
       <!-- Model Icon -->
@@ -24,169 +25,163 @@
         size="18px"
       />
     </div>
+  </q-btn>
 
-    <!-- Model Selection Menu (Dropdown) -->
-    <q-menu
-      :offset="[0, 8]"
-      max-height="70vh"
-      content-class="model-menu"
-      :content-style="menuStyle"
-      anchor="bottom left"
-      self="top left"
-      @show="updateMenuStyle"
+  <!-- Model Selection Menu (Dropdown) -->
+  <q-card
+    v-if="isMenuOpen"
+    ref="menuRef"
+    flat
+    class="custom-model-menu"
+    :style="menuStyle"
+  >
+    <q-card-section class="q-pa-sm">
+      <!-- Search Bar (smaller) -->
+      <q-input
+        v-model="searchText"
+        :placeholder="$t('selectModel.search')"
+        outlined
+        dense
+        clearable
+        :autofocus="$q.platform.is.desktop"
+        class="search-input-small"
+      >
+        <template v-slot:prepend>
+          <q-icon name="sym_o_search" size="16px" />
+        </template>
+      </q-input>
+    </q-card-section>
+
+    <q-separator />
+
+    <!-- Provider Tabs (larger) with independent scrolling -->
+    <div
+      v-if="!searchText && providersWithModels.length > 0"
+      class="provider-tabs-container"
+      ref="providerTabsContainer"
+      @wheel.prevent="handleProviderWheel"
     >
-      <q-card flat>
-        <q-card-section class="q-pa-sm">
-          <!-- Search Bar (smaller) -->
-          <q-input
-            v-model="searchText"
-            :placeholder="$t('selectModel.search')"
-            outlined
-            dense
-            clearable
-            :autofocus="$q.platform.is.desktop"
-            class="search-input-small"
-          >
-            <template v-slot:prepend>
-              <q-icon name="sym_o_search" size="16px" />
-            </template>
-          </q-input>
-        </q-card-section>
-
-        <q-separator />
-
-        <!-- Provider Tabs (larger) with independent scrolling -->
-        <div
-          v-if="!searchText && providersWithModels.length > 0"
-          class="provider-tabs-container"
-          ref="providerTabsContainer"
-          @wheel.prevent="handleProviderWheel"
+      <q-tabs
+        v-model="selectedProviderId"
+        dense
+        class="text-grey-7 provider-tabs"
+        active-color="primary"
+        indicator-color="primary"
+        align="left"
+        narrow-indicator
+        inline-label
+      >
+        <q-tab
+          v-for="provider in providersWithModels"
+          :key="provider.id"
+          :name="provider.id"
+          no-caps
+          class="provider-tab-custom"
         >
-          <q-tabs
-            v-model="selectedProviderId"
-            dense
-            class="text-grey-7 provider-tabs"
-            active-color="primary"
-            indicator-color="primary"
-            align="left"
-            narrow-indicator
-            inline-label
-          >
-            <q-tab
-              v-for="provider in providersWithModels"
-              :key="provider.id"
-              :name="provider.id"
-              no-caps
-              class="provider-tab-custom"
+          <div class="row items-center no-wrap gap-2">
+            <span>{{ provider.name }}</span>
+            <q-avatar size="36px">
+              <a-avatar :avatar="getProviderAvatar(provider)" size="md" />
+            </q-avatar>
+          </div>
+        </q-tab>
+      </q-tabs>
+    </div>
+
+    <q-separator v-if="!searchText" />
+
+    <q-card-section
+      class="q-pt-sm q-pb-sm model-list-container"
+    >
+      <!-- Search Results (all providers) -->
+      <div v-if="searchText">
+        <div v-for="(group, groupIndex) in filteredModelGroups" :key="`group-${group.providerId}`">
+          <div class="text-caption text-weight-medium q-mb-sm q-mt-sm text-grey-7">
+            {{ group.providerName }}
+          </div>
+          <q-list dense>
+            <q-item
+              v-for="model in group.models"
+              :key="`model-${model.uniqId}`"
+              clickable
+              v-ripple
+              @click="selectModel(group.providerId, model.id); isMenuOpen = false"
+              class="model-item"
+              :active="model.uniqId === currentModelUniqId"
+              active-class="bg-primary-1"
             >
-              <div class="row items-center no-wrap gap-2">
-                <span>{{ provider.name }}</span>
-                <q-avatar size="36px">
-                  <a-avatar :avatar="getProviderAvatar(provider)" size="md" />
+              <q-item-section avatar class="model-icon">
+                <q-avatar size="18px">
+                  <img v-if="getModelIcon(model.name)" :src="getModelIcon(model.name)" />
+                  <q-icon v-else name="sym_o_neurology" size="16px" />
                 </q-avatar>
-              </div>
-            </q-tab>
-          </q-tabs>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="model-name">{{ model.name }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+          <q-separator v-if="groupIndex < filteredModelGroups.length - 1" class="q-my-sm" />
         </div>
 
-        <q-separator v-if="!searchText" />
+        <!-- Empty State -->
+        <div v-if="filteredModelGroups.length === 0" class="text-center q-pa-md text-grey-6">
+          {{ $t('selectModel.noResults') }}
+        </div>
+      </div>
 
-        <q-card-section
-          class="q-pt-sm q-pb-sm model-list-container"
-        >
-          <!-- Search Results (all providers) -->
-          <div v-if="searchText">
-            <div v-for="(group, groupIndex) in filteredModelGroups" :key="`group-${group.providerId}`">
-              <div class="text-caption text-weight-medium q-mb-sm q-mt-sm text-grey-7">
-                {{ group.providerName }}
-              </div>
-              <q-list dense>
-                <q-item
-                  v-for="model in group.models"
-                  :key="`model-${model.uniqId}`"
-                  clickable
-                  v-ripple
-                  v-close-popup
-                  :active="model.uniqId === currentModelUniqId"
-                  active-class="bg-primary-1"
-                  @click="selectModel(group.providerId, model.id)"
-                  class="model-item"
+      <!-- Selected Provider Models -->
+      <div v-else>
+        <q-list dense>
+          <q-item
+            v-for="model in currentProviderModels"
+            :key="`model-${model.uniqId}`"
+            clickable
+            v-ripple
+            @click="selectModel(selectedProviderId, model.id); isMenuOpen = false"
+            class="model-item"
+            :active="model.uniqId === currentModelUniqId"
+            active-class="bg-primary-1"
+          >
+            <q-item-section avatar class="model-icon">
+              <q-avatar size="18px">
+                <img v-if="getModelIcon(model.name)" :src="getModelIcon(model.name)" />
+                <q-icon v-else name="sym_o_neurology" size="16px" />
+              </q-avatar>
+            </q-item-section>
+            <q-item-section>
+              <q-item-label class="model-name">{{ model.name }}</q-item-label>
+            </q-item-section>
+            <q-item-section side v-if="model.inputTypes">
+              <div class="row gap-1">
+                <q-icon
+                  v-if="model.inputTypes.user?.includes('image')"
+                  name="sym_o_visibility"
+                  size="18px"
+                  color="green"
                 >
-                  <q-item-section avatar class="model-icon">
-                    <q-avatar size="18px">
-                      <img v-if="getModelIcon(model.name)" :src="getModelIcon(model.name)" />
-                      <q-icon v-else name="sym_o_neurology" size="16px" />
-                    </q-avatar>
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label class="model-name">{{ model.name }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-              </q-list>
-              <q-separator v-if="groupIndex < filteredModelGroups.length - 1" class="q-my-sm" />
-            </div>
+                  <q-tooltip>视觉能力</q-tooltip>
+                </q-icon>
+                <q-icon
+                  v-if="model.inputTypes.user?.includes('audio')"
+                  name="sym_o_mic"
+                  size="18px"
+                  color="blue"
+                >
+                  <q-tooltip>语音能力</q-tooltip>
+                </q-icon>
+              </div>
+            </q-item-section>
+          </q-item>
+        </q-list>
 
-            <!-- Empty State -->
-            <div v-if="filteredModelGroups.length === 0" class="text-center q-pa-md text-grey-6">
-              {{ $t('selectModel.noResults') }}
-            </div>
-          </div>
-
-          <!-- Selected Provider Models -->
-          <div v-else>
-            <q-list dense>
-              <q-item
-                v-for="model in currentProviderModels"
-                :key="`model-${model.uniqId}`"
-                clickable
-                v-ripple
-                v-close-popup
-                :active="model.uniqId === currentModelUniqId"
-                active-class="bg-primary-1"
-                @click="selectModel(selectedProviderId, model.id)"
-                class="model-item"
-              >
-                <q-item-section avatar class="model-icon">
-                  <q-avatar size="18px">
-                    <img v-if="getModelIcon(model.name)" :src="getModelIcon(model.name)" />
-                    <q-icon v-else name="sym_o_neurology" size="16px" />
-                  </q-avatar>
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label class="model-name">{{ model.name }}</q-item-label>
-                </q-item-section>
-                <q-item-section side v-if="model.inputTypes">
-                  <div class="row gap-1">
-                    <q-icon
-                      v-if="model.inputTypes.user?.includes('image')"
-                      name="sym_o_visibility"
-                      size="18px"
-                      color="green"
-                    >
-                      <q-tooltip>视觉能力</q-tooltip>
-                    </q-icon>
-                    <q-icon
-                      v-if="model.inputTypes.user?.includes('audio')"
-                      name="sym_o_mic"
-                      size="18px"
-                      color="blue"
-                    >
-                      <q-tooltip>语音能力</q-tooltip>
-                    </q-icon>
-                  </div>
-                </q-item-section>
-              </q-item>
-            </q-list>
-
-            <!-- Empty State for Provider -->
-            <div v-if="currentProviderModels.length === 0" class="text-center q-pa-md text-grey-6">
-              该供应商暂无可用模型
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-menu>
-  </q-btn>
+        <!-- Empty State for Provider -->
+        <div v-if="currentProviderModels.length === 0" class="text-center q-pa-md text-grey-6">
+          该供应商暂无可用模型
+        </div>
+      </div>
+    </q-card-section>
+  </q-card>
 </template>
 
 <script setup lang="ts">
@@ -194,6 +189,7 @@ import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useProvidersV2Store } from 'src/stores/providers-v2'
+import { useUiStateStore } from 'src/stores/ui-state'
 import AAvatar from './AAvatar.vue'
 import type { Model, ProviderV2 } from 'src/utils/types'
 
@@ -211,6 +207,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const $q = useQuasar()
 const providersStore = useProvidersV2Store()
+const uiStore = useUiStateStore()
 
 const searchText = ref('')
 const selectedProviderId = ref('')
@@ -219,6 +216,8 @@ const providerTabsContainer = ref<HTMLElement | null>(null)
 // Button root element ref
 const btnRef = ref<any>(null)
 const menuStyle = ref<Record<string, string>>({})
+const isMenuOpen = ref(false)
+const menuRef = ref<any>(null)
 
 function getMainPageRect(): DOMRect {
   // Compute remaining area after subtracting visible drawers
@@ -241,8 +240,7 @@ function getMainPageRect(): DOMRect {
   }
 
   if (rightEdge - leftEdge < 100) {
-    const el = btnRef.value?.$el || btnRef.value
-    const page = (el && el.closest) ? el.closest('.q-page-container, .q-page') : (document.querySelector('.q-page-container') || document.querySelector('.q-page'))
+    const page = document.querySelector('.q-page-container') || document.querySelector('.q-page')
     const rect = page?.getBoundingClientRect?.()
     if (rect && rect.width > 0) return rect as DOMRect
     return new DOMRect(0, 0, vw, vh)
@@ -253,27 +251,68 @@ function getMainPageRect(): DOMRect {
 
 function updateMenuStyle() {
   nextTick(() => {
-    const rect = getMainPageRect()
-    const left = rect.left + rect.width * 0.075
-    const width = rect.width * 0.85
+    const mainRect = getMainPageRect()
+    const menuWidth = mainRect.width * 0.60
+    const menuLeft = mainRect.left + (mainRect.width * 0.20)
+
+    const btnEl = btnRef.value?.$el || btnRef.value
+    if (!btnEl) return
+    const btnRect = btnEl.getBoundingClientRect()
+    const menuTop = btnRect.bottom + 8 // Position it 8px below the button
+
     menuStyle.value = {
-      left: `${left}px`,
-      width: `${Math.max(320, Math.floor(width))}px`,
-      maxWidth: `${Math.floor(rect.width)}px`
+      position: 'fixed',
+      top: `${menuTop}px`,
+      left: `${menuLeft}px`,
+      width: `${Math.max(320, Math.floor(menuWidth))}px`,
+      maxWidth: `${Math.floor(mainRect.width)}px`
     }
   })
 }
 
 function onResize() {
-  updateMenuStyle()
+  if (isMenuOpen.value) {
+    updateMenuStyle()
+  }
 }
 
 onMounted(() => {
   window.addEventListener('resize', onResize)
+  window.addEventListener('click', handleClickOutside, true)
 })
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onResize)
+  window.removeEventListener('click', handleClickOutside, true)
 })
+
+watch(() => uiStore.mainDrawerOpen, () => {
+  // Give the drawer animation time to complete
+  setTimeout(() => {
+    if (isMenuOpen.value) {
+      updateMenuStyle()
+    }
+  }, 300)
+})
+
+function toggleMenu() {
+  isMenuOpen.value = !isMenuOpen.value
+  if (isMenuOpen.value) {
+    updateMenuStyle()
+  }
+}
+
+function handleClickOutside(event: MouseEvent) {
+  const menuEl = menuRef.value?.$el || menuRef.value
+  if (
+    isMenuOpen.value &&
+    menuEl &&
+    !menuEl.contains(event.target as Node) &&
+    btnRef.value &&
+    !btnRef.value.$el.contains(event.target as Node)
+  ) {
+    isMenuOpen.value = false
+  }
+}
 
 // Scroll selected provider tab into view
 function scrollToSelectedProvider() {
@@ -515,15 +554,24 @@ function selectModel(providerId: string, modelId: string) {
 .select-model-btn {
   border-radius: 8px;
   padding: 4px 8px;
+  width: 100%;
+  max-width: 100%;
+  justify-content: space-between;
+}
+
+.select-model-btn :deep(.q-btn__content) {
+  width: 100%;
+  justify-content: space-between;
 }
 
 .model-text {
   font-size: 13px;
   font-weight: 500;
-  max-width: 300px;
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: left;
 }
 
 .bg-primary-1 {
@@ -612,15 +660,19 @@ function selectModel(providerId: string, modelId: string) {
 }
 
 /* 响应式下拉菜单宽度 */
-.model-menu {
-  /* width is now controlled via :content-style (menuContentStyle) */
-  min-width: 300px;
-  max-width: var(--menu-max, calc(100vw - 24px));
+.custom-model-menu {
+  z-index: 6001; /* Higher than q-menu default */
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.2), 0 2px 2px rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12);
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 移动端适配 */
 @media (max-width: 600px) {
-  .model-menu {
+  .custom-model-menu {
     max-width: calc(100vw - 16px);
   }
 
@@ -632,7 +684,6 @@ function selectModel(providerId: string, modelId: string) {
   /* 移动端文字稍大 */
   .model-text {
     font-size: 14px;
-    max-width: 200px;
   }
 
   /* 移动端 Provider Tab 更大 */
@@ -691,5 +742,3 @@ function selectModel(providerId: string, modelId: string) {
   padding-right: 4px;
 }
 </style>
-
-
