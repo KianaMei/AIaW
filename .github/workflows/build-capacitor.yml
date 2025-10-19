@@ -1,5 +1,6 @@
 name: Build Android
-run-name: Creating Production Ready Android App 🚀
+run-name: Creating Production Ready Android App
+
 on:
   release:
     types: [published]
@@ -13,20 +14,26 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
+    env:
+      KEYSTORE: ${{ secrets.RELEASE_KEYSTORE }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+      KEYSTORE_ALIAS_PASSWORD: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 34
+          build-tools: '34.0.0'
 
       - name: Setup java
         uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: "21"
-
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.14.0'
 
       - uses: pnpm/action-setup@v4
         name: Install pnpm
@@ -80,21 +87,28 @@ jobs:
       - name: Capacitor sync
         run: npx cap sync
 
-      - name: Extract Android signing key from env
+      - name: Extract Android signing key from env (if provided)
+        if: ${{ env.KEYSTORE != '' }}
         run: |
-          echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > android/release.decrypted.jks
+          echo "$KEYSTORE" | base64 -d > android/release.decrypted.jks
 
       - name: Set gradlew permissions
         run: chmod +x ./android/gradlew
 
-      - name: Build Release APK
+      - name: Build Signed Release APK
+        if: ${{ env.KEYSTORE != '' && env.KEYSTORE_PASSWORD != '' && env.KEYSTORE_ALIAS != '' && env.KEYSTORE_ALIAS_PASSWORD != '' }}
         working-directory: ./android
         run: |
           ./gradlew assembleRelease \
             -Pandroid.injected.signing.store.file=${{ github.workspace }}/android/release.decrypted.jks \
-            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
-            -Pandroid.injected.signing.key.alias=${{ secrets.KEYSTORE_ALIAS }} \
-            -Pandroid.injected.signing.key.password=${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$KEYSTORE_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEYSTORE_ALIAS_PASSWORD"
+
+      - name: Build Unsigned Release APK (fallback when no keystore)
+        if: ${{ env.KEYSTORE == '' || env.KEYSTORE_PASSWORD == '' || env.KEYSTORE_ALIAS == '' || env.KEYSTORE_ALIAS_PASSWORD == '' }}
+        working-directory: ./android
+        run: ./gradlew assembleRelease
 
       - name: Zip spa bundle
         working-directory: ./dist/spa
@@ -105,8 +119,20 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG='${{ steps.vars.outputs.tag }}'
+          shopt -s nullglob
+          APK_PATHS=(
+            "./android/app/build/outputs/apk/release/app-release.apk"
+            "./android/app/build/outputs/apk/release/app-release-unsigned.apk"
+            "./android/app/build/outputs/apk/debug/app-debug.apk"
+          )
+          for APK in "${APK_PATHS[@]}"; do
+            if [ -f "$APK" ]; then
+              NAME="AIaW_${TAG}_$(basename "$APK")"
+              gh release upload "$TAG" "$APK#${NAME}" --clobber || true
+            fi
+          done
           gh release upload "$TAG" \
-            "./android/app/build/outputs/apk/release/app-release.apk#AIaW_${TAG}.apk" \
             "./spa.zip#spa_bundle_${TAG}.zip" \
             "./src/version.json" \
             --clobber
+
