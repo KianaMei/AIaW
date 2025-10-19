@@ -74,10 +74,17 @@ export function fetch(url: string, options?: RequestInit): Promise<Response> {
   const close = () => {
     if (closed) return
     closed = true
-    unlisten && unlisten()
-    writer.ready.then(() => {
-      writer.close().catch((e) => console.error(e))
-    })
+    // Best-effort detach event listener; ignore env mismatch errors
+    try {
+      const maybe = unlisten && unlisten()
+      if (maybe && typeof (maybe as any).then === 'function') {
+        ;(maybe as Promise<any>).catch(() => {})
+      }
+    } catch {}
+    // Closing writer may throw when already closed; swallow
+    writer.ready
+      .then(() => writer.close())
+      .catch(() => {})
   }
 
   if (signal) {
@@ -91,9 +98,9 @@ export function fetch(url: string, options?: RequestInit): Promise<Response> {
         return
       }
       if (chunk) {
-        writer.ready.then(() => {
-          writer.write(new Uint8Array(chunk))
-        })
+        writer.ready
+          .then(() => writer.write(new Uint8Array(chunk)))
+          .catch(() => {})
       } else if (status === 0) {
         // end of body
         close()
