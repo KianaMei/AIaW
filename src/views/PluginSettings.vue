@@ -109,6 +109,96 @@
           component="item"
           lazy
         />
+
+        <!-- APIs overview: show Tools and Info Providers (MCP/others) -->
+        <template v-if="plugin.apis?.length">
+          <q-separator spaced />
+          <!-- Filter -->
+          <q-item>
+            <q-item-section>{{ $t('pluginsMarket.search') }}</q-item-section>
+            <q-item-section side class="xs:w-200px sm:w-300px">
+              <q-input
+                v-model="apiFilter"
+                dense
+                clearable
+                standout
+                :placeholder="$t('pluginsMarket.search')"
+                input-class="text-body2"
+              />
+            </q-item-section>
+          </q-item>
+
+          <q-item-label header>
+            {{ $t('pluginAdjust.toolCall') }} ({{ filteredToolApis.length }})
+          </q-item-label>
+          <q-expansion-item
+            v-for="api in filteredToolApis"
+            :key="api.name"
+            expand-separator
+            dense
+            :label="api.name"
+            :caption="api.description"
+          >
+            <q-list separator>
+              <q-item v-if="schemaProps(api).length === 0">
+                <q-item-section>
+                  <q-item-label caption>-</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item v-for="p in schemaProps(api)" :key="p.key">
+                <q-item-section avatar>
+                  <code>{{ p.key }}</code>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>{{ p.title }}</q-item-label>
+                  <q-item-label caption>{{ p.description }}</q-item-label>
+                </q-item-section>
+                <q-item-section side class="row items-center q-gutter-sm">
+                  <q-chip size="sm" outline color="primary">{{ p.type }}</q-chip>
+                  <q-badge v-if="p.required" color="negative" label="required" />
+                  <q-badge v-else color="grey" label="optional" />
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-expansion-item>
+
+          <template v-if="infoApis.length">
+            <q-separator spaced />
+            <q-item-label header>
+              {{ $t('pluginAdjust.infoProvider') }} ({{ filteredInfoApis.length }})
+            </q-item-label>
+            <q-expansion-item
+              v-for="api in filteredInfoApis"
+              :key="api.name"
+              expand-separator
+              dense
+              :label="api.name"
+              :caption="api.description"
+            >
+              <q-list separator>
+                <q-item v-if="schemaProps(api).length === 0">
+                  <q-item-section>
+                    <q-item-label caption>-</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item v-for="p in schemaProps(api)" :key="p.key">
+                  <q-item-section avatar>
+                    <code>{{ p.key }}</code>
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ p.title }}</q-item-label>
+                    <q-item-label caption>{{ p.description }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side class="row items-center q-gutter-sm">
+                    <q-chip size="sm" outline color="primary">{{ p.type }}</q-chip>
+                    <q-badge v-if="p.required" color="negative" label="required" />
+                    <q-badge v-else color="grey" label="optional" />
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-expansion-item>
+          </template>
+        </template>
       </q-list>
     </q-page>
   </q-page-container>
@@ -116,7 +206,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { usePluginsStore } from 'src/stores/plugins'
 import ViewCommonHeader from 'src/components/ViewCommonHeader.vue'
 import AAvatar from 'src/components/AAvatar.vue'
@@ -154,4 +244,35 @@ function pickAvatar() {
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 useSetTitle(computed(() => plugin.value && `${t('pluginSettings.title')} - ${plugin.value.title}`))
+
+// Derived API lists (tools / info)
+const toolApis = computed(() => (plugin.value?.apis || []).filter(a => a.type === 'tool'))
+const infoApis = computed(() => (plugin.value?.apis || []).filter(a => a.type === 'info'))
+
+// Filtering
+const apiFilter = ref('')
+const matches = (api: any) => {
+  const f = apiFilter.value?.toLowerCase().trim()
+  if (!f) return true
+  return (
+    (api.name || '').toLowerCase().includes(f) ||
+    (api.description || '').toLowerCase().includes(f)
+  )
+}
+const filteredToolApis = computed(() => toolApis.value.filter(matches))
+const filteredInfoApis = computed(() => infoApis.value.filter(matches))
+
+// Extract a readable list from PluginSchema
+function schemaProps(api: any) {
+  const s = api?.parameters || {}
+  const req = new Set((s.required || []) as string[])
+  const props = s.properties || {}
+  return Object.entries(props).map(([key, val]: [string, any]) => ({
+    key,
+    title: val?.title || key,
+    type: val?.type || (val?.anyOf ? 'anyOf' : val?.oneOf ? 'oneOf' : 'object'),
+    description: val?.description,
+    required: req.has(key)
+  }))
+}
 </script>
