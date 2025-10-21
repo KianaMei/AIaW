@@ -575,6 +575,13 @@ const messageMap = computed<Record<string, Message>>(() => {
   const generating = computed(() => !!messageMap.value[chain.value.at(-2)]?.generatingSession)
   const inputEmpty = computed(() => !inputMessageContent.value?.text && !inputMessageContent.value?.items?.length)
 
+  // When input placeholder becomes visible (from empty -> non-empty), auto scroll to bottom
+  watch(inputEmpty, (val, prev) => {
+    if (prev === true && val === false) {
+      nextTick(() => scroll('bottom'))
+    }
+  })
+
 const inputText = ref('')
 const pendingTexts = []
 let pendingTimeout = null
