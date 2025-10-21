@@ -27,7 +27,8 @@ switch ($Action) {
       else { Remove-Item $pidFile -ErrorAction SilentlyContinue }
     }
 
-    $cmd = '$env:FORCE_COLOR="1"; $env:CHECKS="0"; pnpm run dev *>> ".logs\\dev.log"'
+    # Force dev server port to 9006; if occupied, quasar will fail instead of picking another
+    $cmd = '$env:FORCE_COLOR="1"; $env:CHECKS="0"; pnpm run dev -- -p 9006 *>> ".logs\\dev.log"'
     $p = Start-Process pwsh -WorkingDirectory $root -WindowStyle Hidden -ArgumentList @('-NoProfile','-Command', $cmd) -PassThru
     $p.Id | Set-Content $pidFile
     Start-Sleep -Seconds 2

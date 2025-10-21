@@ -198,22 +198,28 @@ const rules: Rule[] = [{
   },
   exec: options => {
     const tools: Record<string, any> = {}
-    if (options.webSearch) tools.google_search = google.tools.googleSearch({})
+    const model = (props.modelId || '').toLowerCase()
+
+    // Feature flags from modelId
+    const isSearchModel = model.includes('-search')
+    const supportsThinking = model.includes('thinking') || model.includes('maxthinking')
+
+    // Tools
+    if (options.webSearch || isSearchModel) tools.google_search = google.tools.googleSearch({})
     if (options.codeExecution) tools.code_execution = google.tools.codeExecution({})
     if (options.urlContext) tools.url_context = google.tools.urlContext({})
 
-    const googleOptions: Record<string, any> = {
-      thinkingConfig: {
-        includeThoughts: true
+    // Provider options
+    const googleOptions: Record<string, any> = {}
+    if (supportsThinking) {
+      googleOptions.thinkingConfig = { includeThoughts: true }
+      if (!inputValueEmpty(options.thinkingBudget)) {
+        googleOptions.thinkingConfig.thinkingBudget = options.thinkingBudget
       }
     }
-    if (!inputValueEmpty(options.thinkingBudget)) {
-      googleOptions.thinkingConfig.thinkingBudget = options.thinkingBudget
-    }
+
     return {
-      providerOptions: {
-        google: googleOptions
-      },
+      providerOptions: { google: googleOptions },
       tools
     }
   }

@@ -20,12 +20,28 @@
           @click="onAvatarClick"
           cursor-pointer
         />
-        <div
-          v-if="name"
-          :class="colMode ? '' : 'my-2 text-xs'"
-          text="center on-sur-var"
-        >
-          {{ name }}
+        <div class="left-meta" :class="colMode ? 'ml-2' : 'mt-2'">
+          <div
+            v-if="name"
+            :class="colMode ? '' : 'my-2 text-xs'"
+            text="center on-sur-var"
+          >
+            {{ name }}
+          </div>
+          <!-- Pinned branch switcher near avatar -->
+          <div
+            v-if="childNum > 1 && message.type !== 'user'"
+            class="branch-switch-pinned"
+          >
+            <q-pagination
+              v-model="model"
+              :max="childNum"
+              input
+              :boundary-links="false"
+              size="sm"
+              class="q-mt-xs"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -212,14 +228,6 @@
         flex
         items-center
       >
-        <template v-if="childNum > 1">
-          <q-pagination
-            v-model="model"
-            :max="childNum"
-            input
-            :boundary-links="false"
-          />
-        </template>
         <q-btn
           v-if="childNum >= 1 && !['pending', 'streaming'].includes(message.status)"
           icon="sym_o_delete"
@@ -679,5 +687,23 @@ function sanitizeReasoning(text?: string) {
   pre, code { font-size: 0.9em; }
   // As a safety net, when a paragraph starts with bold text, add spacing
   p > strong:first-child { display: inline-block; margin-top: .25em }
+}
+
+/* Make pinned branch switch compact and visually consistent near avatar */
+.branch-switch-pinned {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.branch-switch-pinned .q-pagination {
+  font-size: 12px;
+}
+
+.left-meta {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>

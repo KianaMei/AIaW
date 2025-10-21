@@ -140,13 +140,13 @@
             @remove="removeItem(file)"
             shadow
           />
-        </div>
-        <div
-          v-if="isPlatformEnabled(perfs.dialogScrollBtn)"
-          pos-absolute
-          top--1
-          right-2
-          flex="~ col"
+          </div>
+          <div
+            v-if="isPlatformEnabled(perfs.dialogScrollBtn)"
+            pos-absolute
+            top--1
+            right-2
+            flex="~ col"
           text-sec
           translate-y="-100%"
           z-1
@@ -159,20 +159,20 @@
             rotate-90
             @click="scroll('top')"
           />
-          <q-btn
-            flat
-            round
-            dense
-            icon="sym_o_keyboard_arrow_up"
-            @click="scroll('up')"
-          />
-          <q-btn
-            flat
-            round
-            dense
-            icon="sym_o_keyboard_arrow_down"
-            @click="scroll('down')"
-          />
+            <q-btn
+              flat
+              round
+              dense
+              icon="sym_o_keyboard_arrow_up"
+              @click="scrollAnswer('prev')"
+            />
+            <q-btn
+              flat
+              round
+              dense
+              icon="sym_o_keyboard_arrow_down"
+              @click="scrollAnswer('next')"
+            />
           <q-btn
             flat
             round
@@ -430,7 +430,7 @@ const assistant = computed(() => {
 })
 provide('dialog', dialog)
 
-const chain = computed<string[]>(() => liveData.value.dialog ? getChain('$root', liveData.value.dialog.msgRoute)[0] : [])
+  const chain = computed<string[]>(() => liveData.value.dialog ? getChain('$root', liveData.value.dialog.msgRoute)[0] : [])
 const historyChain = ref<string[]>([])
 function switchChain(index, value) {
   const route = [...dialog.value.msgRoute.slice(0, index), value]
@@ -1351,7 +1351,7 @@ function itemInView(item: HTMLElement, container: HTMLElement) {
   return item.offsetTop <= container.scrollTop + container.clientHeight &&
   item.offsetTop + item.clientHeight > container.scrollTop
 }
-function switchTo(target: 'prev' | 'next' | 'first' | 'last') {
+  function switchTo(target: 'prev' | 'next' | 'first' | 'last') {
   const { container, items } = getEls()
   const index = items.findIndex((item, i) =>
     itemInView(item, container) &&
@@ -1373,8 +1373,36 @@ function switchTo(target: 'prev' | 'next' | 'first' | 'last') {
     to = curr + 1
   }
   if (to < 0 || to >= num || to === curr) return
-  switchChain(index, to)
-}
+    switchChain(index, to)
+  }
+  // Jump to previous/next assistant answer (top-aligned), always move at least one item.
+  function scrollAnswer(target: 'prev' | 'next', behavior: 'smooth' | 'auto' = 'smooth') {
+    const { container, items } = getEls()
+    if (!items.length) return
+    const visibleIndex = items.findIndex(item => itemInView(item, container))
+    if (visibleIndex === -1) return
+    const step = target === 'prev' ? -1 : 1
+
+    // 若已有条目正好顶对齐，则从该条算起；否则从第一条可见的条目算起
+    let start = items.findIndex(item => almostEqual(container.scrollTop, item.offsetTop, 5))
+    if (start === -1) start = visibleIndex
+
+    // 保证一定前进/后退一条，不会卡在原位
+    let i = start + step
+
+    // 先找最近的助手消息
+    for (; i >= 0 && i < items.length; i += step) {
+      const msg = messageMap.value[chain.value[i + 1]]
+      if (msg?.type === 'assistant') {
+        container.scrollTo({ top: items[i].offsetTop, behavior })
+        return
+      }
+    }
+
+    // 找不到助手消息：至少移动到相邻一条
+    const fallback = Math.min(Math.max(start + step, 0), items.length - 1)
+    if (fallback !== start) container.scrollTo({ top: items[fallback].offsetTop, behavior })
+  }
 function scroll(action: 'up' | 'down' | 'top' | 'bottom', behavior: 'smooth' | 'auto' = 'smooth') {
   const { container, items } = getEls()
   if (action === 'top') {

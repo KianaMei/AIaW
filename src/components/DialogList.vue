@@ -28,6 +28,9 @@
       <q-item-section>
         {{ dialog.name }}
       </q-item-section>
+      <q-item-section side>
+        <q-badge class="dialog-count-badge" color="secondary" text-color="white">{{ branchMessageCount(dialog) }}</q-badge>
+      </q-item-section>
       <q-menu
         context-menu
       >
@@ -92,6 +95,28 @@ const { getSdkModelBy } = useGetModelV2()
 const { createDialog } = useCreateDialog(workspace)
 async function addItem() {
   await createDialog()
+}
+
+// Compute message count for the current branch of a dialog (follows msgRoute)
+function branchMessageCount(dialog: Dialog): number {
+  try {
+    const tree = dialog.msgTree || {}
+    const route = dialog.msgRoute || []
+    let node = '$root'
+    let count = 0
+    let idx = 0
+    while (true) {
+      const children: string[] = tree[node] || []
+      const r = route[idx] ?? 0
+      if (!children[r]) break
+      node = children[r]
+      count++
+      idx++
+    }
+    return count
+  } catch {
+    return 0
+  }
 }
 
 async function generateTitle(dialog: Dialog) {
@@ -229,3 +254,13 @@ if (isPlatformEnabled(perfs.enableShortcutKey)) {
   useListenKey(toRef(perfs, 'createDialogKey'), addItem)
 }
 </script>
+
+<style scoped>
+.dialog-count-badge {
+  font-size: 11px;
+  line-height: 14px;
+  height: 16px;
+  padding: 0 6px;
+  border-radius: 8px;
+}
+</style>
