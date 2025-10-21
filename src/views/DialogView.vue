@@ -60,14 +60,14 @@
             :virtual-scroll-item-size="messageItemSize"
             v-slot="{ item, index }"
           >
-            <message-item
-              class="message-item"
-              v-if="messageMap[item]"
-              :model-value="dialog.msgRoute[index] + 1"
-              :message="messageMap[item]"
-              :child-num="dialog.msgTree[chain[index]]?.length"
-              :scroll-container="scrollContainer"
-              @update:model-value="switchChain(index, $event - 1)"
+              <message-item
+                class="message-item"
+                v-if="messageMap[item] && item !== '$root' && !isEmptyInputPlaceholder(item)"
+                :model-value="dialog.msgRoute[index] + 1"
+                :message="messageMap[item]"
+                :child-num="dialog.msgTree[chain[index]]?.length"
+                :scroll-container="scrollContainer"
+                @update:model-value="switchChain(index, $event - 1)"
               @edit="edit(index + 1)"
               @regenerate="regenerate(index + 1)"
               @delete="deleteBranch(index + 1)"
@@ -84,14 +84,14 @@
           v-for="(i, index) in chain"
           :key="i"
         >
-          <message-item
-            class="message-item"
-            v-if="messageMap[i] && i !== '$root'"
-            :model-value="dialog.msgRoute[index - 1] + 1"
-            :message="messageMap[i]"
-            :child-num="dialog.msgTree[chain[index - 1]].length"
-            :scroll-container="scrollContainer"
-            @update:model-value="switchChain(index - 1, $event - 1)"
+            <message-item
+              class="message-item"
+              v-if="messageMap[i] && i !== '$root' && !isEmptyInputPlaceholder(i)"
+              :model-value="dialog.msgRoute[index - 1] + 1"
+              :message="messageMap[i]"
+              :child-num="dialog.msgTree[chain[index - 1]].length"
+              :scroll-container="scrollContainer"
+              @update:model-value="switchChain(index - 1, $event - 1)"
             @edit="edit(index)"
             @regenerate="regenerate(index)"
             @delete="deleteBranch(index)"
@@ -556,15 +556,24 @@ const messageMap = computed<Record<string, Message>>(() => {
   liveData.value.messages.forEach(m => { map[m.id] = m })
   return map
 })
-const itemMap = computed<Record<string, StoredItem>>(() => {
-  const map = {}
-  liveData.value.items.forEach(i => { map[i.id] = i })
-  return map
-})
-provide('messageMap', messageMap)
-provide('itemMap', itemMap)
-const generating = computed(() => !!messageMap.value[chain.value.at(-2)]?.generatingSession)
-const inputEmpty = computed(() => !inputMessageContent.value?.text && !inputMessageContent.value?.items?.length)
+  const itemMap = computed<Record<string, StoredItem>>(() => {
+    const map = {}
+    liveData.value.items.forEach(i => { map[i.id] = i })
+    return map
+  })
+  provide('messageMap', messageMap)
+  provide('itemMap', itemMap)
+  // Hide the last empty input placeholder when it has no text and no items
+  function isEmptyInputPlaceholder(id: string): boolean {
+    const m = messageMap.value[id]
+    if (!m || m.type !== 'user' || m.status !== 'inputing') return false
+    const c: any = Array.isArray(m.contents) ? m.contents[0] : null
+    const text = (c?.text || '').trim()
+    const items = Array.isArray(c?.items) ? c.items : []
+    return text.length === 0 && items.length === 0
+  }
+  const generating = computed(() => !!messageMap.value[chain.value.at(-2)]?.generatingSession)
+  const inputEmpty = computed(() => !inputMessageContent.value?.text && !inputMessageContent.value?.items?.length)
 
 const inputText = ref('')
 const pendingTexts = []
