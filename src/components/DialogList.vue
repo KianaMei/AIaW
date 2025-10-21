@@ -113,7 +113,8 @@ function branchMessageCount(dialog: Dialog): number {
       count++
       idx++
     }
-    return count
+    // Only count assistant messages (branch alternates: user, assistant, user, ...)
+    return Math.floor(count / 2)
   } catch {
     return 0
   }
