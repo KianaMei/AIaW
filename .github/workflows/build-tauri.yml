@@ -61,28 +61,27 @@ jobs:
           node -e "const fs=require('fs');const p='src-tauri/tauri.conf.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.bundle=j.bundle||{};if(j.bundle.createUpdaterArtifacts){j.bundle.createUpdaterArtifacts=false;fs.writeFileSync(p,JSON.stringify(j,null,2));console.log('Disabled updater artifacts due to missing TAURI_SIGNING_PRIVATE_KEY');}"
 
       - name: Determine tag
-        id: vars
         shell: bash
         run: |
           if [ "${{ github.event_name }}" = "release" ]; then
-            echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+            echo "TAG=${{ github.event.release.tag_name }}" >> "$GITHUB_ENV"
           else
-            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            echo "TAG=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
           fi
 
       - name: Ensure release exists via gh
-        if: ${{ github.event_name == 'release' || startsWith(steps.vars.outputs.tag, 'v') }}
+        if: ${{ github.event_name == 'release' || startsWith(env.TAG, 'v') }}
         id: ensure_release
         shell: bash
         run: |
-          TAG='${{ steps.vars.outputs.tag }}'
+          TAG='${{ env.TAG }}'
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             gh release create "$TAG" -t "$TAG" -n "Automated release" || exit 1
           fi
           echo "release_id=$(gh release view "$TAG" --json id -q .id)" >> "$GITHUB_OUTPUT"
 
       - name: Build & Publish (using releaseId)
-        if: ${{ github.event_name == 'release' || startsWith(steps.vars.outputs.tag, 'v') }}
+        if: ${{ github.event_name == 'release' || startsWith(env.TAG, 'v') }}
         uses: tauri-apps/tauri-action@v0
         with:
           releaseId: ${{ steps.ensure_release.outputs.release_id }}
@@ -90,10 +89,10 @@ jobs:
           args: ${{ matrix.args }}
 
       - name: Upload raw installers (.exe/.msi)
-        if: ${{ (github.event_name == 'release' || startsWith(steps.vars.outputs.tag, 'v')) && always() }}
+        if: ${{ (github.event_name == 'release' || startsWith(env.TAG, 'v')) && always() }}
         shell: bash
         run: |
-          TAG='${{ steps.vars.outputs.tag }}'
+          TAG='${{ env.TAG }}'
           shopt -s globstar nullglob
           files=(src-tauri/target/**/bundle/*/*.{exe,msi})
           echo "Found: ${files[@]}"
@@ -103,11 +102,11 @@ jobs:
 
       # Non-tag push: build locally and upload as Actions artifact instead of Release
       - name: Build Tauri (artifact only)
-        if: ${{ github.event_name != 'release' && !startsWith(steps.vars.outputs.tag, 'v') }}
+        if: ${{ github.event_name != 'release' && !startsWith(env.TAG, 'v') }}
         run: pnpm tauri build
 
       - name: Upload Tauri artifacts
-        if: ${{ github.event_name != 'release' && !startsWith(steps.vars.outputs.tag, 'v') }}
+        if: ${{ github.event_name != 'release' && !startsWith(env.TAG, 'v') }}
         uses: actions/upload-artifact@v4
         with:
           name: tauri-bundles-${{ github.run_id }}
