@@ -6,6 +6,8 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - master
 
 
 jobs:
@@ -69,6 +71,7 @@ jobs:
           fi
 
       - name: Ensure release exists via gh
+        if: ${{ github.event_name == 'release' || startsWith(steps.vars.outputs.tag, 'v') }}
         id: ensure_release
         shell: bash
         run: |
@@ -79,6 +82,7 @@ jobs:
           echo "release_id=$(gh release view "$TAG" --json id -q .id)" >> "$GITHUB_OUTPUT"
 
       - name: Build & Publish (using releaseId)
+        if: ${{ github.event_name == 'release' || startsWith(steps.vars.outputs.tag, 'v') }}
         uses: tauri-apps/tauri-action@v0
         with:
           releaseId: ${{ steps.ensure_release.outputs.release_id }}
@@ -86,7 +90,7 @@ jobs:
           args: ${{ matrix.args }}
 
       - name: Upload raw installers (.exe/.msi)
-        if: always()
+        if: ${{ (github.event_name == 'release' || startsWith(steps.vars.outputs.tag, 'v')) && always() }}
         shell: bash
         run: |
           TAG='${{ steps.vars.outputs.tag }}'
@@ -96,5 +100,20 @@ jobs:
           for f in "${files[@]}"; do
             [ -f "$f" ] && gh release upload "$TAG" "$f" --clobber || true
           done
+
+      # Non-tag push: build locally and upload as Actions artifact instead of Release
+      - name: Build Tauri (artifact only)
+        if: ${{ github.event_name != 'release' && !startsWith(steps.vars.outputs.tag, 'v') }}
+        run: pnpm tauri build
+
+      - name: Upload Tauri artifacts
+        if: ${{ github.event_name != 'release' && !startsWith(steps.vars.outputs.tag, 'v') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-bundles-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            src-tauri/target/**/bundle/*/*
 
       # Skip latest.json linux-deb augmentation since Linux builds are disabled

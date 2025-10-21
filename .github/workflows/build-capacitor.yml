@@ -7,6 +7,8 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - master
 
 jobs:
   build:
@@ -65,12 +67,13 @@ jobs:
             echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Ensure release exists
-        id: ensure_release
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
+        - name: Ensure release exists
+          if: ${{ github.event_name == 'release' || startsWith(steps.vars.outputs.tag, 'v') }}
+          id: ensure_release
+          shell: bash
+          env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
           TAG='${{ steps.vars.outputs.tag }}'
           if [ "${{ github.event_name }}" = "release" ]; then
             echo "release_id=${{ github.event.release.id }}" >> "$GITHUB_OUTPUT"
@@ -114,12 +117,13 @@ jobs:
         working-directory: ./dist/spa
         run: zip -qq -r ../../spa.zip .
 
-      - name: Upload assets to GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG='${{ steps.vars.outputs.tag }}'
-          shopt -s nullglob
+        - name: Upload assets to GitHub Release
+          if: ${{ github.event_name == 'release' || startsWith(steps.vars.outputs.tag, 'v') }}
+          env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            TAG='${{ steps.vars.outputs.tag }}'
+            shopt -s nullglob
           APK_PATHS=(
             "./android/app/build/outputs/apk/release/app-release.apk"
             "./android/app/build/outputs/apk/release/app-release-unsigned.apk"
@@ -131,8 +135,19 @@ jobs:
               gh release upload "$TAG" "$APK#${NAME}" --clobber || true
             fi
           done
-          gh release upload "$TAG" \
-            "./spa.zip#spa_bundle_${TAG}.zip" \
-            "./src/version.json" \
-            --clobber
+            gh release upload "$TAG" \
+              "./spa.zip#spa_bundle_${TAG}.zip" \
+              "./src/version.json" \
+              --clobber
 
+        - name: Upload Android artifacts (non-tag push)
+          if: ${{ github.event_name != 'release' && !startsWith(steps.vars.outputs.tag, 'v') }}
+          uses: actions/upload-artifact@v4
+          with:
+            name: android-build-${{ github.run_id }}
+            if-no-files-found: warn
+            retention-days: 7
+            path: |
+              android/app/build/outputs/apk/release/*.apk
+              android/app/build/outputs/apk/debug/*.apk
+              spa.zip
