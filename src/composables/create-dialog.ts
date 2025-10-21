@@ -1,6 +1,7 @@
 import { db } from 'src/utils/db'
 import { genId } from 'src/utils/functions'
 import { Dialog, Workspace, Assistant } from 'src/utils/types'
+import { useProvidersStore } from 'src/stores/providers'
 import { Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -42,6 +43,23 @@ export function useCreateDialog(workspace: Ref<Workspace>) {
         }
       }
     } catch {}
+
+    // Final fallback: if no provider/model resolved from assistant, choose first enabled provider & its first model
+    if (!providerIdOverride || !modelIdOverride) {
+      try {
+        const providersStore = useProvidersStore()
+        const providers = providersStore.enabledProviders || []
+        const withModels = providers.filter(p => (providersStore.getModelsByProvider(p.id) || []).length > 0)
+        if (withModels.length > 0) {
+          const pid = withModels[0].id
+          const models = providersStore.getModelsByProvider(pid)
+          if (models && models.length > 0) {
+            providerIdOverride ||= pid
+            modelIdOverride ||= models[0].id
+          }
+        }
+      } catch {}
+    }
 
     await db.transaction('rw', db.dialogs, db.messages, () => {
       db.dialogs.add({
