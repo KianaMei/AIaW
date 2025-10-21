@@ -29,7 +29,7 @@
         {{ dialog.name }}
       </q-item-section>
       <q-item-section side>
-        <q-badge class="dialog-count-badge" color="secondary" text-color="white">{{ branchMessageCount(dialog) }}</q-badge>
+        <q-badge class="dialog-count-badge">{{ branchMessageCount(dialog) }}</q-badge>
       </q-item-section>
       <q-menu
         context-menu
@@ -263,5 +263,10 @@ if (isPlatformEnabled(perfs.enableShortcutKey)) {
   height: 16px;
   padding: 0 6px;
   border-radius: 8px;
+  background-color: var(--a-sur-c-high);
+  color: var(--a-on-sur-var);
+  border: 1px solid var(--a-sur-c-highest);
+  box-shadow: none;
+  font-weight: 500;
 }
 </style>

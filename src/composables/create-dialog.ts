@@ -14,52 +14,48 @@ export function useCreateDialog(workspace: Ref<Workspace>) {
     const id = genId()
     const messageId = genId()
     // Determine default assistant and default model overrides
-    let assistantId: string = workspace.value.defaultAssistantId
+    // Rule: Always prefer the first GLOBAL assistant (workspaceId === '$root')
+    let assistantId: string = undefined
     let providerIdOverride: string = undefined
     let modelIdOverride: string = undefined
 
     try {
-      if (assistantId) {
-        // Read the assistant to fetch its provider/model defaults
-        // safe outside transaction (read-only)
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const a: Assistant = await db.assistants.get(assistantId)
-        if (a) {
-          providerIdOverride = a.providerId || undefined
-          modelIdOverride = a.modelId || undefined
-        }
-      } else {
-        // Fallback: pick the first assistant in current workspace or $root
-        const list: Assistant[] = await db.assistants
-          .where('workspaceId')
-          .anyOf(workspace.value.id, '$root')
-          .toArray()
-        const first = list && list[0]
-        if (first) {
-          assistantId = first.id
-          providerIdOverride = first.providerId || undefined
-          modelIdOverride = first.modelId || undefined
+      // 1) Prefer first GLOBAL assistant
+      const globals: Assistant[] = await db.assistants
+        .where('workspaceId').equals('$root')
+        .toArray()
+      const firstGlobal = globals && globals[0]
+      if (firstGlobal) {
+        assistantId = firstGlobal.id
+        providerIdOverride = firstGlobal.providerId || undefined
+        modelIdOverride = firstGlobal.modelId || undefined
+      }
+      // 2) If no global assistant exists, fallback to workspace default or first assistant (legacy behavior)
+      if (!assistantId) {
+        const fallbackId = workspace.value.defaultAssistantId
+        if (fallbackId) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          const a: Assistant = await db.assistants.get(fallbackId)
+          if (a) {
+            assistantId = a.id
+            providerIdOverride = a.providerId || undefined
+            modelIdOverride = a.modelId || undefined
+          }
+        } else {
+          const list: Assistant[] = await db.assistants
+            .where('workspaceId')
+            .anyOf(workspace.value.id, '$root')
+            .toArray()
+          const first = list && list[0]
+          if (first) {
+            assistantId = first.id
+            providerIdOverride = first.providerId || undefined
+            modelIdOverride = first.modelId || undefined
+          }
         }
       }
     } catch {}
-
-    // Final fallback: if no provider/model resolved from assistant, choose first enabled provider & its first model
-    if (!providerIdOverride || !modelIdOverride) {
-      try {
-        const providersStore = useProvidersStore()
-        const providers = providersStore.enabledProviders || []
-        const withModels = providers.filter(p => (providersStore.getModelsByProvider(p.id) || []).length > 0)
-        if (withModels.length > 0) {
-          const pid = withModels[0].id
-          const models = providersStore.getModelsByProvider(pid)
-          if (models && models.length > 0) {
-            providerIdOverride ||= pid
-            modelIdOverride ||= models[0].id
-          }
-        }
-      } catch {}
-    }
 
     await db.transaction('rw', db.dialogs, db.messages, () => {
       db.dialogs.add({
