@@ -1,6 +1,7 @@
 import { db } from 'src/utils/db'
 import { genId } from 'src/utils/functions'
-import { Dialog, Workspace, Assistant } from 'src/utils/types'\nimport { Ref } from 'vue'
+import { Dialog, Workspace, Assistant } from 'src/utils/types'
+import { Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
