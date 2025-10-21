@@ -1,8 +1,6 @@
 import { db } from 'src/utils/db'
 import { genId } from 'src/utils/functions'
-import { Dialog, Workspace, Assistant } from 'src/utils/types'
-import { useProvidersStore } from 'src/stores/providers'
-import { Ref } from 'vue'
+import { Dialog, Workspace, Assistant } from 'src/utils/types'\nimport { Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
@@ -86,3 +84,4 @@ export function useCreateDialog(workspace: Ref<Workspace>) {
   }
   return { createDialog }
 }
+
