@@ -66,6 +66,16 @@
             {{ $t('providersList.customProviders') }}
           </h6>
           <q-list bordered separator>
+            <VueDraggable
+              v-if="!searchText"
+              v-model="displayCustomProviders"
+              item-key="id"
+              handle=".drag-handle"
+              :animation="150"
+              :force-fallback="true"
+              :fallback-on-body="true"
+              @end="onDragEnd"
+            >
             <q-item
               v-for="(provider, index) in displayCustomProviders"
               :key="provider.id"
@@ -75,13 +85,7 @@
               <!-- Drag Handle -->
               <q-item-section avatar class="min-w-0">
                 <div
-                  draggable="true"
-                  @dragstart="handleDragStart($event, index, provider)"
-                  @dragover="handleDragOver"
-                  @drop="handleDrop($event, index)"
-                  @dragend="handleDragEnd"
                   class="drag-handle flex items-center justify-center cursor-grab active:cursor-grabbing"
-                  :class="{ 'opacity-100': draggedIndex === index }"
                 >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" class="text-grey-6">
                     <!-- 六点拖拽图标 -->
@@ -132,6 +136,7 @@
                 </div>
               </q-item-section>
             </q-item>
+            </VueDraggable>
           </q-list>
         </div>
 
@@ -148,7 +153,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { VueDraggable } from 'vue-draggable-plus'
 import { useProvidersV2Store } from 'src/stores/providers-v2'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
@@ -174,8 +180,6 @@ const displayCustomProviders = ref<CustomProviderV2[]>([])
 
 // Update display list when custom providers change
 const filteredCustomProviders = computed(() => {
-  // Update display list
-  displayCustomProviders.value = providersStore.sortedCustomProviders
 
   const search = searchText.value.toLowerCase()
   if (!search) return providersStore.sortedCustomProviders
@@ -186,6 +190,13 @@ const filteredCustomProviders = computed(() => {
     p.type.toLowerCase().includes(search)
   )
 })
+
+// Keep a local reorderable list in sync with store order (for Draggable)
+watch(
+  () => providersStore.sortedCustomProviders,
+  (list) => { displayCustomProviders.value = [...list] },
+  { immediate: true }
+)
 
 
 // Get provider avatar
@@ -308,46 +319,15 @@ function addProvider() {
 }
 
 // Drag and drop handlers
-function handleDragStart(event: DragEvent, index: number, provider: CustomProviderV2) {
-  draggedIndex.value = index
-  if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('text/html', provider.id)
-  }
-}
-
-function handleDragOver(event: DragEvent) {
-  event.preventDefault()
-  if (event.dataTransfer) {
-    event.dataTransfer.dropEffect = 'move'
-  }
-}
-
-function handleDrop(event: DragEvent, targetIndex: number) {
-  event.preventDefault()
-
-  if (draggedIndex.value === null || draggedIndex.value === targetIndex) return
-
-  // Reorder the list
-  const newList = [...displayCustomProviders.value]
-  const [draggedItem] = newList.splice(draggedIndex.value, 1)
-  newList.splice(targetIndex, 0, draggedItem)
-
-  // Save the new order
-  providersStore.reorderCustomProviders(newList)
-
-  draggedIndex.value = null
-
+function onDragEnd() {
+  // Persist new order
+  providersStore.reorderCustomProviders(displayCustomProviders.value)
   $q.notify({
     message: t('providersList.reorderSuccess') || 'Order updated',
     type: 'positive',
     position: 'top',
-    timeout: 1500
+    timeout: 1200
   })
-}
-
-function handleDragEnd() {
-  draggedIndex.value = null
 }
 </script>
 
@@ -356,6 +336,10 @@ function handleDragEnd() {
   opacity: 0.5;
   transition: opacity 0.2s ease, color 0.2s ease;
   padding: 0 8px;
+  /* Improve touch dragging on Android */
+  touch-action: none;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .drag-handle:hover {
