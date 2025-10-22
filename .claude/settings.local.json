@@ -6,7 +6,20 @@
       "Bash(ls:*)",
       "Bash(mkdir:*)",
       "Bash(cp:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:sdk.vercel.ai)",
+      "WebFetch(domain:ai-sdk.dev)",
+      "Bash(npm view:*)",
+      "Bash(npm outdated:*)",
+      "mcp__mcp-server-time__get_current_time",
+      "mcp__mcp-server-time__convert_time",
+      "mcp__mcp-router__process_thought",
+      "mcp__mcp-router__list_tasks",
+      "mcp__mcp-router__get_task_detail",
+      "mcp__mcp-router__execute_task",
+      "mcp__mcp-router__clear_all_tasks"
     ],
     "deny": [],
     "ask": []

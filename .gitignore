@@ -50,3 +50,8 @@ yarn-error.log*
 /docs/.vitepress/cache
 /docs/.vitepress/dist
 .aider*
+
+# Local runtime logs and PID files
+.logs/
+*.pid
+*.pid.lock
