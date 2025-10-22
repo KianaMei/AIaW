@@ -554,9 +554,12 @@ function selectModel(providerId: string, modelId: string) {
 .select-model-btn {
   border-radius: 8px;
   padding: 4px 8px;
-  width: 100%;
-  max-width: 100%;
+  /* Avoid covering toolbar actions by not forcing full width */
+  width: auto;
+  max-width: min(70vw, 480px);
+  flex: 0 1 auto;
   justify-content: space-between;
+  overflow: hidden;
 }
 
 .select-model-btn :deep(.q-btn__content) {
@@ -679,6 +682,7 @@ function selectModel(providerId: string, modelId: string) {
   /* 移动端按钮更大，更易点击 */
   .select-model-btn {
     padding: 6px 12px;
+    max-width: 65vw; /* leave room for the right toolbar button */
   }
 
   /* 移动端文字稍大 */
