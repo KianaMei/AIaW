@@ -1,7 +1,16 @@
 <template>
   <q-list>
+    <VueDraggable
+      v-model="localProviders"
+      item-key="id"
+      handle=".drag-handle-right"
+      :animation="150"
+      :force-fallback="true"
+      :fallback-on-body="true"
+      @end="onDragEnd"
+    >
     <q-item
-      v-for="(provider, index) in providersStore.sortedCustomProviders"
+      v-for="(provider, index) in localProviders"
       :key="provider.id"
       clickable
       :to="'/settings/providers/' + provider.id"
@@ -44,11 +53,10 @@
       <!-- Drag Handle - Right Side -->
       <q-item-section side>
         <div
-          draggable="true"
-          @dragstart.stop="handleDragStart($event, index, provider)"
-          @dragover.stop="handleDragOver"
-          @drop.stop="handleDrop($event, index)"
-          @dragend.stop="handleDragEnd"
+          
+          
+          
+          
           @click.stop
           class="drag-handle-right flex items-center justify-center cursor-grab active:cursor-grabbing"
           title="拖拽排序"
@@ -65,6 +73,7 @@
         </div>
       </q-item-section>
     </q-item>
+    </VueDraggable>
 
     <!-- Add New Provider -->
     <q-item
@@ -95,7 +104,8 @@ import MenuItem from './MenuItem.vue'
 import { useRouter } from 'vue-router'
 import { CustomProviderV2 } from 'src/utils/types'
 import { useUserPerfsStore } from 'src/stores/user-perfs'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { VueDraggable } from 'vue-draggable-plus'
 
 const { t } = useI18n()
 
@@ -105,7 +115,13 @@ const $q = useQuasar()
 
 const router = useRouter()
 
-const draggedIndex = ref<number | null>(null)
+// Touch-friendly local list for drag-reorder
+const localProviders = ref<CustomProviderV2[]>([])
+watch(
+  () => providersStore.sortedCustomProviders,
+  (list) => { localProviders.value = [...list] },
+  { immediate: true }
+)
 
 async function addItem() {
   const id = await providersStore.addCustomProvider()
@@ -132,43 +148,14 @@ function deleteItem({ id, name }: { id: string, name: string }) {
 }
 
 // Drag and drop handlers
-function handleDragStart(event: DragEvent, index: number, provider: CustomProviderV2) {
-  draggedIndex.value = index
-  if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('text/html', provider.id)
-  }
-}
-
-function handleDragOver(event: DragEvent) {
-  event.preventDefault()
-  if (event.dataTransfer) {
-    event.dataTransfer.dropEffect = 'move'
-  }
-}
-
-function handleDrop(event: DragEvent, targetIndex: number) {
-  event.preventDefault()
-
-  if (draggedIndex.value === null || draggedIndex.value === targetIndex) return
-
-  const newList = [...providersStore.sortedCustomProviders]
-  const [draggedItem] = newList.splice(draggedIndex.value, 1)
-  newList.splice(targetIndex, 0, draggedItem)
-
-  providersStore.reorderCustomProviders(newList)
-  draggedIndex.value = null
-
+function onDragEnd() {
+  providersStore.reorderCustomProviders(localProviders.value)
   $q.notify({
     message: t('customProviders.reorderSuccess') || 'Order updated',
     type: 'positive',
     position: 'top',
-    timeout: 1500
+    timeout: 1200
   })
-}
-
-function handleDragEnd() {
-  draggedIndex.value = null
 }
 </script>
 
@@ -178,6 +165,9 @@ function handleDragEnd() {
   transition: opacity 0.2s ease, color 0.2s ease;
   padding: 4px 8px;
   border-radius: 4px;
+  touch-action: none;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .drag-handle-right:hover {
