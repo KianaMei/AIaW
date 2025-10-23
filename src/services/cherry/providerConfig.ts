@@ -68,9 +68,16 @@ export function providerToAiSdkConfig(provider: ProviderV2, modelId?: string): {
 
   const extraOptions: any = {}
 
+  // Determine OpenAI mode (chat vs responses)
+  // Priority: explicit settings.mode -> provider.type/id hint -> default(chat)
   if (providerId === 'openai') {
-    // default to chat mode
-    extraOptions.mode = 'chat'
+    const settingsMode = (provider.settings as any)?.mode as 'chat' | 'responses' | undefined
+    const wantsResponses =
+      settingsMode === 'responses' ||
+      provider.type === 'openai-response' ||
+      provider.id === 'openai-responses'
+
+    extraOptions.mode = wantsResponses ? 'responses' : (settingsMode === 'chat' ? 'chat' : 'chat')
   }
 
   if (providerId === 'azure') {
