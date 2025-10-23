@@ -93,30 +93,48 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
     },
 
     wrapStream: async ({ doStream }) => {
-      const stream = await doStream()
-      const reader = stream.getReader()
+      const stream: any = await doStream()
 
-      return new ReadableStream({
-        async start(controller) {
-          try {
-            while (true) {
-              const { done, value } = await reader.read()
-              if (done) break
-
-              // Capture response-metadata events with rs_* id
-              if ((value as any)?.type === 'response-metadata') {
-                const metadata = (value as any).providerMetadata?.openai
-                if (metadata?.responseId) lastResponseId = metadata.responseId
-                if (metadata?.itemId) lastItemId = metadata.itemId
+      // Case 1: Web ReadableStream
+      if (stream && typeof stream.getReader === 'function') {
+        const reader = stream.getReader()
+        return new ReadableStream({
+          async start(controller) {
+            try {
+              while (true) {
+                const { done, value } = await reader.read()
+                if (done) break
+                if ((value as any)?.type === 'response-metadata') {
+                  const metadata = (value as any).providerMetadata?.openai
+                  if (metadata?.responseId) lastResponseId = metadata.responseId
+                  if (metadata?.itemId) lastItemId = metadata.itemId
+                }
+                controller.enqueue(value)
               }
-
-              controller.enqueue(value)
+            } finally {
+              controller.close()
             }
-          } finally {
-            controller.close()
+          }
+        })
+      }
+
+      // Case 2: AsyncIterable (common in AI SDK stream parts)
+      if (stream && typeof stream[Symbol.asyncIterator] === 'function') {
+        async function* iter() {
+          for await (const value of stream) {
+            if ((value as any)?.type === 'response-metadata') {
+              const metadata = (value as any).providerMetadata?.openai
+              if (metadata?.responseId) lastResponseId = metadata.responseId
+              if (metadata?.itemId) lastItemId = metadata.itemId
+            }
+            yield value
           }
         }
-      })
+        return iter()
+      }
+
+      // Fallback: pass-through
+      return stream
     }
   }
 }
