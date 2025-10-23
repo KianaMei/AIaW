@@ -21,7 +21,8 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
       // (e.g., reasoning references) even when there is no explicit tool result in this turn.
       if (lastResponseId) {
         const providerOptions = p.providerOptions ?? {}
-        const openaiOptions = { ...(providerOptions.openai ?? {}), previousResponseId: lastResponseId, store: true }
+        // Conservative: avoid item_reference by defaulting store to false
+        const openaiOptions = { ...(providerOptions.openai ?? {}), previousResponseId: lastResponseId, store: false }
         params = { ...p, providerOptions: { ...providerOptions, openai: openaiOptions } } as any
         try { console.log('[AIaW][MCP-MW] Set previousResponseId =', lastResponseId) } catch {}
       }
