@@ -17,17 +17,14 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
     transformParams: async ({ params }) => {
       const p: any = params
 
-      // Detect tool reply on either messages[] or prompt[]
-      try {
-        const arr = Array.isArray(p.messages) ? p.messages : (Array.isArray(p.prompt) ? p.prompt : [])
-        const hasToolReply = Array.isArray(arr) && arr.some((m: any) => m?.role === 'tool')
-        if (hasToolReply && lastResponseId) {
-          const providerOptions = p.providerOptions ?? {}
-          const openaiOptions = { ...(providerOptions.openai ?? {}), previousResponseId: lastResponseId, store: true }
-          params = { ...p, providerOptions: { ...providerOptions, openai: openaiOptions } } as any
-          try { console.log('[AIaW][MCP-MW] Set previousResponseId =', lastResponseId) } catch {}
-        }
-      } catch {}
+      // Always attach previous_response_id if we have one, because the SDK may emit item_reference
+      // (e.g., reasoning references) even when there is no explicit tool result in this turn.
+      if (lastResponseId) {
+        const providerOptions = p.providerOptions ?? {}
+        const openaiOptions = { ...(providerOptions.openai ?? {}), previousResponseId: lastResponseId, store: true }
+        params = { ...p, providerOptions: { ...providerOptions, openai: openaiOptions } } as any
+        try { console.log('[AIaW][MCP-MW] Set previousResponseId =', lastResponseId) } catch {}
+      }
 
       // Normalization helper to coerce tool outputs to string
       const normalize = (list: any[]) => list.map((message: CoreMessage) => {
@@ -84,11 +81,16 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
               while (true) {
                 const { done, value } = await reader.read()
                 if (done) break
-                if ((value as any)?.type === 'response-metadata') {
-                  const metadata = (value as any).providerMetadata?.openai
+                try {
+                  // Provider metadata path
+                  const metadata = (value as any)?.providerMetadata?.openai
                   if (metadata?.responseId) lastResponseId = metadata.responseId
                   if (metadata?.itemId) lastItemId = metadata.itemId
-                }
+
+                  // Generic Responses API SSE shapes
+                  if ((value as any)?.response?.id) lastResponseId = (value as any).response.id
+                  if ((value as any)?.id && (value as any)?.object === 'response') lastResponseId = (value as any).id
+                } catch {}
                 controller.enqueue(value)
               }
             } finally {
@@ -102,11 +104,13 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
       if (stream && typeof stream[Symbol.asyncIterator] === 'function') {
         async function* iter() {
           for await (const value of stream) {
-            if ((value as any)?.type === 'response-metadata') {
-              const metadata = (value as any).providerMetadata?.openai
+            try {
+              const metadata = (value as any)?.providerMetadata?.openai
               if (metadata?.responseId) lastResponseId = metadata.responseId
               if (metadata?.itemId) lastItemId = metadata.itemId
-            }
+              if ((value as any)?.response?.id) lastResponseId = (value as any).response.id
+              if ((value as any)?.id && (value as any)?.object === 'response') lastResponseId = (value as any).id
+            } catch {}
             yield value
           }
         }
