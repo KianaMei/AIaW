@@ -15,66 +15,46 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
 
   return {
     transformParams: async ({ params }) => {
-      // If we are replying with tool outputs, attach previous_response_id
-      // so OpenAI Responses API can link function_call_output to the prior response (rs_*)
-      try {
-        const hasToolReply = Array.isArray((params as any).prompt)
-          && (params as any).prompt.some((m: any) => m?.role === 'tool')
+      const p: any = params
 
+      // Detect tool reply on either messages[] or prompt[]
+      try {
+        const arr = Array.isArray(p.messages) ? p.messages : (Array.isArray(p.prompt) ? p.prompt : [])
+        const hasToolReply = Array.isArray(arr) && arr.some((m: any) => m?.role === 'tool')
         if (hasToolReply && lastResponseId) {
-          const providerOptions = (params as any).providerOptions ?? {}
+          const providerOptions = p.providerOptions ?? {}
           const openaiOptions = { ...(providerOptions.openai ?? {}), previousResponseId: lastResponseId, store: true }
-          params = { ...(params as any), providerOptions: { ...providerOptions, openai: openaiOptions } } as any
+          params = { ...p, providerOptions: { ...providerOptions, openai: openaiOptions } } as any
           try { console.log('[AIaW][MCP-MW] Set previousResponseId =', lastResponseId) } catch {}
         }
       } catch {}
 
-      // Normalize tool outputs within prompt (ensure output becomes string)
-      if ((params as any).prompt) {
-        const transformedMessages = (params as any).prompt.map((message: CoreMessage) => {
-          if (message.role === 'tool') {
-            const content = (message as any).content
-            if (Array.isArray(content)) {
-              const transformed = content.map((part: any) => {
-                if (part?.type === 'tool-result' && part.output) {
-                  const out = part.output
-                  let outputStr: string | undefined
-                  // Coerce any tool output to a plain string
-                  if (out.type === 'text' || out.type === 'error-text') {
-                    outputStr = String(out.value ?? '')
-                  } else if (out.type === 'json' || out.type === 'error-json') {
-                    try { outputStr = JSON.stringify(out.value) } catch { outputStr = String(out?.value) }
-                  } else if (out.type === 'execution-denied') {
-                    outputStr = out.reason ?? 'Tool execution denied.'
-                  } else if (out.type === 'content') {
-                    try { outputStr = JSON.stringify(out.value) } catch { outputStr = '[unserializable content]'}
-                  }
+      // Normalization helper to coerce tool outputs to string
+      const normalize = (list: any[]) => list.map((message: CoreMessage) => {
+        if (message.role === 'tool') {
+          const content = (message as any).content
+          if (Array.isArray(content)) {
+            const transformed = content.map((part: any) => {
+              if (part?.type === 'tool-result' && part.output) {
+                const out = part.output
+                let outputStr: string | undefined
+                if (out.type === 'text' || out.type === 'error-text') outputStr = String(out.value ?? '')
+                else if (out.type === 'json' || out.type === 'error-json') { try { outputStr = JSON.stringify(out.value) } catch { outputStr = String(out?.value) } }
+                else if (out.type === 'execution-denied') outputStr = out.reason ?? 'Tool execution denied.'
+                else if (out.type === 'content') { try { outputStr = JSON.stringify(out.value) } catch { outputStr = '[unserializable content]' } }
 
-                  if (outputStr !== undefined) {
-                    return {
-                      ...part,
-                      output: { type: 'text', value: outputStr },
-                      type: 'tool-result'
-                    }
-                  }
-                }
-                return part
-              })
-
-              return {
-                ...message,
-                content: transformed
-              } as CoreMessage
-            }
+                if (outputStr !== undefined) return { ...part, output: { type: 'text', value: outputStr }, type: 'tool-result' }
+              }
+              return part
+            })
+            return { ...message, content: transformed } as CoreMessage
           }
-          return message
-        })
-
-        return {
-          ...params,
-          prompt: transformedMessages
         }
-      }
+        return message
+      })
+
+      if (Array.isArray(p.messages)) return { ...params, messages: normalize(p.messages) }
+      if (Array.isArray(p.prompt)) return { ...params, prompt: normalize(p.prompt) }
 
       return params
     },
