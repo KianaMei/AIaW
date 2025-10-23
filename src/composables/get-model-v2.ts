@@ -9,6 +9,7 @@ import { useObservable } from '@vueuse/rxjs'
 import { db } from 'src/utils/db'
 import { DexieDBURL, LitellmBaseURL } from 'src/utils/config'
 import { wrapLanguageModel, extractReasoningMiddleware } from 'ai'
+import { createOpenAIResponsesMCPMiddleware } from 'src/aiCore/runtime/responses-mcp-middleware'
 import { AuthropicCors, FormattingReenabled, MarkdownFormatting } from 'src/utils/middlewares'
 import { useProvidersV2Store } from 'src/stores/providers-v2'
 import type { LanguageModelV2, LanguageModelV2Middleware } from '@ai-sdk/provider'
@@ -24,6 +25,7 @@ function wrapMiddlewares(model: LanguageModelV2) {
   FormattingModels.includes(model.modelId) && middlewares.push(FormattingReenabled)
   model.modelId.startsWith('gpt-5') && middlewares.push(MarkdownFormatting)
   model.provider.startsWith('anthropic.') && middlewares.push(AuthropicCors)
+  model.provider.endsWith('.responses') && middlewares.push(createOpenAIResponsesMCPMiddleware())
   return middlewares.length ? wrapLanguageModel({ model, middleware: middlewares }) : model
 }
 
