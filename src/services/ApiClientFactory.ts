@@ -16,6 +16,15 @@ import { fetch } from 'src/utils/platform-api'
 import { OfficialBaseURLs } from 'src/config/providers'
 
 /**
+ * @deprecated This file is deprecated and no longer used in the current architecture.
+ *
+ * The new architecture uses:
+ * - src/services/cherry/providerConfig.ts (providerToAiSdkConfig) to generate provider options
+ * - src/aiCore/providers/schemas.ts (baseProviders) to define provider creators
+ * - src/services/cherry/registry.ts (ensureProviderRegistered) to register providers
+ *
+ * This factory class is kept for reference only and is not part of the active code path.
+ *
  * API Client Factory - Cherry Studio Architecture
  * Creates appropriate SDK client based on provider configuration
  */

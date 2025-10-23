@@ -11,6 +11,7 @@ import {
 import { globalModelResolver } from '../models'
 import type { RuntimeConfig, generateImageParams, generateObjectParams, generateTextParams, streamObjectParams, streamTextParams } from './types'
 import { ImageGenerationError, ImageModelResolutionError } from './errors'
+import { createOpenAIResponsesMCPMiddleware } from './responses-mcp-middleware'
 
 export class RuntimeExecutor<T extends string = string> {
   private config: RuntimeConfig<T>
@@ -47,7 +48,15 @@ export class RuntimeExecutor<T extends string = string> {
     options?: { middlewares?: LanguageModelV2Middleware[] }
   ): Promise<ReturnType<typeof _streamText>> {
     const { model } = params
-    const resolvedModel = await (typeof model === 'string' ? this.resolveModel(model, options?.middlewares) : Promise.resolve(model))
+    const middlewares = options?.middlewares ? [...options.middlewares] : []
+    
+    // Apply OpenAI Responses API + MCP fix if needed
+    if (this.config.providerId === 'openai-response' && (params.tools || params.toolChoice)) {
+      console.log('[AIaW] Applying OpenAI Responses API + MCP fix middleware')
+      middlewares.push(createOpenAIResponsesMCPMiddleware())
+    }
+    
+    const resolvedModel = await (typeof model === 'string' ? this.resolveModel(model, middlewares) : Promise.resolve(model))
     return _streamText({ ...params, model: resolvedModel })
   }
 
@@ -56,7 +65,15 @@ export class RuntimeExecutor<T extends string = string> {
     options?: { middlewares?: LanguageModelV2Middleware[] }
   ): Promise<ReturnType<typeof _generateText>> {
     const { model } = params
-    const resolvedModel = await (typeof model === 'string' ? this.resolveModel(model, options?.middlewares) : Promise.resolve(model))
+    const middlewares = options?.middlewares ? [...options.middlewares] : []
+    
+    // Apply OpenAI Responses API + MCP fix if needed
+    if (this.config.providerId === 'openai-response' && (params.tools || params.toolChoice)) {
+      console.log('[AIaW] Applying OpenAI Responses API + MCP fix middleware')
+      middlewares.push(createOpenAIResponsesMCPMiddleware())
+    }
+    
+    const resolvedModel = await (typeof model === 'string' ? this.resolveModel(model, middlewares) : Promise.resolve(model))
     return _generateText({ ...params, model: resolvedModel })
   }
 

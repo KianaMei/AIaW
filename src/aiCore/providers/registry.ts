@@ -96,27 +96,36 @@ export function registerProvider(providerId: string, provider: any): boolean {
       return false
     }
     const aliases = config.aliases
-    if (providerId === 'openai') {
-      globalRegistryManagement.registerProvider(providerId, provider, aliases)
-      const openaiChatProvider = customProvider({
-        fallbackProvider: {
-          ...provider,
-          languageModel: (modelId: string) => provider.chat(modelId)
-        }
-      })
-      globalRegistryManagement.registerProvider(`${providerId}-chat`, openaiChatProvider)
-    } else if (providerId === 'azure') {
-      globalRegistryManagement.registerProvider(`${providerId}-chat`, provider, aliases)
-      const azureResponsesProvider = customProvider({
-        fallbackProvider: {
-          ...provider,
-          languageModel: (modelId: string) => (provider as any).responses(modelId)
-        }
-      })
-      globalRegistryManagement.registerProvider(providerId, azureResponsesProvider)
-    } else {
-      globalRegistryManagement.registerProvider(providerId, provider, aliases)
-    }
+
+    // ⚠️ DEPRECATED: The following special branches are no longer executed in the current architecture.
+    // The actual code path uses RegistryManagement.registerProvider() directly via ensureProviderRegistered().
+    // These branches are kept commented for reference only.
+    //
+    // if (providerId === 'openai') {
+    //   globalRegistryManagement.registerProvider(providerId, provider, aliases)
+    //   const openaiChatProvider = customProvider({
+    //     fallbackProvider: {
+    //       ...provider,
+    //       languageModel: (modelId: string) => provider.chat(modelId)
+    //     }
+    //   })
+    //   globalRegistryManagement.registerProvider(`${providerId}-chat`, openaiChatProvider)
+    // } else if (providerId === 'azure') {
+    //   globalRegistryManagement.registerProvider(`${providerId}-chat`, provider, aliases)
+    //   const azureResponsesProvider = customProvider({
+    //     fallbackProvider: {
+    //       ...provider,
+    //       languageModel: (modelId: string) => (provider as any).responses(modelId)
+    //     }
+    //   })
+    //   globalRegistryManagement.registerProvider(providerId, azureResponsesProvider)
+    // } else {
+    //   globalRegistryManagement.registerProvider(providerId, provider, aliases)
+    // }
+
+    // Current active path: direct registration without special handling
+    globalRegistryManagement.registerProvider(providerId, provider, aliases)
+
     return true
   } catch (error) {
     console.error(`Failed to register provider "${providerId}" to global registry:`, error)
@@ -124,6 +133,15 @@ export function registerProvider(providerId: string, provider: any): boolean {
   }
 }
 
+/**
+ * @deprecated This function is no longer used in the current architecture.
+ *
+ * The new architecture uses:
+ * - src/services/cherry/registry.ts (ensureProviderRegistered) which calls createProvider() and
+ *   RegistryManagement.registerProvider() directly.
+ *
+ * This function is kept for reference only and is not part of the active code path.
+ */
 export async function createAndRegisterProvider(providerId: string, options: any): Promise<boolean> {
   try {
     const provider = await createProvider(providerId, options)
