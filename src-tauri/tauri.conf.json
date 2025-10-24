@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "AlaW",
-  "version": "2.2.17",
+  "version": "2.2.27",
   "identifier": "com.kianamei.alaw",
   "build": {
     "frontendDist": "../dist/spa",
