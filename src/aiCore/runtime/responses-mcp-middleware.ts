@@ -62,6 +62,7 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
         return message
       })
 
+
       if (Array.isArray(p.messages)) return { ...(params as any), messages: normalize(p.messages) } as any
       if (Array.isArray(p.prompt)) return { ...(params as any), prompt: normalize(p.prompt) } as any
 

@@ -43,6 +43,14 @@ function pushHttpLog(entry: any) {
   } catch {}
 }
 
+function forceWindowFetch(): boolean {
+  try {
+    return localStorage.getItem('AIAW_FORCE_WINDOW_FETCH') === '1'
+  } catch (_) {
+    return false
+  }
+}
+
 function redactHeaders(h?: HeadersInit): Record<string, string> {
   const out: Record<string, string> = {}
   const sensitive = new Set(['authorization', 'x-api-key', 'api-key', 'x-goog-api-key', 'x-api-token', 'proxy-authorization'])
@@ -111,7 +119,9 @@ function wrapFetch<F extends (url: any, init?: any) => Promise<Response>>(base: 
   }) as F
 }
 
-const baseFetch = IsTauri ? tauriFetch : IsCapacitor ? capFetch : window.fetch.bind(window)
+const baseFetch = forceWindowFetch()
+  ? window.fetch.bind(window)
+  : (IsTauri ? tauriFetch : IsCapacitor ? capFetch : window.fetch.bind(window))
 export const fetch = wrapFetch(baseFetch)
 
 export async function clipboardReadText(): Promise<string> {
