@@ -1,4 +1,5 @@
 import type { ProviderV2 } from 'src/utils/types'
+import { fetch } from 'src/utils/platform-api'
 import { normalizeBaseUrl } from './url'
 import { resolveAzureVariant } from './azureVariant'
 import { getRotatedApiKey } from './keyRotation'
@@ -43,19 +44,32 @@ export function providerToAiSdkConfig(provider: ProviderV2, modelId?: string): {
   const providerId = getAiSdkProviderId(provider)
   const rotatedKey = getRotatedApiKey(provider.id, provider.apiKey, modelId)
 
-  // ⭐ Format apiHost based on provider type (align with Cherry Studio)
+  // ? Format apiHost based on provider type (align with Cherry Studio)
   let formattedApiHost = provider.apiHost || undefined
   console.log('[providerToAiSdkConfig] Original apiHost:', provider.apiHost, 'providerId:', providerId)
 
   if (formattedApiHost) {
-    if (providerId === 'google') {
-      formattedApiHost = normalizeBaseUrl(formattedApiHost, 'v1beta')
-    } else if (providerId === 'azure') {
-      // Azure handled separately below
-      formattedApiHost = normalizeBaseUrl(formattedApiHost, 'openai')
-    } else {
-      // ⭐ For all other providers (including openai-compatible), add /v1/ suffix
-      formattedApiHost = normalizeBaseUrl(formattedApiHost, 'v1')
+    // Cherry UI convention:
+    // - If apiHost ends with '#' => force raw, do not append any version segment
+    // - If apiHost ends with '/' => suppress default '/v1' for openai/openai-compatible
+    const forceRaw = formattedApiHost.endsWith('#')
+    const suppressV1 = !forceRaw && formattedApiHost.endsWith('/')
+    if (forceRaw) {
+      formattedApiHost = formattedApiHost.slice(0, -1).trim().replace(/\/+$/, '')
+    }
+
+    if (!forceRaw) {
+      if (providerId === 'google') {
+        formattedApiHost = normalizeBaseUrl(formattedApiHost, 'v1beta')
+      } else if (providerId === 'azure') {
+        // Azure handled separately below
+        formattedApiHost = normalizeBaseUrl(formattedApiHost, 'openai')
+      } else {
+        // For OpenAI / openai-compatible: only add /v1 if not explicitly suppressed via trailing '/'
+        formattedApiHost = suppressV1
+          ? formattedApiHost.replace(/\/+$/, '')
+          : normalizeBaseUrl(formattedApiHost, 'v1')
+      }
     }
   }
 
@@ -63,7 +77,10 @@ export function providerToAiSdkConfig(provider: ProviderV2, modelId?: string): {
 
   const baseConfig: any = {
     baseURL: formattedApiHost,
-    apiKey: rotatedKey
+    apiKey: rotatedKey,
+    // Inject AIaW cross-platform fetch to ensure SSE and headers behave
+    // correctly in Web/Tauri/Capacitor environments
+    fetch
   }
 
   const extraOptions: any = {}

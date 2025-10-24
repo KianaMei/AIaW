@@ -255,6 +255,7 @@ export default {
     typeCaption: 'The API protocol type used by this provider',
     apiHost: 'API Host',
     apiHostCaption: 'The base URL for API requests (e.g., https://api.example.com)',
+    apiHostSuffixHint: "Tip: Ending with '/' suppresses the default '/v1'; ending with '#' forces the raw URL to be used as-is.",
     apiKey: 'API Key',
     apiKeyCaption: 'Your API key for authentication',
     enabled: 'Enabled',

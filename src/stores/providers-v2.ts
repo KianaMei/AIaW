@@ -334,6 +334,46 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
     ModelService.clearCache()
   }
 
+  /**
+   * Rename a model ID for a custom provider and migrate its config.
+   * - Updates provider.models (string[] | Model[])
+   * - Moves provider.modelConfigs[oldId] -> [newId]
+   */
+  async function renameProviderModel(
+    providerId: string,
+    oldId: string,
+    newId: string,
+    newConfig?: Partial<Model>
+  ): Promise<void> {
+    const provider = getProviderById(providerId)
+    if (!provider) throw new Error(`Provider ${providerId} not found`)
+    if (provider.isSystem) throw new Error('Cannot rename models for system providers')
+
+    const cp = provider as CustomProviderV2
+    const models = Array.isArray(cp.models) ? [...cp.models] : []
+
+    let updatedModels: any[] = models
+    if (models.length > 0) {
+      if (typeof models[0] === 'string') {
+        updatedModels = (models as string[]).map(id => (id === oldId ? newId : id))
+        if (!(updatedModels as string[]).includes(newId)) updatedModels.push(newId)
+      } else {
+        updatedModels = (models as Model[]).map(m => (m.id === oldId ? { ...m, id: newId } : m))
+      }
+    } else {
+      updatedModels = [newId]
+    }
+
+    const currentModelConfigs = cp.modelConfigs || {}
+    const migrated: Record<string, Partial<Model>> = { ...currentModelConfigs }
+    const oldCfg = migrated[oldId] || {}
+    delete migrated[oldId]
+    migrated[newId] = { ...oldCfg, id: newId, ...(newConfig || {}) }
+
+    await updateCustomProvider(providerId, { models: updatedModels as any, modelConfigs: migrated })
+    ModelService.clearCache()
+  }
+
   // ====================
   // Return - Clean V2 API only
   // ====================
@@ -366,6 +406,7 @@ export const useProvidersV2Store = defineStore('providers-v2', () => {
     getModelsByProvider,
     searchModels,
     fetchProviderModels,
-    updateProviderModel
+    updateProviderModel,
+    renameProviderModel
   }
 })

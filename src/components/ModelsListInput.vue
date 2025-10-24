@@ -154,6 +154,22 @@
               <q-icon name="sym_o_search" />
             </template>
           </q-input>
+
+          <!-- Manual add -->
+          <div class="row items-center q-gutter-sm q-mt-sm">
+            <q-input v-model="manualModelId" dense outlined placeholder="手动输入模型 ID (例如: ep-20250611114552-z45kg)" class="col">
+              <template v-slot:prepend>
+                <q-icon name="sym_o_edit" />
+              </template>
+            </q-input>
+            <q-btn
+              color="primary"
+              unelevated
+              :disable="!manualModelId"
+              label="添加"
+              @click="addManualModel"
+            />
+          </div>
         </q-card-section>
 
         <q-card-section class="q-pt-none" style="max-height: 400px; overflow-y: auto">
@@ -360,6 +376,15 @@ async function fetchProviderModels() {
   }
 }
 
+// Manual add model id
+const manualModelId = ref('')
+function addManualModel() {
+  const id = manualModelId.value.trim()
+  if (!id) return
+  addModel(id)
+  manualModelId.value = ''
+}
+
 // Get model display name
 function getModelName(modelId: string): string {
   const model = availableModels.value.find(m => m.value === modelId)
@@ -500,7 +525,11 @@ async function showModelSettings(modelId: string) {
     }
   }).onOk(async (updatedModel: Model) => {
     try {
-      await providersStore.updateProviderModel(props.providerId, updatedModel)
+      if (updatedModel.id && updatedModel.id !== modelId) {
+        await providersStore.renameProviderModel(props.providerId, modelId, updatedModel.id, updatedModel)
+      } else {
+        await providersStore.updateProviderModel(props.providerId, updatedModel)
+      }
 
       // Force refresh by clearing cache
       ModelService.clearCache()

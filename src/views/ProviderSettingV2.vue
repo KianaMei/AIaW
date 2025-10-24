@@ -76,7 +76,12 @@
         <!-- API Host -->
         <q-item>
           <q-item-section>
-            <q-item-label>{{ $t('providerSetting.apiHost') }}</q-item-label>
+            <div class="row items-center no-wrap">
+              <q-item-label class="q-mr-xs">{{ $t('providerSetting.apiHost') }}</q-item-label>
+              <q-icon name="sym_o_help" size="16px" class="text-on-sur cursor-pointer">
+                <q-tooltip>小贴士：地址以“/”结尾将不再自动追加“/v1”；以“#”结尾将强制按原样使用输入地址。</q-tooltip>
+              </q-icon>
+            </div>
             <q-item-label caption>
               {{ $t('providerSetting.apiHostCaption') }}
             </q-item-label>

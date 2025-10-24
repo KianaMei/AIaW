@@ -17,14 +17,25 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
     transformParams: async ({ params }) => {
       const p: any = params
 
-      // Always attach previous_response_id if we have one, because the SDK may emit item_reference
-      // (e.g., reasoning references) even when there is no explicit tool result in this turn.
-      if (lastResponseId) {
-        const providerOptions = p.providerOptions ?? {}
-        // Conservative: avoid item_reference by defaulting store to false
-        const openaiOptions = { ...(providerOptions.openai ?? {}), previousResponseId: lastResponseId, store: false }
+      // Prefer to avoid server-side item_reference when tools are involved to prevent
+      // missing item errors if previous_response_id is not reliably attached.
+      const hasTools = !!(p?.tools || p?.toolChoice)
+
+      // Build/merge provider options once to avoid duplication across branches
+      const providerOptions = p.providerOptions ?? {}
+      const openaiBase = providerOptions.openai ?? {}
+      const openaiOptions = {
+        ...openaiBase,
+        ...(lastResponseId ? { previousResponseId: lastResponseId } : {}),
+        ...(hasTools ? { store: false } : {})
+      }
+
+      if (lastResponseId || hasTools) {
         params = { ...p, providerOptions: { ...providerOptions, openai: openaiOptions } } as any
-        try { console.log('[AIaW][MCP-MW] Set previousResponseId =', lastResponseId) } catch {}
+        try {
+          if (lastResponseId) console.log('[AIaW][MCP-MW] Set previousResponseId =', lastResponseId)
+          if (hasTools) console.log('[AIaW][MCP-MW] Forced store=false when tools are present')
+        } catch {}
       }
 
       // Normalization helper to coerce tool outputs to string
@@ -51,10 +62,10 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
         return message
       })
 
-      if (Array.isArray(p.messages)) return { ...params, messages: normalize(p.messages) }
-      if (Array.isArray(p.prompt)) return { ...params, prompt: normalize(p.prompt) }
+      if (Array.isArray(p.messages)) return { ...(params as any), messages: normalize(p.messages) } as any
+      if (Array.isArray(p.prompt)) return { ...(params as any), prompt: normalize(p.prompt) } as any
 
-      return params
+      return params as any
     },
 
     wrapGenerate: async ({ doGenerate }) => {
