@@ -2,8 +2,13 @@
  * OpenAI Responses API + MCP middleware
  *
  * Goals:
- * 1) Preserve rs_* response linkage across tool calls by setting previous_response_id.
- * 2) Ensure function_call_output.output is a string (JSON-stringify non-strings).
+ * 1) Handle OpenAI Responses API intermittent bug with previous_response_id (GitHub issue #2255)
+ *    Solution: Omit previous_response_id, let chain continue via function_call_output
+ * 2) Ensure function_call_output.output is a string (JSON-stringify non-strings)
+ * 3) Use store=false with tools to avoid item_reference issues
+ * 
+ * Based on official recommendation (2025-08): Skip previous_response_id to avoid
+ * "Previous response not found" errors in default tier environments.
  */
 
 import type { LanguageModelV2Middleware } from '@ai-sdk/provider'
@@ -47,18 +52,20 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
       const hasTools = !!(p?.tools || p?.toolChoice)
 
       // Build/merge provider options once to avoid duplication across branches
+      // 基于官方推荐（OpenAI Codex GitHub issue #2255, 2025-08）：
+      // 省略 previous_response_id 避免 intermittent bug（ID 链不匹配或存储临时失效）
       const openaiOptions = {
         ...openaiBase,
-        ...(lastResponseId ? { previousResponseId: lastResponseId } : {}),
-        // Only force store=false when we cannot chain yet
-        ...(!lastResponseId && hasTools ? { store: false } : {})
+        // 官方推荐：省略 previousResponseId，让链通过 function_call_output 自然延续
+        // ...(lastResponseId ? { previousResponseId: lastResponseId } : {}), // REMOVED
+        // 使用 store=false 避免 item_reference 相关问题
+        ...(hasTools ? { store: false } : {})
       }
 
-      if (lastResponseId || hasTools) {
+      if (hasTools) {
         params = { ...p, providerOptions: { ...providerOptions, openai: openaiOptions } } as any
         try {
-          if (lastResponseId) console.log('[AIaW][MCP-MW] Set previousResponseId =', lastResponseId)
-          if (hasTools && !lastResponseId) console.log('[AIaW][MCP-MW] Forced store=false when tools are present (no previousResponseId)')
+          console.log('[AIaW][MCP-MW] Official fix: omit previous_response_id, use store=false with tools')
         } catch {}
       }
 
