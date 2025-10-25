@@ -71,22 +71,9 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
       }
 
       if (hasTools) {
-        // Ensure Responses emits final text and keeps tool calls sequential for stability
-        const enforcedExecControls = {
-          // Limit concurrency to avoid ordering issues in some proxies
-          parallelToolCalls: false,
-          // Reasonable safety cap; model may finish earlier
-          maxToolCalls: p?.maxToolCalls ?? 4,
-          // Nudge model to actually emit text
-          text: p?.text ?? { verbosity: 'high' },
-          reasoning: p?.reasoning ?? { effort: 'medium', summary: 'auto' },
-          // Encourage final textual answer after tools
-          instructions: p?.instructions ?? '在使用工具完成检索后，必须用中文输出最终回答文本，不要留空。'
-        }
-
-        params = { ...p, ...enforcedExecControls, providerOptions: { ...providerOptions, openai: openaiOptions } } as any
+        params = { ...p, providerOptions: { ...providerOptions, openai: openaiOptions } } as any
         try {
-          console.log('[AIaW][MCP-MW] Official fix: omit previous_response_id, use store=false with tools; enforce sequential tools + text verbosity')
+          console.log('[AIaW][MCP-MW] Using store=false with tools; previous_response_id omitted')
         } catch {}
       }
 
