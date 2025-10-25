@@ -71,9 +71,22 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
       }
 
       if (hasTools) {
-        params = { ...p, providerOptions: { ...providerOptions, openai: openaiOptions } } as any
+        // Ensure Responses emits final text and keeps tool calls sequential for stability
+        const enforcedExecControls = {
+          // Limit concurrency to avoid ordering issues in some proxies
+          parallelToolCalls: false,
+          // Reasonable safety cap; model may finish earlier
+          maxToolCalls: p?.maxToolCalls ?? 4,
+          // Nudge model to actually emit text
+          text: p?.text ?? { verbosity: 'high' },
+          reasoning: p?.reasoning ?? { effort: 'medium', summary: 'auto' },
+          // Encourage final textual answer after tools
+          instructions: p?.instructions ?? '在使用工具完成检索后，必须用中文输出最终回答文本，不要留空。'
+        }
+
+        params = { ...p, ...enforcedExecControls, providerOptions: { ...providerOptions, openai: openaiOptions } } as any
         try {
-          console.log('[AIaW][MCP-MW] Official fix: omit previous_response_id, use store=false with tools')
+          console.log('[AIaW][MCP-MW] Official fix: omit previous_response_id, use store=false with tools; enforce sequential tools + text verbosity')
         } catch {}
       }
 
@@ -103,23 +116,28 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
 
       // Process messages to handle reasoning + function_call pairing
       const processMessages = (list: any[]) => {
+        // 0) 先全局清理：移除顶层 item_reference，避免服务端查找失败
+        const cleanList = Array.isArray(list)
+          ? list.filter((it: any) => it?.type !== 'item_reference')
+          : list
+
         // First, collect all items to analyze the entire conversation
         const allItems: any[] = []
         const messageItems: any[] = []
         
-        list.forEach((item: any) => {
+        cleanList.forEach((item: any) => {
           if (item.role === 'assistant') {
             // Extract items from assistant messages
             const content = (item as any).content
             if (Array.isArray(content)) {
               content.forEach((part: any) => {
-                allItems.push(part)
+                if (part?.type !== 'item_reference') allItems.push(part)
               })
             }
             messageItems.push(item)
           } else if (item.type === 'function_call' || item.type === 'reasoning') {
             // Top-level function_call or reasoning items
-            allItems.push(item)
+            if (item?.type !== 'item_reference') allItems.push(item)
           } else {
             // Other messages (user, system, etc.)
             messageItems.push(item)
@@ -159,7 +177,7 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
         }
         
         // Now reconstruct the messages with proper ordering
-        return list.map((item: any) => {
+        return cleanList.map((item: any) => {
           if (item.role === 'assistant') {
             const content = (item as any).content
             if (Array.isArray(content)) {
@@ -174,7 +192,7 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
                   updatedReasoning.push(part)
                 } else if (part?.type === 'function_call' && content.some((c: any) => c.id === part.id)) {
                   updatedFunctionCalls.push(part)
-                } else if (content.some((c: any) => c === part)) {
+                } else if (content.some((c: any) => c === part) && part?.type !== 'item_reference') {
                   otherItems.push(part)
                 }
               })
@@ -195,7 +213,9 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
                 return part
               })
               
-              return { ...(item as any), content: transformed }
+              // 过滤掉 content 中的任何 item_reference
+              const filtered = transformed.filter((p: any) => p?.type !== 'item_reference')
+              return { ...(item as any), content: filtered }
             }
           } else if (item.type === 'reasoning' && hasTools) {
             // Top-level reasoning - check if we need to inject it before a function_call
@@ -210,9 +230,26 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
         })
       }
 
+      // 针对 Responses 原生 input 的清理（AI SDK 在某些版本下会直接构造 input 项）
+      const sanitizeResponsesInput = (input: any[]) => {
+        if (!Array.isArray(input)) return input
+        const pruned = input
+          // 顶层剔除 item_reference
+          .filter((entry: any) => entry?.type !== 'item_reference')
+          .map((entry: any) => {
+            // assistant/developer/user 里的 content 若是数组，过滤 item_reference
+            if (Array.isArray(entry?.content)) {
+              return { ...entry, content: entry.content.filter((p: any) => p?.type !== 'item_reference') }
+            }
+            return entry
+          })
+        return pruned
+      }
+
 
       if (Array.isArray(p.messages)) return { ...(params as any), messages: processMessages(normalize(p.messages)) } as any
       if (Array.isArray(p.prompt)) return { ...(params as any), prompt: processMessages(normalize(p.prompt)) } as any
+      if (Array.isArray((p as any).input)) return { ...(params as any), input: sanitizeResponsesInput((p as any).input) } as any
 
       return params as any
     },
