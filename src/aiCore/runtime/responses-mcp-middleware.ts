@@ -6,14 +6,17 @@
  *    Solution: Omit previous_response_id, let chain continue via function_call_output
  * 2) Ensure function_call_output.output is a string (JSON-stringify non-strings)
  * 3) Use store=false with tools to avoid item_reference issues
- * 4) Remove reasoning items from input when using tools with store=false to prevent
- *    "function_call was provided without its required reasoning item" errors
+ * 4) Handle reasoning + function_call pairing requirements:
+ *    - Every function_call MUST be preceded by a reasoning item
+ *    - If streaming causes missing reasoning items, synthesize them
+ *    - Ensure proper ordering: reasoning -> function_call -> other content
  * 
  * Based on official recommendation (2025-08): Skip previous_response_id to avoid
  * "Previous response not found" errors in default tier environments.
  * 
- * Note: Reasoning items are output-only and should not be included in input when
- * store=false is used with tools.
+ * Note: The "function_call was provided without its required reasoning item" error
+ * occurs when streaming responses lose the reasoning item due to network issues
+ * or Tauri's SSE handling (sequence_number gaps).
  */
 
 import type { LanguageModelV2Middleware } from '@ai-sdk/provider'
@@ -98,46 +101,64 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
         return message
       })
 
-      // Scrub reasoning items when using store=false
-      // When store=false, reasoning items should not be included in input
-      const scrubReasoning = (list: any[]) => list.map((message: CoreMessage) => {
+      // Process messages to handle reasoning + function_call pairing
+      const processMessages = (list: any[]) => list.map((message: CoreMessage) => {
         if (message.role === 'assistant') {
           const content = (message as any).content
           if (Array.isArray(content)) {
-            // When hasTools and store=false, remove ALL reasoning items from input
-            if (hasTools) {
-              const transformed = content.filter((part: any) => {
-                // Remove reasoning items entirely when store=false
-                if (part?.type === 'reasoning') {
-                  console.log('[AIaW][MCP-MW] Removing reasoning item to prevent "required reasoning" error')
-                  return false
-                }
-                return true
+            // For Phase 2: ensure reasoning items are properly paired with function_calls
+            const reasoningItems: any[] = []
+            const functionCalls: any[] = []
+            const otherItems: any[] = []
+            
+            // Categorize items
+            content.forEach((part: any) => {
+              if (part?.type === 'reasoning') {
+                reasoningItems.push(part)
+              } else if (part?.type === 'function_call') {
+                functionCalls.push(part)
+              } else {
+                otherItems.push(part)
+              }
+            })
+            
+            // If we have function calls but no reasoning (stream issue), synthesize minimal reasoning
+            if (functionCalls.length > 0 && reasoningItems.length === 0 && hasTools) {
+              console.log('[AIaW][MCP-MW] Synthesizing reasoning for orphaned function_calls')
+              functionCalls.forEach((fc) => {
+                reasoningItems.push({
+                  type: 'reasoning',
+                  content: `Using ${fc.name} tool`,
+                  // Match the function_call's ID pattern
+                  id: fc.id?.replace('fc_', 'rs_') || `rs_synthetic_${Date.now()}`
+                })
               })
-              return { ...(message as any), content: transformed }
-            } else {
-              // Original logic for non-tool scenarios
-              const transformed = content.map((part: any) => {
-                if (part?.type === 'reasoning') {
-                  const po = part?.providerOptions?.openai
-                  if (!lastResponseId && (po?.itemId || po?.reasoningEncryptedContent)) {
-                    const { providerOptions, ...rest } = part
-                    // remove openai meta to prevent server-side verification step
-                    return { ...rest, providerOptions: { ...(providerOptions || {}), openai: undefined } }
-                  }
-                }
-                return part
-              })
-              return { ...(message as any), content: transformed }
             }
+            
+            // Reconstruct content with proper ordering: reasoning -> function_call -> other
+            const orderedContent = [...reasoningItems, ...functionCalls, ...otherItems]
+            
+            // Clean provider-specific metadata when no previousResponseId
+            const transformed = orderedContent.map((part: any) => {
+              if (part?.type === 'reasoning' && !lastResponseId) {
+                const po = part?.providerOptions?.openai
+                if (po?.itemId || po?.reasoningEncryptedContent) {
+                  const { providerOptions, ...rest } = part
+                  return { ...rest, providerOptions: { ...(providerOptions || {}), openai: undefined } }
+                }
+              }
+              return part
+            })
+            
+            return { ...(message as any), content: transformed }
           }
         }
         return message
       })
 
 
-      if (Array.isArray(p.messages)) return { ...(params as any), messages: scrubReasoning(normalize(p.messages)) } as any
-      if (Array.isArray(p.prompt)) return { ...(params as any), prompt: scrubReasoning(normalize(p.prompt)) } as any
+      if (Array.isArray(p.messages)) return { ...(params as any), messages: processMessages(normalize(p.messages)) } as any
+      if (Array.isArray(p.prompt)) return { ...(params as any), prompt: processMessages(normalize(p.prompt)) } as any
 
       return params as any
     },
