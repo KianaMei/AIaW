@@ -6,9 +6,14 @@
  *    Solution: Omit previous_response_id, let chain continue via function_call_output
  * 2) Ensure function_call_output.output is a string (JSON-stringify non-strings)
  * 3) Use store=false with tools to avoid item_reference issues
+ * 4) Remove reasoning items from input when using tools with store=false to prevent
+ *    "function_call was provided without its required reasoning item" errors
  * 
  * Based on official recommendation (2025-08): Skip previous_response_id to avoid
  * "Previous response not found" errors in default tier environments.
+ * 
+ * Note: Reasoning items are output-only and should not be included in input when
+ * store=false is used with tools.
  */
 
 import type { LanguageModelV2Middleware } from '@ai-sdk/provider'
@@ -93,24 +98,38 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
         return message
       })
 
-      // Scrub OpenAI-specific reasoning metadata when we cannot chain responses
-      // to avoid sending encrypted_content that cannot be verified.
+      // Scrub reasoning items when using store=false
+      // When store=false, reasoning items should not be included in input
       const scrubReasoning = (list: any[]) => list.map((message: CoreMessage) => {
         if (message.role === 'assistant') {
           const content = (message as any).content
           if (Array.isArray(content)) {
-            const transformed = content.map((part: any) => {
-              if (part?.type === 'reasoning') {
-                const po = part?.providerOptions?.openai
-                if (!lastResponseId && (po?.itemId || po?.reasoningEncryptedContent)) {
-                  const { providerOptions, ...rest } = part
-                  // remove openai meta to prevent server-side verification step
-                  return { ...rest, providerOptions: { ...(providerOptions || {}), openai: undefined } }
+            // When hasTools and store=false, remove ALL reasoning items from input
+            if (hasTools) {
+              const transformed = content.filter((part: any) => {
+                // Remove reasoning items entirely when store=false
+                if (part?.type === 'reasoning') {
+                  console.log('[AIaW][MCP-MW] Removing reasoning item to prevent "required reasoning" error')
+                  return false
                 }
-              }
-              return part
-            })
-            return { ...(message as any), content: transformed }
+                return true
+              })
+              return { ...(message as any), content: transformed }
+            } else {
+              // Original logic for non-tool scenarios
+              const transformed = content.map((part: any) => {
+                if (part?.type === 'reasoning') {
+                  const po = part?.providerOptions?.openai
+                  if (!lastResponseId && (po?.itemId || po?.reasoningEncryptedContent)) {
+                    const { providerOptions, ...rest } = part
+                    // remove openai meta to prevent server-side verification step
+                    return { ...rest, providerOptions: { ...(providerOptions || {}), openai: undefined } }
+                  }
+                }
+                return part
+              })
+              return { ...(message as any), content: transformed }
+            }
           }
         }
         return message
