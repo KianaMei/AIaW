@@ -143,8 +143,14 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
             if (expectedReasoningId && !existingReasoningIds.has(expectedReasoningId)) {
               const syntheticReasoning = {
                 type: 'reasoning',
-                content: `Using ${fc.name} tool for: ${fc.arguments ? JSON.parse(fc.arguments).query || 'request' : 'request'}`,
-                id: expectedReasoningId || `rs_synthetic_${Date.now()}`
+                text: `Using ${fc.name} tool for: ${fc.arguments ? JSON.parse(fc.arguments).query || 'request' : 'request'}`,
+                id: expectedReasoningId || `rs_synthetic_${Date.now()}`,
+                // 关键：必须包含 providerOptions 让 SDK 识别为 OpenAI reasoning
+                providerOptions: {
+                  openai: {
+                    itemId: expectedReasoningId || `rs_synthetic_${Date.now()}`
+                  }
+                }
               }
               console.log(`[AIaW][MCP-MW] Synthesizing reasoning: ${syntheticReasoning.id}`)
               allItems.unshift(syntheticReasoning) // Add at beginning
@@ -176,13 +182,14 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
               // Ensure proper ordering: reasoning -> function_call -> other
               const orderedContent = [...updatedReasoning, ...updatedFunctionCalls, ...otherItems]
               
-              // Clean metadata
+              // Clean metadata - 但保留合成的 reasoning 的 providerOptions
               const transformed = orderedContent.map((part: any) => {
                 if (part?.type === 'reasoning' && !lastResponseId) {
                   const po = part?.providerOptions?.openai
-                  if (po?.itemId || po?.reasoningEncryptedContent) {
+                  // 只清理有 encryptedContent 的，保留只有 itemId 的（合成的）
+                  if (po?.reasoningEncryptedContent) {
                     const { providerOptions, ...rest } = part
-                    return { ...rest, providerOptions: { ...(providerOptions || {}), openai: undefined } }
+                    return { ...rest, providerOptions: { ...(providerOptions || {}), openai: { itemId: po.itemId } } }
                   }
                 }
                 return part
