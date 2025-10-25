@@ -102,59 +102,106 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
       })
 
       // Process messages to handle reasoning + function_call pairing
-      const processMessages = (list: any[]) => list.map((message: CoreMessage) => {
-        if (message.role === 'assistant') {
-          const content = (message as any).content
-          if (Array.isArray(content)) {
-            // For Phase 2: ensure reasoning items are properly paired with function_calls
-            const reasoningItems: any[] = []
-            const functionCalls: any[] = []
-            const otherItems: any[] = []
-            
-            // Categorize items
-            content.forEach((part: any) => {
-              if (part?.type === 'reasoning') {
-                reasoningItems.push(part)
-              } else if (part?.type === 'function_call') {
-                functionCalls.push(part)
-              } else {
-                otherItems.push(part)
-              }
-            })
-            
-            // If we have function calls but no reasoning (stream issue), synthesize minimal reasoning
-            if (functionCalls.length > 0 && reasoningItems.length === 0 && hasTools) {
-              console.log('[AIaW][MCP-MW] Synthesizing reasoning for orphaned function_calls')
-              functionCalls.forEach((fc) => {
-                reasoningItems.push({
-                  type: 'reasoning',
-                  content: `Using ${fc.name} tool`,
-                  // Match the function_call's ID pattern
-                  id: fc.id?.replace('fc_', 'rs_') || `rs_synthetic_${Date.now()}`
-                })
+      const processMessages = (list: any[]) => {
+        // First, collect all items to analyze the entire conversation
+        const allItems: any[] = []
+        const messageItems: any[] = []
+        
+        list.forEach((item: any) => {
+          if (item.role === 'assistant') {
+            // Extract items from assistant messages
+            const content = (item as any).content
+            if (Array.isArray(content)) {
+              content.forEach((part: any) => {
+                allItems.push(part)
               })
             }
-            
-            // Reconstruct content with proper ordering: reasoning -> function_call -> other
-            const orderedContent = [...reasoningItems, ...functionCalls, ...otherItems]
-            
-            // Clean provider-specific metadata when no previousResponseId
-            const transformed = orderedContent.map((part: any) => {
-              if (part?.type === 'reasoning' && !lastResponseId) {
-                const po = part?.providerOptions?.openai
-                if (po?.itemId || po?.reasoningEncryptedContent) {
-                  const { providerOptions, ...rest } = part
-                  return { ...rest, providerOptions: { ...(providerOptions || {}), openai: undefined } }
-                }
-              }
-              return part
-            })
-            
-            return { ...(message as any), content: transformed }
+            messageItems.push(item)
+          } else if (item.type === 'function_call' || item.type === 'reasoning') {
+            // Top-level function_call or reasoning items
+            allItems.push(item)
+          } else {
+            // Other messages (user, system, etc.)
+            messageItems.push(item)
           }
+        })
+        
+        // Analyze all items for orphaned function_calls
+        const reasoningItems = allItems.filter(item => item?.type === 'reasoning')
+        const functionCalls = allItems.filter(item => item?.type === 'function_call')
+        
+        // If we have orphaned function_calls, synthesize reasoning
+        if (functionCalls.length > 0 && reasoningItems.length < functionCalls.length && hasTools) {
+          console.log(`[AIaW][MCP-MW] Found ${functionCalls.length} function_calls but only ${reasoningItems.length} reasoning items`)
+          
+          // Create a map of existing reasoning IDs
+          const existingReasoningIds = new Set(reasoningItems.map(r => r.id))
+          
+          // Synthesize missing reasoning items
+          functionCalls.forEach((fc) => {
+            const expectedReasoningId = fc.id?.replace('fc_', 'rs_')
+            if (expectedReasoningId && !existingReasoningIds.has(expectedReasoningId)) {
+              const syntheticReasoning = {
+                type: 'reasoning',
+                content: `Using ${fc.name} tool for: ${fc.arguments ? JSON.parse(fc.arguments).query || 'request' : 'request'}`,
+                id: expectedReasoningId || `rs_synthetic_${Date.now()}`
+              }
+              console.log(`[AIaW][MCP-MW] Synthesizing reasoning: ${syntheticReasoning.id}`)
+              allItems.unshift(syntheticReasoning) // Add at beginning
+            }
+          })
         }
-        return message
-      })
+        
+        // Now reconstruct the messages with proper ordering
+        return list.map((item: any) => {
+          if (item.role === 'assistant') {
+            const content = (item as any).content
+            if (Array.isArray(content)) {
+              // Re-categorize with synthetic reasoning included
+              const updatedReasoning: any[] = []
+              const updatedFunctionCalls: any[] = []
+              const otherItems: any[] = []
+              
+              // Include all items (original + synthetic)
+              allItems.forEach((part: any) => {
+                if (part?.type === 'reasoning') {
+                  updatedReasoning.push(part)
+                } else if (part?.type === 'function_call' && content.some((c: any) => c.id === part.id)) {
+                  updatedFunctionCalls.push(part)
+                } else if (content.some((c: any) => c === part)) {
+                  otherItems.push(part)
+                }
+              })
+              
+              // Ensure proper ordering: reasoning -> function_call -> other
+              const orderedContent = [...updatedReasoning, ...updatedFunctionCalls, ...otherItems]
+              
+              // Clean metadata
+              const transformed = orderedContent.map((part: any) => {
+                if (part?.type === 'reasoning' && !lastResponseId) {
+                  const po = part?.providerOptions?.openai
+                  if (po?.itemId || po?.reasoningEncryptedContent) {
+                    const { providerOptions, ...rest } = part
+                    return { ...rest, providerOptions: { ...(providerOptions || {}), openai: undefined } }
+                  }
+                }
+                return part
+              })
+              
+              return { ...(item as any), content: transformed }
+            }
+          } else if (item.type === 'reasoning' && hasTools) {
+            // Top-level reasoning - check if we need to inject it before a function_call
+            const matchingFc = functionCalls.find(fc => fc.id?.replace('fc_', 'rs_') === item.id)
+            if (matchingFc) {
+              // This reasoning should be injected before its function_call
+              return item
+            }
+          }
+          
+          return item
+        })
+      }
 
 
       if (Array.isArray(p.messages)) return { ...(params as any), messages: processMessages(normalize(p.messages)) } as any
