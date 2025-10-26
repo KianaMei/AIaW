@@ -360,6 +360,13 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
                     getGlobalLinkMap().set(conversationKey, lastResponseId)
                   }
                 } catch {}
+                try {
+                  // 如果是服务端错误事件，打印简短信息辅助定位（不改变流）
+                  if ((value as any)?.error?.message || (value as any)?.data?.error?.message) {
+                    const msg = (value as any)?.error?.message || (value as any)?.data?.error?.message
+                    console.error('[AIaW][MCP-MW][SSE-err]', String(msg).slice(0, 300))
+                  }
+                } catch {}
                 const out = maybeInjectReasoningChunks(value)
                 for (const v of out) controller.enqueue(v)
               }
@@ -383,6 +390,12 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
 
               if (conversationKey && lastResponseId) {
                 getGlobalLinkMap().set(conversationKey, lastResponseId)
+              }
+            } catch {}
+            try {
+              if ((value as any)?.error?.message || (value as any)?.data?.error?.message) {
+                const msg = (value as any)?.error?.message || (value as any)?.data?.error?.message
+                console.error('[AIaW][MCP-MW][SSE-err]', String(msg).slice(0, 300))
               }
             } catch {}
             const out = maybeInjectReasoningChunks(value)

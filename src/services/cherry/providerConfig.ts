@@ -95,6 +95,8 @@ export function providerToAiSdkConfig(provider: ProviderV2, modelId?: string): {
       provider.id === 'openai-responses'
 
     extraOptions.mode = wantsResponses ? 'responses' : (settingsMode === 'chat' ? 'chat' : 'chat')
+    // 默认开启自动截断，避免超长 input 触发 400
+    extraOptions.truncation = 'auto'
     // SDK hotfix: 声明 reasoning 支持，避免新版本 SDK 在代理场景下跳过 reasoning 片段
     extraOptions.providerOptions = {
       ...(provider.settings?.providerOptions || {}),
