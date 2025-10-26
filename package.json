@@ -1,6 +1,6 @@
 {
   "name": "aiaw",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "精心设计的 AI (LLM) 客户端。全功能，轻量级；支持多工作区、插件系统、跨平台、本地优先+实时云同步",
   "productName": "AI as Workspace",
   "author": "NitroRCr <i@krytro.com>",
@@ -65,7 +65,7 @@
     "@tauri-apps/plugin-window-state": "~2.2.3",
     "@vueuse/core": "^11.3.0",
     "@vueuse/rxjs": "^11.3.0",
-    "ai": "^5.0.72",
+    "ai": "^5.0.79",
     "ai-sdk-ollama": "^0.5.5",
     "capacitor-export-file": "^0.0.1",
     "capacitor-stream-fetch": "^0.0.6",
