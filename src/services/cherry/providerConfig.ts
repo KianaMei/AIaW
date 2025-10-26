@@ -95,6 +95,14 @@ export function providerToAiSdkConfig(provider: ProviderV2, modelId?: string): {
       provider.id === 'openai-responses'
 
     extraOptions.mode = wantsResponses ? 'responses' : (settingsMode === 'chat' ? 'chat' : 'chat')
+    // SDK hotfix: 声明 reasoning 支持，避免新版本 SDK 在代理场景下跳过 reasoning 片段
+    extraOptions.providerOptions = {
+      ...(provider.settings?.providerOptions || {}),
+      openai: {
+        ...(provider.settings?.providerOptions?.openai || {}),
+        reasoning: { supported: true }
+      }
+    }
   }
 
   if (providerId === 'azure') {

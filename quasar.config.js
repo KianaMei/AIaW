@@ -58,7 +58,9 @@ export default configure((ctx) => {
 
       // publicPath: '/',
       // analyze: true,
-      // env: {},
+      env: {
+        AI_SDK_LOG_WARNINGS: false
+      },
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,

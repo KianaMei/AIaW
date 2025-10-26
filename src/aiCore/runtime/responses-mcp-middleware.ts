@@ -45,7 +45,7 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
       const p: any = params
 
       // Identify conversationKey (stable per dialog/thread)
-      const providerOptions = p.providerOptions ?? {}
+        const providerOptions = p.providerOptions ?? {}
       const openaiBase = providerOptions.openai ?? {}
       conversationKey = openaiBase.conversationKey || conversationKey
 
@@ -66,8 +66,8 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
         ...openaiBase,
         // 官方推荐：省略 previousResponseId，让链通过 function_call_output 自然延续
         // ...(lastResponseId ? { previousResponseId: lastResponseId } : {}), // REMOVED
-        // 使用 store=false 避免 item_reference 相关问题
-        ...(hasTools ? { store: false } : {})
+        // 使用 store=false 避免 item_reference 相关问题；并显式声明 reasoning 支持，避免 SDK 误判为不支持而跳过
+        ...(hasTools ? { store: false, reasoning: { supported: true } } : {})
       }
 
       if (hasTools) {
@@ -101,7 +101,7 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
         return message
       })
 
-      // Process messages to handle reasoning + function_call pairing
+      // Process messages/inputs to handle reasoning + function_call pairing
       const processMessages = (list: any[]) => {
         // 0) 先全局清理：移除顶层 item_reference，避免服务端查找失败
         const cleanList = Array.isArray(list)
@@ -135,8 +135,31 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
         const reasoningItems = allItems.filter(item => item?.type === 'reasoning')
         const functionCalls = allItems.filter(item => item?.type === 'function_call')
         
-        // If we have orphaned function_calls, synthesize reasoning
-        if (functionCalls.length > 0 && reasoningItems.length < functionCalls.length && hasTools) {
+        const createSyntheticReasoningForFc = (fc: any) => {
+          let queryText = 'request'
+          try {
+            if (fc?.arguments) {
+              const parsed = JSON.parse(fc.arguments)
+              if (parsed && typeof parsed === 'object') {
+                queryText = parsed.query || parsed.q || JSON.stringify(parsed)
+              }
+            }
+          } catch {}
+          const expectedReasoningId = fc.id?.replace('fc_', 'rs_') || `rs_synthetic_${Date.now()}`
+          return {
+            type: 'reasoning',
+            text: `Using ${fc.name || 'tool'} for: ${queryText}`,
+            id: expectedReasoningId,
+            providerOptions: {
+              openai: {
+                itemId: expectedReasoningId
+              }
+            }
+          }
+        }
+
+        // If we have orphaned function_calls, synthesize reasoning (regardless of tools presence)
+        if (functionCalls.length > 0 && reasoningItems.length < functionCalls.length) {
           console.log(`[AIaW][MCP-MW] Found ${functionCalls.length} function_calls but only ${reasoningItems.length} reasoning items`)
           
           // Create a map of existing reasoning IDs
@@ -146,43 +169,48 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
           functionCalls.forEach((fc) => {
             const expectedReasoningId = fc.id?.replace('fc_', 'rs_')
             if (expectedReasoningId && !existingReasoningIds.has(expectedReasoningId)) {
-              const syntheticReasoning = {
-                type: 'reasoning',
-                text: `Using ${fc.name} tool for: ${fc.arguments ? JSON.parse(fc.arguments).query || 'request' : 'request'}`,
-                id: expectedReasoningId || `rs_synthetic_${Date.now()}`,
-                // 关键：必须包含 providerOptions 让 SDK 识别为 OpenAI reasoning
-                providerOptions: {
-                  openai: {
-                    itemId: expectedReasoningId || `rs_synthetic_${Date.now()}`
-                  }
-                }
-              }
+              const syntheticReasoning = createSyntheticReasoningForFc(fc)
               console.log(`[AIaW][MCP-MW] Synthesizing reasoning: ${syntheticReasoning.id}`)
               allItems.unshift(syntheticReasoning) // Add at beginning
             }
           })
         }
         
-        // Now reconstruct the messages with proper ordering
-        return cleanList.map((item: any) => {
+        // Now reconstruct with proper ordering; also handle top-level function_call
+        const result: any[] = []
+        cleanList.forEach((item: any) => {
           if (item.role === 'assistant') {
             const content = (item as any).content
             if (Array.isArray(content)) {
-              // Re-categorize with synthetic reasoning included
+              // Collect fc ids inside this assistant message
+              const fcIdsInMessage = new Set(
+                content.filter((c: any) => c?.type === 'function_call').map((c: any) => c.id)
+              )
+              const expectedRsIds = new Set(
+                Array.from(fcIdsInMessage).map((id: any) => (typeof id === 'string' ? id.replace('fc_', 'rs_') : id))
+              )
+
+              // Build parts: only include reasoning matched to fc in this message
+              const updatedFunctionCalls = content.filter((c: any) => c?.type === 'function_call')
               const updatedReasoning: any[] = []
-              const updatedFunctionCalls: any[] = []
-              const otherItems: any[] = []
-              
-              // Include all items (original + synthetic)
-              allItems.forEach((part: any) => {
-                if (part?.type === 'reasoning') {
-                  updatedReasoning.push(part)
-                } else if (part?.type === 'function_call' && content.some((c: any) => c.id === part.id)) {
-                  updatedFunctionCalls.push(part)
-                } else if (content.some((c: any) => c === part) && part?.type !== 'item_reference') {
-                  otherItems.push(part)
+              // Prefer existing reasoning in content if any
+              content.forEach((c: any) => {
+                if (c?.type === 'reasoning' && (expectedRsIds.has(c.id) || fcIdsInMessage.size === 0)) {
+                  updatedReasoning.push(c)
                 }
               })
+              // Add synthetic/global reasonings that match missing ones
+              if (updatedReasoning.length < fcIdsInMessage.size) {
+                const haveIds = new Set(updatedReasoning.map(r => r.id))
+                allItems.forEach((part: any) => {
+                  if (part?.type === 'reasoning' && expectedRsIds.has(part.id) && !haveIds.has(part.id)) {
+                    updatedReasoning.push(part)
+                    haveIds.add(part.id)
+                  }
+                })
+              }
+
+              const otherItems = content.filter((c: any) => c?.type !== 'function_call' && c?.type !== 'reasoning' && c?.type !== 'item_reference')
               
               // Ensure proper ordering: reasoning -> function_call -> other
               const orderedContent = [...updatedReasoning, ...updatedFunctionCalls, ...otherItems]
@@ -202,19 +230,36 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
               
               // 过滤掉 content 中的任何 item_reference
               const filtered = transformed.filter((p: any) => p?.type !== 'item_reference')
-              return { ...(item as any), content: filtered }
+              result.push({ ...(item as any), content: filtered })
+              return
             }
-          } else if (item.type === 'reasoning' && hasTools) {
-            // Top-level reasoning - check if we need to inject it before a function_call
-            const matchingFc = functionCalls.find(fc => fc.id?.replace('fc_', 'rs_') === item.id)
-            if (matchingFc) {
-              // This reasoning should be injected before its function_call
-              return item
+          } else if (item?.type === 'function_call') {
+            // Top-level function_call: ensure preceding reasoning exists in output sequence
+            const expectedId = item.id?.replace('fc_', 'rs_')
+            const hasMatchingReasoning = allItems.some(part => part?.type === 'reasoning' && part.id === expectedId)
+            if (!hasMatchingReasoning) {
+              const syn = createSyntheticReasoningForFc(item)
+              console.log(`[AIaW][MCP-MW] Inject top-level synthetic reasoning before function_call: ${syn.id}`)
+              result.push(syn)
             }
+            result.push(item)
+            return
+          } else if (item?.type === 'reasoning') {
+            // Keep top-level reasoning as-is
+            result.push(item)
+            return
           }
           
-          return item
+          // For other entries (user/system/developer), also filter any nested item_reference in content
+        if (Array.isArray((item as any)?.content)) {
+          const filtered = (item as any).content.filter((p: any) => p?.type !== 'item_reference')
+          result.push({ ...(item as any), content: filtered })
+        } else {
+          result.push(item)
+        }
         })
+
+        return result
       }
 
       // 针对 Responses 原生 input 的清理（AI SDK 在某些版本下会直接构造 input 项）
@@ -236,7 +281,7 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
 
       if (Array.isArray(p.messages)) return { ...(params as any), messages: processMessages(normalize(p.messages)) } as any
       if (Array.isArray(p.prompt)) return { ...(params as any), prompt: processMessages(normalize(p.prompt)) } as any
-      if (Array.isArray((p as any).input)) return { ...(params as any), input: sanitizeResponsesInput((p as any).input) } as any
+      if (Array.isArray((p as any).input)) return { ...(params as any), input: processMessages(normalize((p as any).input)) } as any
 
       return params as any
     },
@@ -261,6 +306,37 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
     wrapStream: async ({ doStream }) => {
       const stream: any = await doStream()
 
+      // Helper: inject synthetic reasoning items into streaming chunks if missing
+      const seenReasoningIds = new Set<string>()
+      const maybeInjectReasoningChunks = (value: any): any[] => {
+        try {
+          if (value?.type === 'response.output_item.added' && value?.item?.type === 'reasoning' && value?.item?.id) {
+            seenReasoningIds.add(value.item.id)
+          }
+          if (value?.type === 'response.output_item.added' && value?.item?.type === 'function_call' && value?.item?.id) {
+            const fcId: string = value.item.id
+            const rsId = typeof fcId === 'string' ? fcId.replace('fc_', 'rs_') : undefined
+            if (rsId && !seenReasoningIds.has(rsId)) {
+              seenReasoningIds.add(rsId)
+              const outputIndex = (value as any).output_index ?? 0
+              const syntheticAdded = {
+                type: 'response.output_item.added',
+                output_index: outputIndex,
+                // 不设置 sequence_number，交由上游容忍；多数消费者仅关心顺序
+                item: { id: rsId, type: 'reasoning', summary: [] as any[] }
+              }
+              const syntheticDone = {
+                type: 'response.output_item.done',
+                output_index: outputIndex,
+                item: { id: rsId, type: 'reasoning', summary: [] as any[] }
+              }
+              return [syntheticAdded, syntheticDone, value]
+            }
+          }
+        } catch {}
+        return [value]
+      }
+
       // Case 1: Web ReadableStream
       if (stream && typeof stream.getReader === 'function') {
         const reader = stream.getReader()
@@ -284,7 +360,8 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
                     getGlobalLinkMap().set(conversationKey, lastResponseId)
                   }
                 } catch {}
-                controller.enqueue(value)
+                const out = maybeInjectReasoningChunks(value)
+                for (const v of out) controller.enqueue(v)
               }
             } finally {
               controller.close()
@@ -308,7 +385,8 @@ export function createOpenAIResponsesMCPMiddleware(): LanguageModelV2Middleware 
                 getGlobalLinkMap().set(conversationKey, lastResponseId)
               }
             } catch {}
-            yield value
+            const out = maybeInjectReasoningChunks(value)
+            for (const v of out) yield v
           }
         }
         return iter()
