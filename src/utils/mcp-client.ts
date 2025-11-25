@@ -4,7 +4,9 @@ import { JSONEqual } from './functions'
 import { version } from 'src/version'
 import { TauriShellClientTransport } from './tauri-shell-transport'
 import { platform } from '@tauri-apps/plugin-os'
-import { fetch } from './platform-api'
+import { fetch, IsWeb } from './platform-api'
+import { CorsFetchBaseURL } from './config'
+import { corsFetch } from './cors-fetch'
 import { Notify } from 'quasar'
 import { i18n } from 'src/boot/i18n'
 import { SSEClientTransport } from './mcp-sse-transport'
@@ -65,11 +67,18 @@ async function createConnection(key: string, transportConf: TransportConf): Prom
       cwd: transportConf.cwd
     }))
   } else if (transportConf.type === 'http') {
+    // In Web, use corsFetch only when CORS proxy base is configured; otherwise use direct fetch
+    const httpFetch = (IsWeb && CorsFetchBaseURL)
+      ? (async (url: URL, init?: any) => corsFetch(String(url), { method: init?.method, headers: init?.headers as any, body: init?.body, signal: init?.signal as any }))
+      : fetch
     await client.connect(new StreamableHTTPClientTransport(new URL(transportConf.url), {
-      fetch,
+      fetch: httpFetch as any,
       requestInit: {
         headers: transportConf.headers,
-        cache: 'no-cache'
+        cache: 'no-cache',
+        // Include cookies for session-based servers; works with same-origin or
+        // when dev proxy rewrites Set-Cookie for localhost
+        credentials: 'include' as any
       }
     })).catch(err => {
       client.close()

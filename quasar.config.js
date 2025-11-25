@@ -68,13 +68,41 @@ export default configure((ctx) => {
       // distDir
 
       extendViteConf() {
+        const mcpProxyTarget = process.env.MCP_PROXY_TARGET
+        const mcpProxyPath = process.env.MCP_PROXY_PATH || '/mcp'
+        const dynamicProxy = mcpProxyTarget
+          ? {
+              [mcpProxyPath]: {
+                target: mcpProxyTarget,
+                changeOrigin: true,
+                secure: false,
+                ws: false,
+                rewrite: (path) => path.replace(new RegExp('^' + mcpProxyPath), ''),
+                configure: (proxy) => {
+                  proxy.on('proxyRes', (proxyRes) => {
+                    const setCookie = proxyRes.headers['set-cookie']
+                    if (Array.isArray(setCookie)) {
+                      proxyRes.headers['set-cookie'] = setCookie.map((c) => {
+                        c = c.replace(/;\s*Domain=[^;]*/i, '')
+                        if (/;\s*Path=/i.test(c)) c = c.replace(/;\s*Path=[^;]*/i, `; Path=${mcpProxyPath}`)
+                        else c += `; Path=${mcpProxyPath}`
+                        c = c.replace(/;\s*Secure/ig, '')
+                        return c
+                      })
+                    }
+                  })
+                }
+              }
+            }
+          : undefined
         return {
           server: {
             // Hide noisy HMR overlay (e.g. UnoCSS entry warning) during dev
             hmr: { overlay: false },
             watch: {
               ignored: ['**/src-tauri/**', '**/.venv/**', '/android/**']
-            }
+            },
+            ...(dynamicProxy ? { proxy: dynamicProxy } : {})
           }
         }
       },

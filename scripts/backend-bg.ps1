@@ -64,7 +64,12 @@ switch ($Action) {
 
     # Launch uvicorn with working directory set to src-backend so relative paths (e.g. 'static') resolve correctly
     $cmd = "$python -m uvicorn app:app --host 127.0.0.1 --port $env:PORT *>> '..\\.logs\\backend.log'"
-    $p = Start-Process pwsh -WorkingDirectory $workdir -WindowStyle Hidden -ArgumentList @('-NoProfile','-Command', $cmd) -PassThru
+    $shell = (Get-Command pwsh -ErrorAction SilentlyContinue)
+    if ($shell) {
+      $p = Start-Process $shell.Source -WorkingDirectory $workdir -WindowStyle Hidden -ArgumentList @('-NoProfile','-Command', $cmd) -PassThru
+    } else {
+      $p = Start-Process powershell -WorkingDirectory $workdir -WindowStyle Hidden -ArgumentList @('-NoProfile','-Command', $cmd) -PassThru
+    }
     $p.Id | Set-Content $pidFile
     Start-Sleep -Seconds 2
     Write-Output "Started FastAPI backend. PID: $($p.Id)"

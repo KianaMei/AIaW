@@ -14,12 +14,16 @@ export type ProviderId =
   | 'azure'
   | 'deepseek'
   | 'openrouter'
+  // dynamic custom providers below (registered at runtime)
+  | 'kelivo-responses'
 
 const STATIC_PROVIDER_MAPPING: Record<string, ProviderId> = {
   gemini: 'google',
   grok: 'xai',
   'openai-response': 'openai',
-  openrouter: 'openrouter'
+  openrouter: 'openrouter',
+  // allow directly targeting kelivo by id/type
+  'kelivo-responses': 'kelivo-responses'
 }
 
 export function getAiSdkProviderId(provider: ProviderV2): ProviderId | 'openai-compatible' {
@@ -27,8 +31,13 @@ export function getAiSdkProviderId(provider: ProviderV2): ProviderId | 'openai-c
   if (byId) return byId
   const byType = provider.type !== 'openai' ? STATIC_PROVIDER_MAPPING[provider.type] : undefined
   if (byType) return byType
+  // Global replacement: any OpenAI Responses usage goes via kelivo-responses
+  const wantsKelivo =
+    (provider as any).settings?.responsesOrchestrator === 'kelivo' ||
+    provider.type === 'openai-response' ||
+    provider.id === 'openai-responses'
+  if (wantsKelivo) return 'kelivo-responses'
   if (provider.type === 'openai') return 'openai'
-  if (provider.type === 'openai-response') return 'openai'
   if (provider.type === 'azure') return 'azure'
   if (provider.type === 'anthropic') return 'anthropic'
   if (provider.type === 'google') return 'google'
@@ -89,11 +98,9 @@ export function providerToAiSdkConfig(provider: ProviderV2, modelId?: string): {
   // Priority: explicit settings.mode -> provider.type/id hint -> default(chat)
   if (providerId === 'openai') {
     const settingsMode = (provider.settings as any)?.mode as 'chat' | 'responses' | undefined
-    const wantsResponses =
-      settingsMode === 'responses' ||
-      provider.type === 'openai-response' ||
-      provider.id === 'openai-responses'
+    const wantsResponses = settingsMode === 'responses'
 
+    // For plain openai, keep chat by default
     extraOptions.mode = wantsResponses ? 'responses' : (settingsMode === 'chat' ? 'chat' : 'chat')
     // 默认开启自动截断，避免超长 input 触发 400
     extraOptions.truncation = 'auto'
@@ -106,6 +113,9 @@ export function providerToAiSdkConfig(provider: ProviderV2, modelId?: string): {
       }
     }
   }
+
+  // If routing to kelivo-responses, no special mode flags are required here; the
+  // kelivo provider internally builds OpenAI responses model and handles orchestration.
 
   if (providerId === 'azure') {
     const { mode, useDeploymentBasedUrls } = resolveAzureVariant(provider.settings?.apiVersion)

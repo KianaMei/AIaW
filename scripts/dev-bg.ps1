@@ -27,9 +27,15 @@ switch ($Action) {
       else { Remove-Item $pidFile -ErrorAction SilentlyContinue }
     }
 
-    # Force dev server port to 9006; if occupied, quasar will fail instead of picking another
-    $cmd = '$env:FORCE_COLOR="1"; $env:CHECKS="0"; pnpm run dev -- -p 9006 *>> ".logs\\dev.log"'
-    $p = Start-Process pwsh -WorkingDirectory $root -WindowStyle Hidden -ArgumentList @('-NoProfile','-Command', $cmd) -PassThru
+    # Force dev server port to 9007; lock dev to that port
+    $cmd = '$env:FORCE_COLOR="1"; $env:CHECKS="0"; pnpm run dev -- -p 9007 *>> ".logs\\dev.log"'
+    # Prefer pwsh if available, fallback to Windows PowerShell
+    $shell = (Get-Command pwsh -ErrorAction SilentlyContinue)
+    if ($shell) {
+      $p = Start-Process $shell.Source -WorkingDirectory $root -WindowStyle Hidden -ArgumentList @('-NoProfile','-Command', $cmd) -PassThru
+    } else {
+      $p = Start-Process powershell -WorkingDirectory $root -WindowStyle Hidden -ArgumentList @('-NoProfile','-Command', $cmd) -PassThru
+    }
     $p.Id | Set-Content $pidFile
     Start-Sleep -Seconds 2
     Write-Output "Started Quasar dev. PID: $($p.Id)"
@@ -43,8 +49,8 @@ switch ($Action) {
       Remove-Item $pidFile -ErrorAction SilentlyContinue
       Write-Output "Stopped PID $devPid"
     } else {
-      Write-Output 'No PID file. Attempting by ports 9005/9006...'
-      foreach ($port in 9005,9006) {
+      Write-Output 'No PID file. Attempting by ports 9005/9006/9007...'
+      foreach ($port in 9005,9006,9007) {
         $own = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq $port } | Select-Object -First 1 -ExpandProperty OwningProcess
         if ($own) { Stop-Process -Id $own -Force -ErrorAction SilentlyContinue; Write-Output "Stopped process on port $port (PID $own)" }
       }
@@ -56,13 +62,15 @@ switch ($Action) {
     if ($devPid) { $alive = (Get-Process -Id $devPid -ErrorAction SilentlyContinue) -ne $null }
     $port9005 = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq 9005 }
     $port9006 = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq 9006 }
+    $port9007 = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq 9007 }
     [PSCustomObject]@{
       ProcId   = $devPid
       Running  = $alive
       Log      = $log
       Port9005 = [bool]$port9005
       Port9006 = [bool]$port9006
-      URLs     = @('http://localhost:9005/','http://localhost:9006/')
+      Port9007 = [bool]$port9007
+      URLs     = @('http://localhost:9005/','http://localhost:9006/','http://localhost:9007/')
     } | Format-List
   }
   'logs' {

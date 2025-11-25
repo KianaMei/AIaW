@@ -891,7 +891,12 @@ const sdkModel = computedAsync(
 const providerNameForOptions = computed(() => {
   const prov = getProvider(currentProviderId.value)
   if (!prov) return ''
-  if ((prov.id === 'openai-responses') || (prov.type === 'openai-response')) return 'openai.responses'
+  // Route kelivo responses to openai.responses options rules for compatibility
+  if (
+    prov.id === 'openai-responses' ||
+    prov.type === 'openai-response' ||
+    prov.id === 'kelivo-responses'
+  ) return 'openai.responses'
   const pid = getAiSdkProviderId(prov)
   return pid ? `${pid}.` : ''
 })
